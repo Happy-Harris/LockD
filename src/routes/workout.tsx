@@ -1,0 +1,572 @@
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Check, ChevronLeft, Flame, Minus, Plus, Timer, Trash2, Video, Zap } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { ExercisePicker } from "@/components/app/exercise-picker";
+import { Page } from "@/components/app/shell";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { SET_TYPES, titleCase, usesReps, usesWeight } from "@/domain/taxonomy";
+import { elapsedSeconds } from "@/domain/time";
+import type { GrindFeel, SetType, WorkoutSet } from "@/domain/types";
+import { formatDuration, formatWeight, parseWeightInput, weightUnitFor } from "@/domain/units";
+import { uuid } from "@/domain/ids";
+import { compareSet, findGhostSlice, formatGhostSet, ghostHeader, ghostSetsForExercise } from "@/lib/gym/ghost";
+import { restPersonalitySeconds, learnedRestSeconds } from "@/lib/gym/dna";
+import { progressExercise, actionLabel } from "@/lib/gym/progression";
+import { useSlices } from "@/lib/gym/hooks";
+import { useGym } from "@/lib/gym/store";
+import { putClipBlob } from "@/lib/gym/vault";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/workout")({ component: ActiveWorkoutPage });
+
+function ActiveWorkoutPage() {
+  const navigate = useNavigate();
+  const workouts = useGym((s) => s.workouts);
+  const workout = workouts.find((row) => row.status === "active");
+  const workoutExercises = useGym((s) => s.workoutExercises);
+  const workoutSets = useGym((s) => s.workoutSets);
+  const templateExercises = useGym((s) => s.templateExercises);
+  const settings = useGym((s) => s.settings);
+  const exercises = useGym((s) => s.exercises);
+  const machineSetups = useGym((s) => s.machineSetups);
+  const lessons = useGym((s) => s.lessons);
+  const addExerciseToWorkout = useGym((s) => s.addExerciseToWorkout);
+  const removeExerciseFromWorkout = useGym((s) => s.removeExerciseFromWorkout);
+  const swapExercise = useGym((s) => s.swapExercise);
+  const addSet = useGym((s) => s.addSet);
+  const updateSet = useGym((s) => s.updateSet);
+  const nudgeSetWeight = useGym((s) => s.nudgeSetWeight);
+  const nudgeSetReps = useGym((s) => s.nudgeSetReps);
+  const completeSet = useGym((s) => s.completeSet);
+  const uncompleteSet = useGym((s) => s.uncompleteSet);
+  const deleteSet = useGym((s) => s.deleteSet);
+  const finishWorkout = useGym((s) => s.finishWorkout);
+  const discardWorkout = useGym((s) => s.discardWorkout);
+  const startRestTimer = useGym((s) => s.startRestTimer);
+  const stopRestTimer = useGym((s) => s.stopRestTimer);
+  const updateWorkout = useGym((s) => s.updateWorkout);
+  const ensureWarmups = useGym((s) => s.ensureWarmups);
+  const attachClip = useGym((s) => s.attachClip);
+  const slices = useSlices();
+  const [picker, setPicker] = useState<"add" | string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const leaving = useRef(false);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (!workout && !leaving.current) void navigate({ to: "/" });
+  }, [workout, navigate]);
+
+  const unit = weightUnitFor(settings.unitSystem);
+  const increment = settings.quickIncrementG;
+
+  const ghostSlice = useMemo(() => {
+    if (!workout) return undefined;
+    return findGhostSlice(slices, {
+      beatWorkoutId: workout.beatWorkoutId,
+      templateId: workout.templateId,
+      name: workout.name,
+      beforeIso: workout.startedAt,
+    });
+  }, [workout, slices]);
+
+  const blocks = useMemo(() => {
+    if (!workout) return [];
+    return workoutExercises
+      .filter((row) => row.workoutId === workout.id)
+      .sort((a, b) => a.order - b.order)
+      .map((exercise) => ({
+        exercise,
+        sets: workoutSets
+          .filter((set) => set.workoutExerciseId === exercise.id)
+          .sort((a, b) => a.order - b.order),
+        prescription: templateExercises.find(
+          (row) => row.templateId === workout.templateId && row.exerciseId === exercise.exerciseId,
+        ),
+        ghost: ghostSetsForExercise(ghostSlice, exercise.exerciseId),
+        setup: machineSetups.find((row) => row.exerciseId === exercise.exerciseId),
+        lesson: [...lessons].reverse().find((row) => row.exerciseId === exercise.exerciseId),
+        catalog: exercises.find((row) => row.id === exercise.exerciseId),
+      }));
+  }, [workout, workoutExercises, workoutSets, templateExercises, ghostSlice, machineSetups, lessons, exercises]);
+
+  if (!workout) return null;
+
+  const elapsed = elapsedSeconds(workout.startedAt, undefined, workout.pausedSeconds);
+  void now;
+  const completed = workoutSets.filter((set) => set.workoutId === workout.id && set.isCompleted).length;
+  const total = workoutSets.filter((set) => set.workoutId === workout.id).length;
+  const workingDone = blocks.flatMap((block) =>
+    block.sets.filter((set) => set.isCompleted && set.setType !== "warmup").map((set, index) => ({ set, ghost: block.ghost[index] })),
+  );
+  const beats = workingDone.filter(({ set, ghost }) => compareSet(set, ghost).verdict === "beat").length;
+
+  const finish = () => {
+    leaving.current = true;
+    const id = workout.id;
+    stopRestTimer();
+    finishWorkout(id);
+    void navigate({ to: "/workout/$id/summary", params: { id } });
+  };
+
+  return (
+    <Page hideNav>
+      <header className="mb-3 flex items-center gap-2">
+        <button
+          type="button"
+          className="grid size-11 place-items-center rounded-xl hover:bg-raised"
+          onClick={() => void navigate({ to: "/" })}
+          aria-label="Back"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+        <div className="min-w-0 flex-1">
+          <input
+            value={workout.name}
+            onChange={(event) => updateWorkout(workout.id, { name: event.target.value })}
+            className="w-full bg-transparent font-display text-2xl font-semibold tracking-tight text-ink outline-none"
+          />
+          <p className="font-mono text-xs text-muted tabular">
+            {formatDuration(elapsed)} · {completed}/{total || 0} sets
+            {beats > 0 ? ` · ${beats} beat last time` : ""}
+          </p>
+        </div>
+        <Button size="sm" variant="ghost" onClick={() => discardWorkout(workout.id)}>
+          Discard
+        </Button>
+        <Button size="sm" onClick={finish}>
+          Finish
+        </Button>
+      </header>
+
+      {ghostSlice ? (
+        <p className="mb-4 rounded-2xl bg-paper px-4 py-3 font-mono text-xs text-paper-ink">
+          {ghostHeader(workout, ghostSlice)} · racing {ghostSlice.workout.name}
+        </p>
+      ) : null}
+
+      <div className="space-y-4">
+        {blocks.map((block) => {
+          const tracking = block.exercise.trackingTypeSnapshot;
+          const target =
+            block.prescription?.targetRepMin && block.prescription.targetRepMax
+              ? `${block.prescription.targetSets} × ${block.prescription.targetRepMin}–${block.prescription.targetRepMax}`
+              : null;
+          const suggestion = progressExercise({
+            exerciseId: block.exercise.exerciseId,
+            exerciseName: block.exercise.exerciseNameSnapshot,
+            trackingType: block.exercise.trackingTypeSnapshot,
+            incrementG: increment,
+            targetRepMin: block.prescription?.targetRepMin,
+            targetRepMax: block.prescription?.targetRepMax,
+            targetSets: block.prescription?.targetSets,
+            slices,
+            formula: settings.oneRepMaxFormula,
+            excludeWarmups: settings.excludeWarmupsFromAnalytics,
+          });
+          const restHint = block.catalog
+            ? restPersonalitySeconds(block.catalog, learnedRestSeconds(block.catalog.id, slices))
+            : block.exercise.restSeconds;
+          return (
+            <article key={block.exercise.id} className="rounded-[28px] bg-surface p-4 hairline">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-2xl font-semibold tracking-tight">
+                    {block.exercise.exerciseNameSnapshot}
+                  </h2>
+                  <p className="text-xs text-muted">
+                    {titleCase(block.exercise.primaryMuscleGroupSnapshot)}
+                    {target ? ` · ${target}` : ""}
+                    {` · rest ${restHint}s`}
+                  </p>
+                </div>
+                <div className="flex">
+                  <button
+                    type="button"
+                    className="grid size-11 place-items-center rounded-xl text-subtle hover:bg-raised"
+                    onClick={() =>
+                      startRestTimer(restHint, workout.id, undefined, block.exercise.exerciseNameSnapshot)
+                    }
+                    aria-label="Start rest"
+                  >
+                    <Timer className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    className="grid size-11 place-items-center rounded-xl text-subtle hover:bg-raised"
+                    onClick={() => removeExerciseFromWorkout(block.exercise.id)}
+                    aria-label="Remove exercise"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </div>
+              </div>
+              {block.setup ? (
+                <p className="mb-2 font-mono text-[11px] text-subtle">
+                  Setup {block.setup.gymName ? `· ${block.setup.gymName}` : ""}
+                  {block.setup.seat ? ` · seat ${block.setup.seat}` : ""}
+                  {block.setup.handle ? ` · ${block.setup.handle}` : ""}
+                  {block.setup.lever ? ` · lever ${block.setup.lever}` : ""}
+                  {block.setup.pin ? ` · pin ${block.setup.pin}` : ""}
+                  {block.setup.stackNote ? ` · ${block.setup.stackNote}` : ""}
+                </p>
+              ) : null}
+              {block.lesson ? (
+                <p className="mb-2 text-xs leading-relaxed text-muted">Pinned: {block.lesson.text}</p>
+              ) : null}
+              {block.ghost.length > 0 ? (
+                <p className="mb-2 font-mono text-xs text-subtle">
+                  Ghost:{" "}
+                  {block.ghost.map((set) => formatGhostSet(set, unit)).join("  ")}
+                </p>
+              ) : null}
+              {suggestion.why ? (
+                <p className="mb-3 text-xs leading-relaxed text-muted">
+                  <span className="font-medium text-ink">{actionLabel(suggestion.action)}. </span>
+                  {suggestion.why}
+                </p>
+              ) : null}
+
+              <div className="space-y-2">
+                {block.sets.map((set, index) => {
+                  const ghostIndex = block.sets.slice(0, index + 1).filter((row) => row.setType !== "warmup").length - 1;
+                  const ghost = set.setType === "warmup" ? undefined : block.ghost[Math.max(0, ghostIndex)];
+                  return (
+                    <SetRow
+                      key={set.id}
+                      set={set}
+                      index={index}
+                      unit={unit}
+                      incrementG={increment}
+                      showWeight={usesWeight(tracking)}
+                      showReps={usesReps(tracking)}
+                      showRpe={settings.intensityMode === "rpe"}
+                      ghost={ghost}
+                      targetMin={block.prescription?.targetRepMin}
+                      targetMax={block.prescription?.targetRepMax}
+                      onChange={(patch) => updateSet(set.id, patch)}
+                      onNudgeWeight={(delta) => nudgeSetWeight(set.id, delta)}
+                      onNudgeReps={(delta) => nudgeSetReps(set.id, delta)}
+                      onToggle={() => {
+                        if (set.isCompleted) uncompleteSet(set.id);
+                        else {
+                          const prs = completeSet(set.id);
+                          if (prs.length) toast(`${prs.map((pr) => pr.exerciseName).join(", ")} — new e1RM`);
+                          const cmp = compareSet(set, ghost);
+                          if (cmp.verdict === "beat") toast(`Beat last time · ${cmp.label}`);
+                          if (cmp.verdict === "tie") toast("Tied last time");
+                        }
+                      }}
+                      onDelete={() => deleteSet(set.id)}
+                      onClip={async (file) => {
+                        const id = uuid();
+                        try {
+                          await putClipBlob(id, file);
+                          attachClip({
+                            id,
+                            setId: set.id,
+                            workoutId: workout.id,
+                            exerciseId: block.exercise.exerciseId,
+                            exerciseName: block.exercise.exerciseNameSnapshot,
+                            createdAt: new Date().toISOString(),
+                            localDate: workout.localDate,
+                            mimeType: file.type || "video/mp4",
+                          });
+                          toast("Clip locked to this set");
+                        } catch (error) {
+                          toast(error instanceof Error ? error.message : "Could not store clip");
+                        }
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Button variant="ghost" size="sm" onClick={() => addSet(block.exercise.id)}>
+                  <Plus className="size-4" />
+                  Add set
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => ensureWarmups(block.exercise.id)}>
+                  <Zap className="size-4" />
+                  Warm-up
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setPicker(block.exercise.id)}>
+                  Swap
+                </Button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {blocks.length === 0 ? (
+        <p className="py-10 text-center text-sm text-muted">No lifts yet. Add an exercise to start logging.</p>
+      ) : null}
+
+      <Button variant="secondary" className="mt-4 w-full" onClick={() => setPicker("add")}>
+        <Plus className="size-4" />
+        Add exercise
+      </Button>
+
+      <ExercisePicker
+        open={picker !== null}
+        onClose={() => setPicker(null)}
+        onPick={(exercise) => {
+          if (picker && picker !== "add") swapExercise(picker, exercise.id);
+          else addExerciseToWorkout(workout.id, exercise.id);
+        }}
+      />
+    </Page>
+  );
+}
+
+function SetRow({
+  set,
+  index,
+  unit,
+  incrementG,
+  ghost,
+  targetMin,
+  targetMax,
+  showWeight,
+  showReps,
+  showRpe,
+  onChange,
+  onNudgeWeight,
+  onNudgeReps,
+  onToggle,
+  onDelete,
+  onClip,
+}: {
+  set: WorkoutSet;
+  index: number;
+  unit: "kg" | "lb";
+  incrementG: number;
+  ghost?: { weightG?: number; reps?: number; rpe?: number };
+  targetMin?: number;
+  targetMax?: number;
+  showWeight: boolean;
+  showReps: boolean;
+  showRpe: boolean;
+  onChange: (patch: Partial<WorkoutSet>) => void;
+  onNudgeWeight: (deltaG: number) => void;
+  onNudgeReps: (delta: number) => void;
+  onToggle: () => void;
+  onDelete: () => void;
+  onClip: (file: File) => void;
+}) {
+  const [weight, setWeight] = useState(() => (set.weightG != null ? formatWeight(set.weightG, unit) : ""));
+  const [reps, setReps] = useState(() => (set.reps != null ? String(set.reps) : ""));
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setWeight(set.weightG != null ? formatWeight(set.weightG, unit) : "");
+  }, [set.weightG, unit]);
+  useEffect(() => {
+    setReps(set.reps != null ? String(set.reps) : "");
+  }, [set.reps]);
+
+  const classification =
+    set.isCompleted && set.reps != null && targetMin != null && targetMax != null
+      ? set.reps < targetMin
+        ? "under"
+        : set.reps > targetMax
+          ? "over"
+          : "hit"
+      : null;
+
+  const typeLabel = SET_TYPES.find((entry) => entry.value === set.setType)?.short || "WK";
+  const cmp = set.isCompleted ? compareSet(set, ghost) : null;
+  const grindOrder: GrindFeel[] = ["easy", "normal", "grind"];
+
+  return (
+    <div className={cn("rounded-2xl bg-raised/70 p-2", set.isCompleted && "opacity-90")}>
+      <div className="flex items-center gap-2">
+        <span className="w-6 text-center font-mono text-sm tabular text-muted">{index + 1}</span>
+        {showWeight ? (
+          <Stepper
+            value={weight}
+            placeholder={ghost?.weightG != null ? formatWeight(ghost.weightG, unit) : "0"}
+            ariaLabel={`Set ${index + 1} weight`}
+            onMinus={() => onNudgeWeight(-incrementG)}
+            onPlus={() => onNudgeWeight(incrementG)}
+            onChange={(value) => {
+              setWeight(value);
+              onChange({ weightG: parseWeightInput(value, unit) });
+            }}
+          />
+        ) : (
+          <div className="flex-1" />
+        )}
+        <button
+          type="button"
+          className="h-11 w-11 shrink-0 rounded-xl bg-surface text-xs font-medium text-muted hairline"
+          aria-label={`Set type ${set.setType}`}
+          onClick={() => {
+            const order: SetType[] = ["working", "warmup", "drop", "failure"];
+            const next = order[(order.indexOf(set.setType) + 1) % order.length]!;
+            onChange({ setType: next });
+          }}
+        >
+          {typeLabel || "WK"}
+        </button>
+        <button
+          type="button"
+          onClick={onToggle}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            onDelete();
+          }}
+          className={cn(
+            "grid size-11 shrink-0 place-items-center rounded-xl hairline",
+            set.isCompleted ? "bg-success text-canvas" : "bg-surface text-muted",
+          )}
+          aria-label={set.isCompleted ? "Mark incomplete" : "Complete set"}
+        >
+          <Check className="size-4" />
+        </button>
+      </div>
+      {showReps ? (
+        <div className="mt-2 flex items-center gap-2 pl-8">
+          <Stepper
+            value={reps}
+            placeholder={ghost?.reps != null ? String(ghost.reps) : "0"}
+            ariaLabel={`Set ${index + 1} reps`}
+            inputMode="numeric"
+            onMinus={() => onNudgeReps(-1)}
+            onPlus={() => onNudgeReps(1)}
+            onChange={(value) => {
+              setReps(value);
+              const parsed = Number(value);
+              onChange({ reps: Number.isFinite(parsed) ? parsed : undefined });
+            }}
+            onEnter={onToggle}
+          />
+          {showRpe ? (
+            <button
+              type="button"
+              className="h-11 shrink-0 rounded-xl bg-surface px-3 text-xs text-muted hairline"
+              onClick={() => {
+                const current = set.rpe ?? 6;
+                const next = current >= 10 ? 6 : Math.round((current + 0.5) * 2) / 2;
+                onChange({ rpe: next });
+              }}
+            >
+              RPE {set.rpe ?? "—"}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      <div className="mt-1 flex items-center gap-1 pl-8">
+        <button
+          type="button"
+          className="grid size-9 place-items-center rounded-lg text-subtle hover:bg-surface"
+          aria-label="Set grind"
+          onClick={() => {
+            const current = set.grind ?? "normal";
+            const next = grindOrder[(grindOrder.indexOf(current) + 1) % grindOrder.length]!;
+            onChange({ grind: next });
+          }}
+        >
+          <Flame className={cn("size-3.5", set.grind === "grind" && "text-accent", set.grind === "easy" && "text-success")} />
+        </button>
+        <button
+          type="button"
+          className="grid size-9 place-items-center rounded-lg text-subtle hover:bg-surface"
+          aria-label="Attach clip"
+          onClick={() => fileRef.current?.click()}
+        >
+          <Video className={cn("size-3.5", set.clipId && "text-accent")} />
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) onClip(file);
+            event.target.value = "";
+          }}
+        />
+        <p className="min-w-0 flex-1 text-[11px] text-subtle">
+          {cmp
+            ? cmp.verdict === "beat"
+              ? `Beat ghost · ${cmp.label}`
+              : cmp.verdict === "behind"
+                ? `Ghost won · ${cmp.label}`
+                : cmp.label
+            : classification === "hit"
+              ? "In range"
+              : classification === "under"
+                ? "Under range"
+                : classification === "over"
+                  ? "Over range"
+                  : ghost
+                    ? `Ghost ${formatGhostSet(ghost, unit)}`
+                    : set.grind
+                      ? set.grind
+                      : "Long-press check to delete"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Stepper({
+  value,
+  placeholder,
+  ariaLabel,
+  inputMode = "decimal",
+  onMinus,
+  onPlus,
+  onChange,
+  onEnter,
+}: {
+  value: string;
+  placeholder: string;
+  ariaLabel: string;
+  inputMode?: "decimal" | "numeric";
+  onMinus: () => void;
+  onPlus: () => void;
+  onChange: (value: string) => void;
+  onEnter?: () => void;
+}) {
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-1">
+      <button
+        type="button"
+        className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface text-muted hairline"
+        onClick={onMinus}
+        aria-label={`Decrease ${ariaLabel}`}
+      >
+        <Minus className="size-3.5" />
+      </button>
+      <Input
+        inputMode={inputMode}
+        value={value}
+        placeholder={placeholder}
+        className="h-11 px-1 text-center font-mono text-base"
+        aria-label={ariaLabel}
+        onChange={(event) => onChange(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") onEnter?.();
+        }}
+      />
+      <button
+        type="button"
+        className="grid size-11 shrink-0 place-items-center rounded-xl bg-surface text-muted hairline"
+        onClick={onPlus}
+        aria-label={`Increase ${ariaLabel}`}
+      >
+        <Plus className="size-3.5" />
+      </button>
+    </div>
+  );
+}
