@@ -42,6 +42,37 @@ export default tseslint.config(
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  // Principle 8: history, charts and export are never paywalled. These surfaces may not
+  // import anything that gates by plan or entitlement. Enforced again by
+  // src/test/history-never-paywalled.test.ts, which walks the full import graph.
+  {
+    files: [
+      "src/routes/history*.tsx",
+      "src/routes/chronicle.tsx",
+      "src/routes/analytics.tsx",
+      "src/routes/library.$id.tsx",
+      "src/routes/body.tsx",
+      "src/routes/wrapped.tsx",
+      "src/routes/moments.$id.tsx",
+      "src/routes/workout.$id.summary.tsx",
+      "src/routes/settings.tsx",
+      "src/lib/gym/**/*.ts",
+      "src/domain/**/*.ts",
+    ],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/*entitlement*", "**/*billing*", "**/*paywall*", "**/*subscription*", "**/*plan-gate*", "**/*pricing*"],
+              message: "History, charts and export are free forever (principle 8). Gate sync, video or Lab compute outside these surfaces.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // Disable rules that conflict with Prettier formatting.
   prettier,
 );

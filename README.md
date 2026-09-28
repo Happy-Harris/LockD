@@ -6,6 +6,12 @@ A training operating system that remembers your entire lifting life — sessions
 
 This snapshot is the Grok App Builder rewrite as of 2026-09-22. It is **not** the original Strong-Pro repo. Do not overwrite Strong-Pro with this.
 
+## Our promise
+
+Your full history, charts and export are free, forever. If Lock’d ever charges for anything, it will only be for what costs money to run: sync, video storage and Lab compute.
+
+This is enforced in code: `src/test/history-never-paywalled.test.ts` fails if any history, chart or export screen can reach a plan or entitlement check, and an ESLint rule blocks the import at edit time.
+
 ## Stack
 
 - React 19 + TanStack Start / Router / Query
@@ -24,6 +30,18 @@ npm run build
 ```
 
 Guest mode works with no env vars (on-device Zustand + PGLite). Sign-in, locker, public shares, and server Lab need a database and auth (see `.env.example` and `HANDOFF.md`).
+
+## Checks
+
+```bash
+npm run verify       # lint + typecheck + unit tests (Vitest) + build — the bar for every PR
+npm run test:e2e     # Playwright, phone (390 px) and desktop (1024 px)
+npm run check:brand  # stale brand names in user-facing strings (report only for now)
+npm run test:legacy  # old app-builder scaffolding suites; not part of verify, removed with the scaffolding
+```
+
+CI runs `verify` and the e2e suite on every push and pull request. Local e2e can reuse a
+preinstalled Chromium: `CHROMIUM_PATH=/path/to/chrome npm run test:e2e`.
 
 ## What lives where
 

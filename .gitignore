@@ -20,3 +20,8 @@ attachments
 pglite-data
 *.tgz
 lockd-export.zip
+
+# Test output
+playwright-report/
+test-results/
+src/test/.tmp-*

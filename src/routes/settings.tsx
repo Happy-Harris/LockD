@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { BACKUP_FORMAT, type AccentTheme, type AppSettings, type LockdBackup, type ThemeMode, type UnitSystem, type WeekStartDay } from "@/domain/types";
 import { defaultQuickIncrementG } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
+import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
@@ -223,6 +224,10 @@ function SettingsPage() {
       </Section>
 
       <Section title="Data">
+        <div className="mb-3 rounded-xl bg-raised px-3 py-3" data-testid="history-promise">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">{HISTORY_PROMISE_TITLE}</p>
+          <p className="mt-1 text-sm leading-relaxed text-ink">{HISTORY_PROMISE}</p>
+        </div>
         <p className="text-sm leading-relaxed text-muted">
           Signed in, every session writes to the locker. JSON and CSV are still here if you want a file in your hand.
           Strong CSV imports locally, then syncs up.

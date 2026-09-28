@@ -398,8 +398,8 @@ export function applyProgramLoad(opts: {
 }): { weightG?: number; reps?: number; sets: number } {
   const { rule, weekNumber, isDeload, suggestion, previousWeightG, previousReps, baseSets } = opts;
   let weightG = suggestion?.suggestedWeightG ?? previousWeightG;
-  let reps = suggestion?.suggestedReps ?? previousReps;
-  let sets = isDeload ? Math.max(2, baseSets - 1) : baseSets;
+  const reps = suggestion?.suggestedReps ?? previousReps;
+  const sets = isDeload ? Math.max(2, baseSets - 1) : baseSets;
 
   if (rule.kind === "linear" && weightG && !suggestion) {
     const increment = rule.incrementG ?? 2500;
