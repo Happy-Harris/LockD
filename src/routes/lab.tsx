@@ -5,8 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, Stat } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { formatWeightWithUnit, weightUnitFor } from "@/domain/units";
-import { askTheLab, consultLab } from "@/lib/lab/ask";
+import { consultLab } from "@/lib/lab/ask";
 import { actionLabel } from "@/lib/gym/progression";
 import { useGymDerived } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
@@ -17,11 +16,9 @@ import type { LabHistoryNote } from "@/lib/cloud/types";
 export const Route = createFileRoute("/lab")({ component: LabPage });
 
 function LabPage() {
-  const { verdict, muscles, slices, settings, lastCompleted, intelligence, board, easier, chronicle, autopsies, dna, queue } =
-    useGymDerived();
+  const { intelligence, board, easier, chronicle, autopsies, dna, queue } = useGymDerived();
   const labLast = useGym((s) => s.labLast);
   const setLabLast = useGym((s) => s.setLabLast);
-  const unit = weightUnitFor(settings.unitSystem);
   const { user, isPending } = useCurrentUserState();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,53 +33,21 @@ function LabPage() {
   }, [user]);
 
   const ask = async () => {
+    if (!user) return;
     setBusy(true);
     setError(null);
     try {
-      if (user) {
-        const result = await consultLab({ data: { question } });
-        if (!result.ok) {
-          setError(result.error);
-          return;
-        }
-        setLabLast(result.text);
-        setHistory((current) => [
-          { id: result.id, question, answer: result.text, createdAt: result.askedAt },
-          ...current,
-        ]);
-        setQuestion("");
-        return;
-      }
-      const brief = [
-        `Lens: ${settings.goalLens}. Era: ${chronicle.current?.name ?? "none"}.`,
-        `Verdict: ${verdict.headline} ${verdict.detail}`,
-        `Progression hit-rate: ${Math.round(intelligence.hitRate * 100)}% (prior ${Math.round(intelligence.hitRatePrior * 100)}%).`,
-        easier.needed ? `Easier week call: ${easier.why}` : "No easier-week call.",
-        "DNA: " + dna.map((row) => `${row.name} personality=${row.personality} range=${row.strongestRange ?? "n/a"} rest=${row.learnedRestSeconds ?? "n/a"}s`).join(" | "),
-        "Autopsy: " + autopsies.map((row) => `${row.name}: ${row.headline} [${row.findings.map((f) => `${f.title}: ${f.evidence}`).join("; ")}]`).join(" || "),
-        "Queue: " + queue.map((row) => `${row.name} ${row.how}`).join(" | "),
-        board.map((call) => `${call.exerciseName}: ${call.action} — ${call.why}`).join(" | "),
-        intelligence.insights.join(" | "),
-        intelligence.volumeResponse,
-        intelligence.restNote,
-        intelligence.rpeDrift?.note ?? "",
-        intelligence.relative
-          .map((row) => `${row.name} ${formatWeightWithUnit(row.e1rmG, unit)} / BW = ${row.ratio.toFixed(2)}`)
-          .join("; "),
-        `Sessions on file: ${slices.length}. Last: ${lastCompleted ? lastCompleted.workout.name : "none"}.`,
-        Object.entries(muscles)
-          .filter(([, value]) => value > 0)
-          .map(([muscle, value]) => `${muscle} ${Math.round(value)}`)
-          .join(", "),
-      ]
-        .filter(Boolean)
-        .join("\n");
-      const result = await askTheLab({ data: { brief } });
+      const result = await consultLab({ data: { question } });
       if (!result.ok) {
         setError(result.error);
         return;
       }
       setLabLast(result.text);
+      setHistory((current) => [
+        { id: result.id, question, answer: result.text, createdAt: result.askedAt },
+        ...current,
+      ]);
+      setQuestion("");
     } finally {
       setBusy(false);
     }
@@ -93,8 +58,8 @@ function LabPage() {
       <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-subtle">The Lab</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">Ask the numbers.</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">
-        Local intelligence first. Signed in, Grok reads the locker — last sessions, stalls, DNA, the note you asked
-        last time — and files the answer. Guest mode still sends a dry brief from this device.
+        The read below is worked out on this device from your log. Signed in, you can also ask the Lab a question: it
+        reads your synced log — last sessions, stalls, DNA, the note you asked last time — and files the answer.
       </p>
 
       <div className="mt-6 grid grid-cols-3 gap-2">
@@ -274,17 +239,12 @@ function LabPage() {
           </Button>
         </form>
       ) : (
-        <div className="mt-8 space-y-2">
-          <Button onClick={() => void ask()} disabled={busy}>
-            {busy ? "Reading the log…" : labLast ? "Ask Grok again" : "Ask the Lab"}
-          </Button>
-          <p className="text-xs text-subtle">
-            <Link to="/login" className="text-accent underline-offset-2 hover:underline">
-              Sign in
-            </Link>{" "}
-            if you want the Lab to remember the conversation and read the full log.
-          </p>
-        </div>
+        <p className="mt-8 text-sm text-muted" data-testid="lab-guest-note">
+          <Link to="/login" className="text-accent underline-offset-2 hover:underline">
+            Sign in
+          </Link>{" "}
+          to ask the Lab a question. It reads your full synced log and files every answer.
+        </p>
       )}
       {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
       {labLast ? (
@@ -295,7 +255,7 @@ function LabPage() {
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink">{labLast.text}</p>
         </Card>
       ) : (
-        <p className="mt-6 text-sm text-muted">The local read is already above. Ask Grok if you want a second opinion.</p>
+        <p className="mt-6 text-sm text-muted">The local read is above. Signed in, you can ask for a second opinion.</p>
       )}
       {history.length > 1 ? (
         <section className="mt-8">
