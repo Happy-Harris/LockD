@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Play, Plus } from "lucide-react";
+import { useMemo } from "react";
 import { Page } from "@/components/app/shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,7 +12,10 @@ export const Route = createFileRoute("/routines")({ component: RoutinesPage });
 
 function RoutinesPage() {
   const navigate = useNavigate();
-  const templates = useGym((s) => s.templates.filter((row) => !row.isArchived));
+  // Select the stored array and filter in a memo: a selector that returns a new array on
+  // every call makes useSyncExternalStore loop forever ("Maximum update depth exceeded").
+  const allTemplates = useGym((s) => s.templates);
+  const templates = useMemo(() => allTemplates.filter((row) => !row.isArchived), [allTemplates]);
   const templateExercises = useGym((s) => s.templateExercises);
   const startFromTemplate = useGym((s) => s.startFromTemplate);
   const upsertTemplate = useGym((s) => s.upsertTemplate);

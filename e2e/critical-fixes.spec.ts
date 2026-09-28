@@ -14,4 +14,19 @@ test.describe("critical fixes", () => {
     await page.waitForTimeout(500);
     expect(posts).toEqual([]);
   });
+
+  test("I-1: the Train tab and a routine open without crashing", async ({ page }) => {
+    const crashes: string[] = [];
+    page.on("console", (message) => {
+      if (/Maximum update depth/.test(message.text())) crashes.push(message.text());
+    });
+    await openWithSampleLog(page);
+    await goTo(page, "/routines");
+    await expect(page.getByText("Something went wrong")).toHaveCount(0);
+    await expect(page.getByText("Push Day").first()).toBeVisible();
+    await page.getByText("Push Day").first().click();
+    await expect(page).toHaveURL(/\/routines\/.+/);
+    await expect(page.getByText("Something went wrong")).toHaveCount(0);
+    expect(crashes).toEqual([]);
+  });
 });
