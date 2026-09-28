@@ -62,4 +62,28 @@ test.describe("critical fixes", () => {
     await page.getByRole("button", { name: "Undo" }).click();
     await expect(completeButtons).toHaveCount(before);
   });
+
+  test("I-2: Settings lists safety copies and offers each for download", async ({ page }) => {
+    await openWithSampleLog(page);
+    await goTo(page, "/settings");
+    const section = page.getByTestId("safety-backups");
+    await expect(section).toContainText("None yet");
+
+    // Take a copy through the real module (the dev server serves source modules).
+    await page.evaluate(async () => {
+      const safety = await import("/src/lib/storage/safety.ts");
+      const state = JSON.parse(localStorage.getItem("lockd-v1") || "{}").state;
+      await safety.takeSafetyBackup("before-cloud-sign-in", {
+        format: "lockd-backup",
+        version: 3,
+        exportedAt: new Date().toISOString(),
+        ...state,
+      });
+    });
+    await page.reload();
+    await expect(section).toContainText("Before signing in");
+    const download = page.waitForEvent("download");
+    await section.getByRole("button", { name: "Download" }).click();
+    expect((await download).suggestedFilename()).toMatch(/^lockd-safety-copy-\d{4}-\d{2}-\d{2}\.json$/);
+  });
 });
