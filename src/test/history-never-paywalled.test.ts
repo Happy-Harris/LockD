@@ -16,14 +16,14 @@ const ROOT = path.resolve(__dirname, "../..");
 
 const HISTORY_SURFACES = [
   "src/routes/history.tsx",
-  "src/routes/history.$id.tsx",
+  "src/routes/history_.$id.tsx",
   "src/routes/chronicle.tsx",
   "src/routes/analytics.tsx",
-  "src/routes/library.$id.tsx",
+  "src/routes/library_.$id.tsx",
   "src/routes/body.tsx",
   "src/routes/wrapped.tsx",
   "src/routes/moments.$id.tsx",
-  "src/routes/workout.$id.summary.tsx",
+  "src/routes/workout_.$id.summary.tsx",
   "src/routes/settings.tsx",
   "src/lib/gym/csv.ts",
   "src/lib/gym/store.ts",

@@ -2,7 +2,10 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useGym } from "@/lib/gym/store";
 import { pullVault, pushVault } from "./api";
-import { cloudGymFromState, vaultHasLog } from "./payload";
+import { toast } from "sonner";
+import { takeSafetyBackup } from "@/lib/storage/safety";
+import { cloudGymFromState } from "./payload";
+import { applyRemoteVault, normalizeCloudGym } from "./signin-merge";
 import type { CloudProfile, CloudStatus } from "./types";
 
 type CloudState = {
@@ -57,15 +60,28 @@ export function CloudSync({ children }: { children: ReactNode }) {
         if (cancelled) return;
         setProfile(remote.profile);
         applying.current = true;
-        if (remote.payload && vaultHasLog(remote.payload)) {
-          useGym.getState().replaceFromCloud(remote.payload);
-        } else if (vaultHasLog(cloudGymFromState(useGym.getState()))) {
-          return pushVault({ data: { payload: cloudGymFromState(useGym.getState()), displayName } }).then((pushed) => {
-            if (cancelled) return;
-            setLastSavedAt(pushed.updatedAt);
-          });
-        }
         setLastSavedAt(remote.updatedAt);
+        // Never overwrite this device's log: back up first, then push, replace or merge
+        // (see signin-merge.ts). A failed backup aborts before anything changes.
+        return applyRemoteVault({
+          local: cloudGymFromState(useGym.getState()),
+          remote: remote.payload ? normalizeCloudGym(remote.payload) : null,
+          takeBackup: async () => {
+            await takeSafetyBackup("before-cloud-sign-in", useGym.getState().exportBackup());
+          },
+          apply: (gym) => useGym.getState().replaceFromCloud(gym),
+          push: async (gym) => {
+            const pushed = await pushVault({ data: { payload: gym, displayName } });
+            if (!cancelled) setLastSavedAt(pushed.updatedAt);
+          },
+        }).then((result) => {
+          const added = result.summary?.sessionsFromThisDevice ?? 0;
+          if (!cancelled && added > 0) {
+            toast(
+              `Merged ${added} session${added === 1 ? "" : "s"} from this device into your locker. A copy from before the merge is in Settings → Data.`,
+            );
+          }
+        });
       })
       .then(() => {
         if (cancelled) return;

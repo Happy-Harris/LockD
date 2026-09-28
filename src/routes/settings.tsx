@@ -7,6 +7,7 @@ import { BACKUP_FORMAT, type AccentTheme, type AppSettings, type LockdBackup, ty
 import { defaultQuickIncrementG } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
+import { SafetyBackups } from "@/components/app/safety-backups";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
@@ -264,6 +265,7 @@ function SettingsPage() {
             />
           </label>
           {csvNote ? <p className="text-xs text-muted">{csvNote}</p> : null}
+          <SafetyBackups />
           <Button className="w-full" variant="secondary" onClick={loadDemo}>
             Load sample log
           </Button>

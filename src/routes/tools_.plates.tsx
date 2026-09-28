@@ -7,7 +7,7 @@ import { calculatePlates } from "@/domain/plateCalculator";
 import { formatWeight, parseWeightInput, weightUnitFor } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
 
-export const Route = createFileRoute("/tools/plates")({ component: PlatesPage });
+export const Route = createFileRoute("/tools_/plates")({ component: PlatesPage });
 
 function PlatesPage() {
   const settings = useGym((s) => s.settings);
