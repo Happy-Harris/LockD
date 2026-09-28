@@ -128,3 +128,19 @@ regression pass fixed or logged.
 | DA-3 | Comeback rule numbers (A-7) | 90 / 80 / 70 % by layoff band, editable |
 | DA-4 | Warm-up timer default (A-8) | Off |
 | DA-5 | Approve A-3 to A-6 | Yes |
+
+## 9. Correction (found in Phase 2, PR 2)
+
+**I-42: seven detail screens were unreachable, and Phase 1 missed it.** TanStack's flat route
+files nested `history.$id`, `library.$id`, `programs.$id`, `routines.$id`, `tools.plates`,
+`tools.warmup` and `workout.$id.summary` under their list routes, and no list page renders an
+`<Outlet />`. Every one of those URLs showed its list page, and finishing a workout left a blank
+screen. The baselines `390/1024-history_id`, `-library_seed-bench-press`, `-programs_id`,
+`-tools_plates`, `-tools_warmup` and `-workout_id_summary` show the list pages, not the details.
+
+The feature matrix describes these screens from their code (session replay, exercise detail with
+DNA, rep maxes and strength standards, the plate calculator, the warm-up generator, the workout
+summary). The code exists, but users could not reach any of it. PR 2 (#3) makes them reachable by
+renaming the files to the un-nested form; URLs are unchanged. Two problems became visible on the
+summary once it rendered, and are logged for characterisation: skipped exercises count as "behind",
+and guests are told "The session is on the locker".
