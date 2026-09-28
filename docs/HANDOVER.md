@@ -6,6 +6,36 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-28 — PR 2: Critical fixes
+
+- **I-4** (first commit): the unauthenticated `askTheLab` endpoint is gone. `consultLab` refuses
+  the shared dev user (what `authMiddleware` returns when sign-in is off) and caps model calls at
+  `LAB_DAILY_LIMIT` per user per 24 h (default 10). Guests keep the on-device read. Lab copy no
+  longer names the provider; the brand check is now at 0 findings.
+- **I-1**: the Train tab crash (a Zustand selector returning a new array) is fixed.
+- **I-42 (new, found this PR)**: seven detail screens were unreachable. TanStack flat routes
+  nested `history.$id`, `library.$id`, `programs.$id`, `routines.$id`, `tools.plates`,
+  `tools.warmup` and `workout.$id.summary` under their list routes, none of which render an
+  `<Outlet />`, so each URL showed the list page, and finishing a workout left a blank screen.
+  Files renamed to the un-nested form (`history_.$id.tsx`, ...); URLs unchanged. **Correction to
+  Phase 1:** the matrix described these screens (session replay, exercise detail with DNA and
+  standards, plate calculator, warm-up generator, summary) from their code; users could not reach
+  any of them.
+- **I-3**: Discard asks first (Radix AlertDialog, "Keep logging" focused); a long-press set
+  delete shows Undo (`restoreSet`).
+- **I-2**: sign-in plans before touching the log (`src/lib/cloud/signin-merge.ts`): push, take
+  the cloud copy, or merge by id; a safety copy is written first to IndexedDB `lockd` →
+  `safetyBackups` (a failed copy aborts); Settings → Data lists copies with downloads. Revision
+  compare-and-swap on push is not done yet.
+- **I-7** landed in PR 1.
+
+Newly visible now that the summary renders (not fixed; engine behaviour, characterise first):
+the workout diff marks exercises with no completed sets as "behind" (`0r (−32 kg · −9 reps)`),
+and the summary tells guests "The session is on the locker". Routine "Delete" has no confirm.
+
+Not verified: sign-in against a real auth provider (none configured here); the sign-in logic is
+covered by unit and real-store tests instead.
+
 ### 2026-09-28 — PR 1: Guardrails
 
 - `npm ci` works again (lockfile regenerated). Vitest 5 + Testing Library + jsdom + Playwright
