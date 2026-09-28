@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { uuid } from "@/domain/ids";
 import { useGym } from "@/lib/gym/store";
 
-export const Route = createFileRoute("/routines/$id")({ component: RoutineEditorPage });
+export const Route = createFileRoute("/routines_/$id")({ component: RoutineEditorPage });
 
 function RoutineEditorPage() {
   const { id } = Route.useParams();

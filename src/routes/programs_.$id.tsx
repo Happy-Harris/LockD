@@ -11,7 +11,7 @@ import { useGym } from "@/lib/gym/store";
 import { PublishButton } from "@/components/app/publish-button";
 import { programShare } from "@/lib/cloud/shares";
 
-export const Route = createFileRoute("/programs/$id")({ component: ProgramDetailPage });
+export const Route = createFileRoute("/programs_/$id")({ component: ProgramDetailPage });
 
 function ProgramDetailPage() {
   const { id } = Route.useParams();

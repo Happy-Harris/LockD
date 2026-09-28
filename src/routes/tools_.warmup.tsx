@@ -7,7 +7,7 @@ import { generateWarmup } from "@/domain/warmup";
 import { formatWeight, parseWeightInput, weightUnitFor } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
 
-export const Route = createFileRoute("/tools/warmup")({ component: WarmupPage });
+export const Route = createFileRoute("/tools_/warmup")({ component: WarmupPage });
 
 function WarmupPage() {
   const settings = useGym((s) => s.settings);
