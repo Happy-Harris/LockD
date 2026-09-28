@@ -177,6 +177,9 @@ export default defineConfig(({ command, isPreview }) => ({
     strictPort: true,
   },
   resolve: { tsconfigPaths: true },
+  // Pre-bundle dependencies that only lazily loaded routes import, so the dev server never
+  // re-optimises and hard-reloads mid-session (it breaks e2e runs on a cold CI start).
+  optimizeDeps: { include: ["@radix-ui/react-alert-dialog"] },
   plugins: [
     pgliteBootstrapPlugin(),
     // Before tanstackStart so /auth/popup never falls through to the SPA.

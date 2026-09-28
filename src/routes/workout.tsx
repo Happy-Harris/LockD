@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { ExercisePicker } from "@/components/app/exercise-picker";
 import { Page } from "@/components/app/shell";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { SET_TYPES, titleCase, usesReps, usesWeight } from "@/domain/taxonomy";
 import { elapsedSeconds } from "@/domain/time";
@@ -42,6 +43,7 @@ function ActiveWorkoutPage() {
   const completeSet = useGym((s) => s.completeSet);
   const uncompleteSet = useGym((s) => s.uncompleteSet);
   const deleteSet = useGym((s) => s.deleteSet);
+  const restoreSet = useGym((s) => s.restoreSet);
   const finishWorkout = useGym((s) => s.finishWorkout);
   const discardWorkout = useGym((s) => s.discardWorkout);
   const startRestTimer = useGym((s) => s.startRestTimer);
@@ -51,6 +53,7 @@ function ActiveWorkoutPage() {
   const attachClip = useGym((s) => s.attachClip);
   const slices = useSlices();
   const [picker, setPicker] = useState<"add" | string | null>(null);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const leaving = useRef(false);
 
@@ -137,7 +140,7 @@ function ActiveWorkoutPage() {
             {beats > 0 ? ` · ${beats} beat last time` : ""}
           </p>
         </div>
-        <Button size="sm" variant="ghost" onClick={() => discardWorkout(workout.id)}>
+        <Button size="sm" variant="ghost" onClick={() => setConfirmDiscard(true)}>
           Discard
         </Button>
         <Button size="sm" onClick={finish}>
@@ -263,7 +266,12 @@ function ActiveWorkoutPage() {
                           if (cmp.verdict === "tie") toast("Tied last time");
                         }
                       }}
-                      onDelete={() => deleteSet(set.id)}
+                      onDelete={() => {
+                        deleteSet(set.id);
+                        toast(`Set ${index + 1} deleted`, {
+                          action: { label: "Undo", onClick: () => restoreSet(set) },
+                        });
+                      }}
                       onClip={async (file) => {
                         const id = uuid();
                         try {
@@ -313,6 +321,21 @@ function ActiveWorkoutPage() {
         <Plus className="size-4" />
         Add exercise
       </Button>
+
+      <ConfirmDialog
+        open={confirmDiscard}
+        onOpenChange={setConfirmDiscard}
+        title="Discard this session?"
+        description="Every set logged in this session is deleted. This can't be undone."
+        cancelLabel="Keep logging"
+        confirmLabel="Discard session"
+        onConfirm={() => {
+          leaving.current = true;
+          stopRestTimer();
+          discardWorkout(workout.id);
+          void navigate({ to: "/" });
+        }}
+      />
 
       <ExercisePicker
         open={picker !== null}
