@@ -93,6 +93,11 @@ function GymGate() {
     return unsub;
   }, []);
 
+  // Test hook: effects only run after React hydrates, so this marks "interactive and log loaded".
+  useEffect(() => {
+    if (hydrated) document.documentElement.dataset.gymReady = "true";
+  }, [hydrated]);
+
   return (
     <>
       <ThemeSync />

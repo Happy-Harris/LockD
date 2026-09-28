@@ -153,12 +153,12 @@ function ShareBody({ share }: { share: PublicShare }) {
 }
 
 function ProgramShare({ share }: { share: PublicShare }) {
-  const payload = share.payload;
-  if (payload.kind !== "program") return null;
-  const file = payload.file;
   const { user, isPending } = useCurrentUserState();
   const importProgram = useGym((s) => s.importProgram);
   const navigate = useNavigate();
+  const payload = share.payload;
+  if (payload.kind !== "program") return null;
+  const file = payload.file;
 
   return (
     <>
