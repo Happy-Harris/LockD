@@ -18,7 +18,7 @@ import { rmTable } from "@/lib/gym/queue";
 import { useGymDerived, useSlices } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
 
-export const Route = createFileRoute("/library/$id")({ component: ExerciseDetailPage });
+export const Route = createFileRoute("/library_/$id")({ component: ExerciseDetailPage });
 
 function ExerciseDetailPage() {
   const { id } = Route.useParams();

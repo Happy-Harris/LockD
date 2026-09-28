@@ -122,6 +122,8 @@ interface GymActions {
   completeSet: (setId: string) => PersonalRecord[];
   uncompleteSet: (setId: string) => void;
   deleteSet: (setId: string) => void;
+  /** Undo for deleteSet: puts the row back unchanged, unless its exercise was removed meanwhile. */
+  restoreSet: (set: WorkoutSet) => void;
   finishWorkout: (workoutId: string, notes?: string) => PersonalRecord[];
   discardWorkout: (workoutId: string) => void;
   updateWorkout: (workoutId: string, patch: Partial<Workout>) => void;
@@ -676,6 +678,13 @@ export const useGym = create<GymState>()(
 
       deleteSet: (setId) =>
         set((state) => ({ workoutSets: state.workoutSets.filter((row) => row.id !== setId) })),
+
+      restoreSet: (row) =>
+        set((state) => {
+          if (state.workoutSets.some((item) => item.id === row.id)) return {};
+          if (!state.workoutExercises.some((item) => item.id === row.workoutExerciseId)) return {};
+          return { workoutSets: [...state.workoutSets, row] };
+        }),
 
       finishWorkout: (workoutId, notes) => {
         const stamp = new Date().toISOString();

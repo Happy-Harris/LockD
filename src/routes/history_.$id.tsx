@@ -12,7 +12,7 @@ import { useSlices } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
 import { hardSetCount } from "@/domain/volume";
 
-export const Route = createFileRoute("/history/$id")({ component: HistoryDetailPage });
+export const Route = createFileRoute("/history_/$id")({ component: HistoryDetailPage });
 
 function HistoryDetailPage() {
   const { id } = Route.useParams();

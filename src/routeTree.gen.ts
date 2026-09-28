@@ -26,17 +26,17 @@ import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WorkoutRouteImport } from './routes/workout'
 import { Route as WrappedRouteImport } from './routes/wrapped'
-import { Route as HistoryIdRouteImport } from './routes/history.$id'
-import { Route as LibraryIdRouteImport } from './routes/library.$id'
+import { Route as HistoryIdRouteImport } from './routes/history_.$id'
+import { Route as LibraryIdRouteImport } from './routes/library_.$id'
 import { Route as MomentsIdRouteImport } from './routes/moments.$id'
-import { Route as ProgramsIdRouteImport } from './routes/programs.$id'
-import { Route as RoutinesIdRouteImport } from './routes/routines.$id'
+import { Route as ProgramsIdRouteImport } from './routes/programs_.$id'
+import { Route as RoutinesIdRouteImport } from './routes/routines_.$id'
 import { Route as SIdRouteImport } from './routes/s.$id'
-import { Route as ToolsPlatesRouteImport } from './routes/tools.plates'
-import { Route as ToolsWarmupRouteImport } from './routes/tools.warmup'
+import { Route as ToolsPlatesRouteImport } from './routes/tools_.plates'
+import { Route as ToolsWarmupRouteImport } from './routes/tools_.warmup'
 import { Route as UHandleRouteImport } from './routes/u.$handle'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as WorkoutIdSummaryRouteImport } from './routes/workout.$id.summary'
+import { Route as WorkoutIdSummaryRouteImport } from './routes/workout_.$id.summary'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -124,14 +124,14 @@ const WrappedRoute = WrappedRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoryIdRoute = HistoryIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => HistoryRoute,
+  id: '/history_/$id',
+  path: '/history/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LibraryIdRoute = LibraryIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => LibraryRoute,
+  id: '/library_/$id',
+  path: '/library/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const MomentsIdRoute = MomentsIdRouteImport.update({
   id: '/moments/$id',
@@ -139,14 +139,14 @@ const MomentsIdRoute = MomentsIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgramsIdRoute = ProgramsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => ProgramsRoute,
+  id: '/programs_/$id',
+  path: '/programs/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const RoutinesIdRoute = RoutinesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => RoutinesRoute,
+  id: '/routines_/$id',
+  path: '/routines/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SIdRoute = SIdRouteImport.update({
   id: '/s/$id',
@@ -154,14 +154,14 @@ const SIdRoute = SIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ToolsPlatesRoute = ToolsPlatesRouteImport.update({
-  id: '/plates',
-  path: '/plates',
-  getParentRoute: () => ToolsRoute,
+  id: '/tools_/plates',
+  path: '/tools/plates',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ToolsWarmupRoute = ToolsWarmupRouteImport.update({
-  id: '/warmup',
-  path: '/warmup',
-  getParentRoute: () => ToolsRoute,
+  id: '/tools_/warmup',
+  path: '/tools/warmup',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const UHandleRoute = UHandleRouteImport.update({
   id: '/u/$handle',
@@ -174,9 +174,9 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkoutIdSummaryRoute = WorkoutIdSummaryRouteImport.update({
-  id: '/$id/summary',
-  path: '/$id/summary',
-  getParentRoute: () => WorkoutRoute,
+  id: '/workout_/$id/summary',
+  path: '/workout/$id/summary',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -184,18 +184,18 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AnalyticsRoute
   '/body': typeof BodyRoute
   '/chronicle': typeof ChronicleRoute
-  '/history': typeof HistoryRouteWithChildren
+  '/history': typeof HistoryRoute
   '/lab': typeof LabRoute
-  '/library': typeof LibraryRouteWithChildren
+  '/library': typeof LibraryRoute
   '/locker': typeof LockerRoute
   '/login': typeof LoginRoute
   '/more': typeof MoreRoute
-  '/programs': typeof ProgramsRouteWithChildren
-  '/routines': typeof RoutinesRouteWithChildren
+  '/programs': typeof ProgramsRoute
+  '/routines': typeof RoutinesRoute
   '/settings': typeof SettingsRoute
-  '/tools': typeof ToolsRouteWithChildren
+  '/tools': typeof ToolsRoute
   '/vault': typeof VaultRoute
-  '/workout': typeof WorkoutRouteWithChildren
+  '/workout': typeof WorkoutRoute
   '/wrapped': typeof WrappedRoute
   '/history/$id': typeof HistoryIdRoute
   '/library/$id': typeof LibraryIdRoute
@@ -214,18 +214,18 @@ export interface FileRoutesByTo {
   '/analytics': typeof AnalyticsRoute
   '/body': typeof BodyRoute
   '/chronicle': typeof ChronicleRoute
-  '/history': typeof HistoryRouteWithChildren
+  '/history': typeof HistoryRoute
   '/lab': typeof LabRoute
-  '/library': typeof LibraryRouteWithChildren
+  '/library': typeof LibraryRoute
   '/locker': typeof LockerRoute
   '/login': typeof LoginRoute
   '/more': typeof MoreRoute
-  '/programs': typeof ProgramsRouteWithChildren
-  '/routines': typeof RoutinesRouteWithChildren
+  '/programs': typeof ProgramsRoute
+  '/routines': typeof RoutinesRoute
   '/settings': typeof SettingsRoute
-  '/tools': typeof ToolsRouteWithChildren
+  '/tools': typeof ToolsRoute
   '/vault': typeof VaultRoute
-  '/workout': typeof WorkoutRouteWithChildren
+  '/workout': typeof WorkoutRoute
   '/wrapped': typeof WrappedRoute
   '/history/$id': typeof HistoryIdRoute
   '/library/$id': typeof LibraryIdRoute
@@ -245,30 +245,30 @@ export interface FileRoutesById {
   '/analytics': typeof AnalyticsRoute
   '/body': typeof BodyRoute
   '/chronicle': typeof ChronicleRoute
-  '/history': typeof HistoryRouteWithChildren
+  '/history': typeof HistoryRoute
   '/lab': typeof LabRoute
-  '/library': typeof LibraryRouteWithChildren
+  '/library': typeof LibraryRoute
   '/locker': typeof LockerRoute
   '/login': typeof LoginRoute
   '/more': typeof MoreRoute
-  '/programs': typeof ProgramsRouteWithChildren
-  '/routines': typeof RoutinesRouteWithChildren
+  '/programs': typeof ProgramsRoute
+  '/routines': typeof RoutinesRoute
   '/settings': typeof SettingsRoute
-  '/tools': typeof ToolsRouteWithChildren
+  '/tools': typeof ToolsRoute
   '/vault': typeof VaultRoute
-  '/workout': typeof WorkoutRouteWithChildren
+  '/workout': typeof WorkoutRoute
   '/wrapped': typeof WrappedRoute
-  '/history/$id': typeof HistoryIdRoute
-  '/library/$id': typeof LibraryIdRoute
+  '/history_/$id': typeof HistoryIdRoute
+  '/library_/$id': typeof LibraryIdRoute
   '/moments/$id': typeof MomentsIdRoute
-  '/programs/$id': typeof ProgramsIdRoute
-  '/routines/$id': typeof RoutinesIdRoute
+  '/programs_/$id': typeof ProgramsIdRoute
+  '/routines_/$id': typeof RoutinesIdRoute
   '/s/$id': typeof SIdRoute
-  '/tools/plates': typeof ToolsPlatesRoute
-  '/tools/warmup': typeof ToolsWarmupRoute
+  '/tools_/plates': typeof ToolsPlatesRoute
+  '/tools_/warmup': typeof ToolsWarmupRoute
   '/u/$handle': typeof UHandleRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
-  '/workout/$id/summary': typeof WorkoutIdSummaryRoute
+  '/workout_/$id/summary': typeof WorkoutIdSummaryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -350,17 +350,17 @@ export interface FileRouteTypes {
     | '/vault'
     | '/workout'
     | '/wrapped'
-    | '/history/$id'
-    | '/library/$id'
+    | '/history_/$id'
+    | '/library_/$id'
     | '/moments/$id'
-    | '/programs/$id'
-    | '/routines/$id'
+    | '/programs_/$id'
+    | '/routines_/$id'
     | '/s/$id'
-    | '/tools/plates'
-    | '/tools/warmup'
+    | '/tools_/plates'
+    | '/tools_/warmup'
     | '/u/$handle'
     | '/api/auth/$'
-    | '/workout/$id/summary'
+    | '/workout_/$id/summary'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -368,23 +368,30 @@ export interface RootRouteChildren {
   AnalyticsRoute: typeof AnalyticsRoute
   BodyRoute: typeof BodyRoute
   ChronicleRoute: typeof ChronicleRoute
-  HistoryRoute: typeof HistoryRouteWithChildren
+  HistoryRoute: typeof HistoryRoute
   LabRoute: typeof LabRoute
-  LibraryRoute: typeof LibraryRouteWithChildren
+  LibraryRoute: typeof LibraryRoute
   LockerRoute: typeof LockerRoute
   LoginRoute: typeof LoginRoute
   MoreRoute: typeof MoreRoute
-  ProgramsRoute: typeof ProgramsRouteWithChildren
-  RoutinesRoute: typeof RoutinesRouteWithChildren
+  ProgramsRoute: typeof ProgramsRoute
+  RoutinesRoute: typeof RoutinesRoute
   SettingsRoute: typeof SettingsRoute
-  ToolsRoute: typeof ToolsRouteWithChildren
+  ToolsRoute: typeof ToolsRoute
   VaultRoute: typeof VaultRoute
-  WorkoutRoute: typeof WorkoutRouteWithChildren
+  WorkoutRoute: typeof WorkoutRoute
   WrappedRoute: typeof WrappedRoute
+  HistoryIdRoute: typeof HistoryIdRoute
+  LibraryIdRoute: typeof LibraryIdRoute
   MomentsIdRoute: typeof MomentsIdRoute
+  ProgramsIdRoute: typeof ProgramsIdRoute
+  RoutinesIdRoute: typeof RoutinesIdRoute
   SIdRoute: typeof SIdRoute
+  ToolsPlatesRoute: typeof ToolsPlatesRoute
+  ToolsWarmupRoute: typeof ToolsWarmupRoute
   UHandleRoute: typeof UHandleRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  WorkoutIdSummaryRoute: typeof WorkoutIdSummaryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -508,19 +515,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WrappedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/history/$id': {
-      id: '/history/$id'
-      path: '/$id'
+    '/history_/$id': {
+      id: '/history_/$id'
+      path: '/history/$id'
       fullPath: '/history/$id'
       preLoaderRoute: typeof HistoryIdRouteImport
-      parentRoute: typeof HistoryRoute
+      parentRoute: typeof rootRouteImport
     }
-    '/library/$id': {
-      id: '/library/$id'
-      path: '/$id'
+    '/library_/$id': {
+      id: '/library_/$id'
+      path: '/library/$id'
       fullPath: '/library/$id'
       preLoaderRoute: typeof LibraryIdRouteImport
-      parentRoute: typeof LibraryRoute
+      parentRoute: typeof rootRouteImport
     }
     '/moments/$id': {
       id: '/moments/$id'
@@ -529,19 +536,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MomentsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/programs/$id': {
-      id: '/programs/$id'
-      path: '/$id'
+    '/programs_/$id': {
+      id: '/programs_/$id'
+      path: '/programs/$id'
       fullPath: '/programs/$id'
       preLoaderRoute: typeof ProgramsIdRouteImport
-      parentRoute: typeof ProgramsRoute
+      parentRoute: typeof rootRouteImport
     }
-    '/routines/$id': {
-      id: '/routines/$id'
-      path: '/$id'
+    '/routines_/$id': {
+      id: '/routines_/$id'
+      path: '/routines/$id'
       fullPath: '/routines/$id'
       preLoaderRoute: typeof RoutinesIdRouteImport
-      parentRoute: typeof RoutinesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/s/$id': {
       id: '/s/$id'
@@ -550,19 +557,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/tools/plates': {
-      id: '/tools/plates'
-      path: '/plates'
+    '/tools_/plates': {
+      id: '/tools_/plates'
+      path: '/tools/plates'
       fullPath: '/tools/plates'
       preLoaderRoute: typeof ToolsPlatesRouteImport
-      parentRoute: typeof ToolsRoute
+      parentRoute: typeof rootRouteImport
     }
-    '/tools/warmup': {
-      id: '/tools/warmup'
-      path: '/warmup'
+    '/tools_/warmup': {
+      id: '/tools_/warmup'
+      path: '/tools/warmup'
       fullPath: '/tools/warmup'
       preLoaderRoute: typeof ToolsWarmupRouteImport
-      parentRoute: typeof ToolsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/u/$handle': {
       id: '/u/$handle'
@@ -578,107 +585,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/workout/$id/summary': {
-      id: '/workout/$id/summary'
-      path: '/$id/summary'
+    '/workout_/$id/summary': {
+      id: '/workout_/$id/summary'
+      path: '/workout/$id/summary'
       fullPath: '/workout/$id/summary'
       preLoaderRoute: typeof WorkoutIdSummaryRouteImport
-      parentRoute: typeof WorkoutRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface HistoryRouteChildren {
-  HistoryIdRoute: typeof HistoryIdRoute
-}
-
-const HistoryRouteChildren: HistoryRouteChildren = {
-  HistoryIdRoute: HistoryIdRoute,
-}
-
-const HistoryRouteWithChildren =
-  HistoryRoute._addFileChildren(HistoryRouteChildren)
-
-interface LibraryRouteChildren {
-  LibraryIdRoute: typeof LibraryIdRoute
-}
-
-const LibraryRouteChildren: LibraryRouteChildren = {
-  LibraryIdRoute: LibraryIdRoute,
-}
-
-const LibraryRouteWithChildren =
-  LibraryRoute._addFileChildren(LibraryRouteChildren)
-
-interface ProgramsRouteChildren {
-  ProgramsIdRoute: typeof ProgramsIdRoute
-}
-
-const ProgramsRouteChildren: ProgramsRouteChildren = {
-  ProgramsIdRoute: ProgramsIdRoute,
-}
-
-const ProgramsRouteWithChildren = ProgramsRoute._addFileChildren(
-  ProgramsRouteChildren,
-)
-
-interface RoutinesRouteChildren {
-  RoutinesIdRoute: typeof RoutinesIdRoute
-}
-
-const RoutinesRouteChildren: RoutinesRouteChildren = {
-  RoutinesIdRoute: RoutinesIdRoute,
-}
-
-const RoutinesRouteWithChildren = RoutinesRoute._addFileChildren(
-  RoutinesRouteChildren,
-)
-
-interface ToolsRouteChildren {
-  ToolsPlatesRoute: typeof ToolsPlatesRoute
-  ToolsWarmupRoute: typeof ToolsWarmupRoute
-}
-
-const ToolsRouteChildren: ToolsRouteChildren = {
-  ToolsPlatesRoute: ToolsPlatesRoute,
-  ToolsWarmupRoute: ToolsWarmupRoute,
-}
-
-const ToolsRouteWithChildren = ToolsRoute._addFileChildren(ToolsRouteChildren)
-
-interface WorkoutRouteChildren {
-  WorkoutIdSummaryRoute: typeof WorkoutIdSummaryRoute
-}
-
-const WorkoutRouteChildren: WorkoutRouteChildren = {
-  WorkoutIdSummaryRoute: WorkoutIdSummaryRoute,
-}
-
-const WorkoutRouteWithChildren =
-  WorkoutRoute._addFileChildren(WorkoutRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
   BodyRoute: BodyRoute,
   ChronicleRoute: ChronicleRoute,
-  HistoryRoute: HistoryRouteWithChildren,
+  HistoryRoute: HistoryRoute,
   LabRoute: LabRoute,
-  LibraryRoute: LibraryRouteWithChildren,
+  LibraryRoute: LibraryRoute,
   LockerRoute: LockerRoute,
   LoginRoute: LoginRoute,
   MoreRoute: MoreRoute,
-  ProgramsRoute: ProgramsRouteWithChildren,
-  RoutinesRoute: RoutinesRouteWithChildren,
+  ProgramsRoute: ProgramsRoute,
+  RoutinesRoute: RoutinesRoute,
   SettingsRoute: SettingsRoute,
-  ToolsRoute: ToolsRouteWithChildren,
+  ToolsRoute: ToolsRoute,
   VaultRoute: VaultRoute,
-  WorkoutRoute: WorkoutRouteWithChildren,
+  WorkoutRoute: WorkoutRoute,
   WrappedRoute: WrappedRoute,
+  HistoryIdRoute: HistoryIdRoute,
+  LibraryIdRoute: LibraryIdRoute,
   MomentsIdRoute: MomentsIdRoute,
+  ProgramsIdRoute: ProgramsIdRoute,
+  RoutinesIdRoute: RoutinesIdRoute,
   SIdRoute: SIdRoute,
+  ToolsPlatesRoute: ToolsPlatesRoute,
+  ToolsWarmupRoute: ToolsWarmupRoute,
   UHandleRoute: UHandleRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  WorkoutIdSummaryRoute: WorkoutIdSummaryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
