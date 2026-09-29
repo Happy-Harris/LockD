@@ -10,6 +10,7 @@ import type { GoalLens } from "@/domain/types";
 import { titleCase } from "@/domain/taxonomy";
 import { formatWeight, formatWeightWithUnit, roundEstimateG, weightUnitFor } from "@/domain/units";
 import { e1rmSeries } from "@/lib/gym/analytics";
+import { useStartProgramSession } from "@/lib/gym/program-hooks";
 import { LENSES, lensShows } from "@/lib/gym/lenses";
 import { formatSets, stateLabel } from "@/lib/gym/muscle-labels";
 import { actionLabel } from "@/lib/gym/progression";
@@ -25,7 +26,7 @@ function TodayPage() {
   const startFromTemplate = useGym((s) => s.startFromTemplate);
   const startEmptyWorkout = useGym((s) => s.startEmptyWorkout);
   const repeatLastWorkout = useGym((s) => s.repeatLastWorkout);
-  const startFromProgramSession = useGym((s) => s.startFromProgramSession);
+  const startFromProgramSession = useStartProgramSession();
   const updateSettings = useGym((s) => s.updateSettings);
   const activeId = useGym((s) => s.workouts.find((row) => row.status === "active")?.id);
   const derived = useGymDerived();

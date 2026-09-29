@@ -52,6 +52,7 @@ import {
   duplicateInstalled,
   exportProgramFile,
   importProgramFile,
+  resolveProgramExercise,
   installPack,
   nextProgramSession,
   PROGRAM_PACKS,
@@ -627,7 +628,7 @@ export const useGym = create<GymState>()(
         const workoutExercises: WorkoutExercise[] = [];
         const workoutSets: WorkoutSet[] = [];
         rows.forEach((row) => {
-          const exercise = state.exercises.find((item) => item.id === row.exerciseId);
+          const exercise = resolveProgramExercise(row, state.exercises);
           if (!exercise) return;
           const we = snapshotExercise(exercise, workout.id, row.order, row.restSeconds);
           workoutExercises.push(we);
