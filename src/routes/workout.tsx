@@ -75,13 +75,7 @@ function ActiveWorkoutPage() {
   const slices = useSlices();
   const [picker, setPicker] = useState<"add" | string | null>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
-  const [now, setNow] = useState(() => Date.now());
   const leaving = useRef(false);
-
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(id);
-  }, []);
 
   useEffect(() => {
     if (!workout && !leaving.current) void navigate({ to: "/" });
@@ -129,10 +123,38 @@ function ActiveWorkoutPage() {
     exercises,
   ]);
 
+  // Depends on finished sessions, not on the sets being edited, so a keystroke does not redo it.
+  const suggestions = useMemo(() => {
+    const out = new Map<string, ReturnType<typeof progressExercise>>();
+    if (!workout) return out;
+    for (const exercise of workoutExercises) {
+      if (exercise.workoutId !== workout.id) continue;
+      const prescription = templateExercises.find(
+        (row) => row.templateId === workout.templateId && row.exerciseId === exercise.exerciseId,
+      );
+      const catalog = exercises.find((row) => row.id === exercise.exerciseId);
+      out.set(
+        exercise.id,
+        progressExercise({
+          exerciseId: exercise.exerciseId,
+          exerciseName: exercise.exerciseNameSnapshot,
+          trackingType: exercise.trackingTypeSnapshot,
+          incrementG: catalog?.incrementG ?? settings.quickIncrementG,
+          targetRepMin: prescription?.targetRepMin,
+          targetRepMax: prescription?.targetRepMax,
+          targetSets: prescription?.targetSets,
+          slices,
+          formula: settings.oneRepMaxFormula,
+          excludeWarmups: settings.excludeWarmupsFromAnalytics,
+          snap: catalog ? barbellSnap(catalog, bars, plates, settings) : undefined,
+        }),
+      );
+    }
+    return out;
+  }, [workout, workoutExercises, templateExercises, exercises, bars, plates, settings, slices]);
+
   if (!workout) return null;
 
-  const elapsed = elapsedSeconds(workout.startedAt, undefined, workout.pausedSeconds);
-  void now;
   const completed = workoutSets.filter(
     (set) => set.workoutId === workout.id && set.isCompleted,
   ).length;
@@ -172,7 +194,8 @@ function ActiveWorkoutPage() {
             className="w-full bg-transparent font-display text-2xl font-semibold tracking-tight text-ink outline-none"
           />
           <p className="font-mono text-xs text-muted tabular">
-            {formatDuration(elapsed)} · {completed}/{total || 0} sets
+            <ElapsedClock startedAt={workout.startedAt} pausedSeconds={workout.pausedSeconds} /> ·{" "}
+            {completed}/{total || 0} sets
             {beats > 0 ? ` · ${beats} beat last time` : ""}
           </p>
         </div>
@@ -198,19 +221,7 @@ function ActiveWorkoutPage() {
               ? `${block.prescription.targetSets} × ${block.prescription.targetRepMin}–${block.prescription.targetRepMax}`
               : null;
           const blockIncrement = block.catalog?.incrementG ?? increment;
-          const suggestion = progressExercise({
-            exerciseId: block.exercise.exerciseId,
-            exerciseName: block.exercise.exerciseNameSnapshot,
-            trackingType: block.exercise.trackingTypeSnapshot,
-            incrementG: blockIncrement,
-            targetRepMin: block.prescription?.targetRepMin,
-            targetRepMax: block.prescription?.targetRepMax,
-            targetSets: block.prescription?.targetSets,
-            slices,
-            formula: settings.oneRepMaxFormula,
-            excludeWarmups: settings.excludeWarmupsFromAnalytics,
-            snap: block.catalog ? barbellSnap(block.catalog, bars, plates, settings) : undefined,
-          });
+          const suggestion = suggestions.get(block.exercise.id);
           const restHint = block.exercise.restSeconds;
           return (
             <article key={block.exercise.id} className="rounded-[28px] bg-surface p-4 hairline">
@@ -271,7 +282,7 @@ function ActiveWorkoutPage() {
                   Ghost: {block.ghost.map((set) => formatGhostSet(set, unit)).join("  ")}
                 </p>
               ) : null}
-              {suggestion.why ? (
+              {suggestion?.why ? (
                 <p className="mb-3 text-xs leading-relaxed text-muted">
                   <span className="font-medium text-ink">{actionLabel(suggestion.action)}. </span>
                   {suggestion.why}
@@ -395,6 +406,16 @@ function ActiveWorkoutPage() {
       />
     </Page>
   );
+}
+
+/** The only part of the page that ticks, so the set rows do not re-render every second. */
+function ElapsedClock({ startedAt, pausedSeconds }: { startedAt: string; pausedSeconds?: number }) {
+  const [, setNow] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(() => setNow((n) => n + 1), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  return <>{formatDuration(elapsedSeconds(startedAt, undefined, pausedSeconds))}</>;
 }
 
 function SetRow({
