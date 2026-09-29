@@ -146,8 +146,9 @@ export function detectPrsForWorkout(
     const sets = current.sets.filter((set) => set.workoutExerciseId === exercise.id);
     const best = bestOneRepMax(sets, formula);
     if (!best) continue;
-    const prev = priorBest.get(exercise.exerciseId) ?? 0;
-    if (best.value > prev) {
+    // First time on file is the baseline, not a record: there is nothing earlier to beat.
+    const prev = priorBest.get(exercise.exerciseId);
+    if (prev !== undefined && best.value > prev) {
       hits.push({
         exerciseId: exercise.exerciseId,
         exerciseName: exercise.exerciseNameSnapshot,
