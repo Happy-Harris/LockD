@@ -6,6 +6,26 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Cleanup: unused files removed (owner request)
+
+- **Removed:** `AGENTS.md` (its content, updated, is now `CLAUDE.md`, the one file Claude Code loads);
+  the `.grok/` folder (its only file was a platform deploy flag, `deploy.database`; `with-app-env`
+  already tolerates it missing, and `.gitignore` now ignores `.grok/` so the platform cannot re-add
+  it unnoticed); `startup.sh`; the sandbox tooling nothing imports: `scripts/preview.mjs`,
+  `preview-thumbnail.mjs`, `browser-smoke*`, `browser-guard`, `write-atomic*`, Grok's own
+  `brand-check.mjs` (ours is `lockd-brand-check.mjs`), and the `preview:restart` and `preview:stop`
+  npm scripts; and a tracked `test-results/.last-run.json`. Each was checked for references first.
+  The legacy suite has fewer failures (12, from 16), because failing tests went with their files.
+- **Kept on purpose, and why:** `server/middleware/grok-pwa.ts` and `scripts/grok-pwa-*`. They look
+  like scaffolding, but they inject the **share-card OG and Twitter tags for `/s/*` and `/u/*`**;
+  those pages set none of their own, so removing the middleware would end link previews for shared
+  receipts. They also add the `grok.com` script to every page (see the 6a entry). Removal needs the OG
+  tags built into those two routes first. `sign-out-plan.mjs` is imported by `src/lib/auth/client.ts`;
+  `with-app-env`, `app-env-plugin` and `check-auth-invariant` belong with the auth-behind-config
+  work. All of this is plan PR 12.
+- The Codex handoff (`CODEX-HANDOFF.md`) was never in this repo; it was deleted from the planning
+  repo's branch too. Root `HANDOFF.md` is the app-builder era's handoff (dated 2026-09-22) and is still
+  here: plan PR 13 rewrites it from the code.
 ### 2026-09-29 — Plan PR 7a: backups are checked before they are restored
 
 Plan PR 7 (data portability) is split. **7a (this):** validate and safely restore `lockd-backup`

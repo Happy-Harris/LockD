@@ -13,10 +13,7 @@ attachments
 .env.local
 .project_id
 .node_modules.lock
-.grok/preview.log
-.grok/status
-.grok/skills
-.grok/references
+.grok/
 pglite-data
 *.tgz
 lockd-export.zip
