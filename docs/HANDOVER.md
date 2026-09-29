@@ -6,6 +6,28 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 3: Engine characterisation
+
+- Characterisation fixtures now pin the existing behaviour of Chronicle, Ghost,
+  autopsy, progression/easier-week, Lift DNA, queue, intelligence, recovery,
+  volume landmarks, strength standards, Lockd's weekly verdict, moments,
+  wrapped, programs, CSV import/export and store actions. The demo already
+  accepted a clock parameter on `main`; tests pass a fixed local-noon clock and
+  use deterministic ids. No engine logic was changed.
+- Known defects are intentionally preserved by assertions: renaming an era
+  orphans sessions, first exposure is described as a PR, an incomplete exercise
+  counts as behind, no recovery history reads as Fresh, missing landmark reads
+  as MEV, and a European Strong CSV loses/misreads data. A later fix must change
+  the corresponding test and explain its before/after behaviour.
+- The only Hevy export fixtures committed are the two owner-supplied synthetic
+  kg/km and lb/miles files under `src/test/fixtures/hevy`. Importer scope and
+  the limited verification label are in `docs/consolidation/HEVY-IMPORT.md`.
+  The Hevy importer is scheduled for plan PR 7, not added here.
+- This PR branches directly from `main` at `fa3ba3e`; it does not depend on
+  the unmerged privacy PR. Browser tests/screenshots remain blocked here by the
+  execution environment's network-interface/socket restrictions.
+
+
 ### 2026-09-28 — PR 2: Critical fixes
 
 - **I-4** (first commit): the unauthenticated `askTheLab` endpoint is gone. `consultLab` refuses
