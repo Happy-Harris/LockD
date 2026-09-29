@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import {
-  buildWeeklyVerdict,
   calendarHeat,
   computeRecords,
   muscleSetMap,
@@ -13,12 +12,15 @@ import { autopsyBoard } from "./autopsy";
 import { buildChronicle } from "./chronicle";
 import { buildLiftDna } from "./dna";
 import { buildIntelligence } from "./intelligence";
-import { lensDef } from "./lenses";
+import { lensDef, verdictFraming } from "./lenses";
+import { loggedEntriesOf } from "./entries";
 import { buildMoments } from "./moments";
 import { nextProgramSession } from "./programs";
 import { easierWeekCall, progressBoard } from "./progression";
 import { milestoneQueue } from "./queue";
 import { useGym } from "./store";
+import { trainingFlags } from "@/domain/analytics/trainingFlags";
+import { weeklyVerdict } from "@/domain/analytics/weeklyVerdict";
 import { addDays, localDateOf, startOfTrainingWeek } from "@/domain/time";
 import { weightUnitFor } from "@/domain/units";
 
@@ -47,7 +49,30 @@ export function useGymDerived() {
 
   return useMemo(() => {
     const records = computeRecords(slices, settings.oneRepMaxFormula, settings.excludeWarmupsFromAnalytics);
-    const verdict = buildWeeklyVerdict(slices, settings.weekStartDay);
+    const entries = loggedEntriesOf(slices);
+    const analyticsOptions = {
+      formula: settings.oneRepMaxFormula,
+      includeWarmups: !settings.excludeWarmupsFromAnalytics,
+      secondaryCredit: settings.secondaryMuscleCredit,
+    };
+    const verdictLens = verdictFraming(settings.goalLens);
+    const now = new Date();
+    const verdict = weeklyVerdict(
+      entries,
+      analyticsOptions,
+      settings.weekStartDay,
+      now,
+      settings.goalLiftIds,
+      verdictLens,
+    );
+    const flags = trainingFlags(
+      entries,
+      analyticsOptions,
+      settings.weekStartDay,
+      now,
+      settings.goalLiftIds,
+      verdictLens,
+    );
     const heat = calendarHeat(slices, 84);
     const weeks = weeklySeries(slices, settings.weekStartDay);
     const weekStart = startOfTrainingWeek(new Date(), settings.weekStartDay);
@@ -135,6 +160,8 @@ export function useGymDerived() {
       slices,
       records,
       verdict,
+      verdictLens,
+      flags,
       heat,
       weeks,
       muscles,
