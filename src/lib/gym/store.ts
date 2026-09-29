@@ -50,27 +50,10 @@ import { seedBarProfiles, seedExercises, seedPlateInventories } from "./seed";
 import { generateWarmup } from "@/domain/warmup";
 import { restPersonalitySeconds, learnedRestSeconds } from "./dna";
 import { deleteClipBlob } from "./vault";
+import { defaultSettings } from "./settings";
+import { migratePersisted, PERSIST_KEY, PERSIST_VERSION, persistedSlice } from "@/lib/storage/persisted";
 
-export const defaultSettings = (): AppSettings => ({
-  unitSystem: "metric",
-  oneRepMaxFormula: "epley",
-  intensityMode: "rpe",
-  weekStartDay: "monday",
-  quickIncrementG: defaultQuickIncrementG("metric"),
-  defaultRestSeconds: 120,
-  restTimerAutoStart: true,
-  restTimerSound: true,
-  excludeWarmupsFromAnalytics: true,
-  secondaryMuscleCredit: 0.5,
-  goalLiftIds: ["seed-bench-press", "seed-back-squat", "seed-conventional-deadlift"],
-  defaultBarProfileId: "seed-bar-olympic-kg",
-  defaultPlateInventoryId: "seed-plates-kg",
-  themeMode: "dark",
-  accentTheme: "stamp",
-  goalLens: "powerbuilding",
-  presentationMode: "loud",
-  demoLoaded: false,
-});
+export { defaultSettings };
 
 export interface LabNote {
   askedAt: string;
@@ -1251,49 +1234,12 @@ export const useGym = create<GymState>()(
       },
     }),
     {
-      name: "lockd-v1",
-      version: 3,
+      name: PERSIST_KEY,
+      version: PERSIST_VERSION,
       skipHydration: true,
       storage: createJSONStorage(() => localStorage),
-      migrate: (persisted, _version) => {
-        const state = persisted as Partial<GymData>;
-        return {
-          ...state,
-          programs: state.programs ?? [],
-          programWeeks: state.programWeeks ?? [],
-          programSessions: state.programSessions ?? [],
-          programExercises: state.programExercises ?? [],
-          eraNames: state.eraNames ?? [],
-          machineSetups: state.machineSetups ?? [],
-          lessons: state.lessons ?? [],
-          namedPrs: state.namedPrs ?? [],
-          clips: state.clips ?? [],
-          settings: { ...defaultSettings(), ...state.settings },
-        };
-      },
-      partialize: (state) => ({
-        exercises: state.exercises,
-        templates: state.templates,
-        templateExercises: state.templateExercises,
-        workouts: state.workouts,
-        workoutExercises: state.workoutExercises,
-        workoutSets: state.workoutSets,
-        measurements: state.measurements,
-        plates: state.plates,
-        bars: state.bars,
-        settings: state.settings,
-        restTimer: state.restTimer,
-        labLast: state.labLast,
-        programs: state.programs,
-        programWeeks: state.programWeeks,
-        programSessions: state.programSessions,
-        programExercises: state.programExercises,
-        eraNames: state.eraNames,
-        machineSetups: state.machineSetups,
-        lessons: state.lessons,
-        namedPrs: state.namedPrs,
-        clips: state.clips,
-      }),
+      migrate: (persisted, version) => migratePersisted(persisted, version),
+      partialize: (state) => persistedSlice(state),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);
       },
