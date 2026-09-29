@@ -1,0 +1,5 @@
+# Project-level Codex settings.
+# Gives Codex unrestricted filesystem/network access and disables approval prompts.
+
+approval_policy = "never"
+sandbox_mode = "danger-full-access"

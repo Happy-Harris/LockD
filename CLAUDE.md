@@ -59,6 +59,50 @@ npm run check:brand  # stale brand names in user-facing strings
 npm run test:legacy  # old scaffolding suites, not part of verify
 ```
 
+Single tests (Vitest runs in Node with `TZ=UTC`; component tests opt into jsdom with a
+`// @vitest-environment jsdom` pragma):
+
+```bash
+npx vitest run src/lib/gym/chronicle-detection.test.ts        # one file
+npx vitest run -t "a layoff still starts a new era"           # one test by name
+npx vitest run -u src/lib/gym/engine-characterisation.test.ts # accept an intended snapshot change
+CHROMIUM_PATH=/opt/pw-browsers/chromium npx playwright test e2e/import-csv.spec.ts   # one e2e file
+npm run test:e2e:offline  # builds, then the service-worker suite in e2e-offline/ (port 8081)
+```
+
+`.claude/skills/run-lockd` drives the real app headlessly (screenshots at 390 and 1024 px).
+
+## How the pieces fit
+
+- **One store, derived on read.** `src/lib/gym/store.ts` (Zustand, persisted) holds the raw log and every
+  action. Nothing derived is stored: screens call `useGymDerived()` in `src/lib/gym/hooks.ts`, which
+  slices sessions (`sliceSessions`) and runs the engines (records, chronicle, progression, moments,
+  intelligence). Persistence sits behind `src/lib/storage/` (Dexie repository, migration, safety backup);
+  clips are separate blobs in IndexedDB `lockd-vault` (`src/lib/gym/vault.ts`) with `ClipMeta` in the store.
+- **A new stored field is optional and travels in three places:** `src/domain/types.ts`, the zod schema in
+  `src/lib/backup/schema.ts` (backups are validated on the way in), and the store's export/import. Old
+  backups must keep loading, so add the field as optional and pin it with a round-trip test.
+- **Unit-aware code takes a `WeightUnit`** (default `"kg"`) as a trailing argument; grams stay canonical
+  underneath. Anything that words a weight, a threshold or a milestone must go through `@/domain/units`.
+- **Server functions** (`src/lib/cloud/api.ts`, `src/lib/lab/ask.ts`) validate input with the pure functions in
+  `src/lib/cloud/validate.ts` before any handler runs. Sign-in, sync and public shares are optional; guest
+  mode needs no env vars.
+- **Product heuristics are named constants plus an evidence claim.** A threshold that is not research
+  (the thin-evidence gate, era detection, the autopsy load band) lives as an exported constant next to its
+  code and as an `implementation_heuristic` claim in `src/domain/evidence/catalog.ts`.
+
+## Working rules learned the hard way
+
+- Read `docs/consolidation/PLAN.md` § 8 (decisions D1 to D18) before choosing any number or wording: several
+  slices already have an owner-confirmed rule, and the audit row alone does not give it.
+- Characterisation snapshots (`engine-characterisation`, `secondary-characterisation`) pin behaviour on the
+  dated demo. An intended behaviour change shows up as a snapshot diff; read it, then update with `-u`.
+- With several PRs open, every merge to `main` conflicts the top of `docs/HANDOVER.md` and the in-flight step's row in
+  `docs/STATUS.md`. Keep both sides, then `grep -rn '^<<<<<<<' src docs e2e` before committing: a conflict in a
+  source file (the evidence catalog has bitten once) must not ride along.
+- Prettier is not enforced repo-wide and several files are not prettier-clean; do not run it over a whole
+  file you are only editing in part.
+
 ## How work lands
 
 - Follow the PR order in `docs/consolidation/PLAN.md` § 3 (as amended by `PLAN-ADDENDUM.md`).
