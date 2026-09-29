@@ -9,7 +9,7 @@ import { applyBackup, restoreMessage, type RestoreMode } from "@/lib/backup/appl
 import { parseBackup } from "@/lib/backup/schema";
 import { takeSafetyBackup } from "@/lib/storage/safety";
 import { defaultQuickIncrementG } from "@/domain/units";
-import { useGym } from "@/lib/gym/store";
+import { useGym, type ImportSummary } from "@/lib/gym/store";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
 import { SafetyBackups } from "@/components/app/safety-backups";
 import { eraseAllOnDevice } from "@/lib/storage/boot";
@@ -23,6 +23,7 @@ function SettingsPage() {
   const importBackup = useGym((s) => s.importBackup);
   const importStrongCsv = useGym((s) => s.importStrongCsv);
   const importHevyCsv = useGym((s) => s.importHevyCsv);
+  const importOtherAppBackup = useGym((s) => s.importOtherAppBackup);
   const exportSetsCsvText = useGym((s) => s.exportSetsCsvText);
   const resetAll = useGym((s) => s.resetAll);
   const loadDemo = useGym((s) => s.loadDemo);
@@ -83,18 +84,45 @@ function SettingsPage() {
     if (warnings.length) setBackupProblems(warnings);
   };
 
+  const importNote = (preview: ImportSummary) =>
+    `Imported ${preview.workouts} sessions, ${preview.sets} sets${
+      preview.routines ? `, ${preview.routines} routines` : ""
+    }${preview.measurements ? `, ${preview.measurements} measurements` : ""}. Skipped ${preview.skipped} rows.${
+      preview.duplicates ? ` ${preview.duplicates} sessions were already here and were left out.` : ""
+    }${
+      preview.unmatched.length
+        ? ` New exercises to classify: ${preview.unmatched.slice(0, 8).join(", ")}.`
+        : ""
+    }${
+      preview.routinesSkipped
+        ? ` ${preview.routinesSkipped} routines with the same name were already here.`
+        : ""
+    }${
+      preview.measurementsSkipped
+        ? ` ${preview.measurementsSkipped} measurements were already recorded.`
+        : ""
+    }${preview.notes.length ? ` ${preview.notes.join(" ")}` : ""}${
+      preview.issues.length
+        ? ` ${preview.issues.slice(0, 3).join(" ")}${preview.issues.length > 3 ? ` (and ${preview.issues.length - 3} more.)` : ""}`
+        : ""
+    }`;
+
   const onCsv = async (file: File, source: "strong" | "hevy") => {
     const text = await file.text();
-    const preview = (source === "hevy" ? importHevyCsv : importStrongCsv)(text, file.name);
-    setCsvNote(
-      `Imported ${preview.workouts} sessions, ${preview.sets} sets. Skipped ${preview.skipped} rows.${
-        preview.duplicates ? ` ${preview.duplicates} sessions were already here and were left out.` : ""
-      }${
-        preview.unmatched.length
-          ? ` New exercises to classify: ${preview.unmatched.slice(0, 8).join(", ")}.`
-          : ""
-      }${preview.issues.length ? ` ${preview.issues[0]}` : ""}`,
-    );
+    setBackupProblems(null);
+    setCsvNote(importNote((source === "hevy" ? importHevyCsv : importStrongCsv)(text, file.name)));
+  };
+
+  const onOtherAppBackup = async (file: File) => {
+    const text = await file.text();
+    setBackupProblems(null);
+    const outcome = importOtherAppBackup(text, file.name);
+    if (!outcome.ok) {
+      setCsvNote(null);
+      setBackupProblems(outcome.errors);
+      return;
+    }
+    setCsvNote(importNote(outcome.summary));
   };
 
   const toggleGoal = (id: string) => {
@@ -335,6 +363,20 @@ function SettingsPage() {
                 const file = event.target.files?.[0];
                 event.target.value = ""; // so choosing the same file again still fires
                 if (file) void onCsv(file, "hevy");
+              }}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs text-subtle">Import a backup from another app (JSON)</span>
+            <input
+              type="file"
+              accept="application/json,.json"
+              data-testid="other-backup-input"
+              className="block w-full text-sm text-muted file:mr-3 file:h-11 file:rounded-xl file:border-0 file:bg-raised file:px-4 file:text-sm file:text-ink"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = ""; // so choosing the same file again still fires
+                if (file) void onOtherAppBackup(file);
               }}
             />
           </label>

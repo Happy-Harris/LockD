@@ -36,6 +36,7 @@ import { exportSetsCsv } from "./csv";
 import { applyImportBatch, buildImportBatch, storedFingerprints } from "@/lib/import/batch";
 import type { ImportAnalysis, SourceProfile } from "@/lib/import/engine";
 import { analyseHevyCsv, HEVY_PROFILE } from "@/lib/import/hevy";
+import { readRepforgeBackup, REPFORGE_SOURCE } from "@/lib/import/repforge";
 import { analyseStrongCsv, STRONG_PROFILE } from "@/lib/import/strong";
 import { buildDemoLog, emptyStarterPack } from "./demo";
 import {
@@ -95,8 +96,8 @@ export interface GymData {
   clips: ClipMeta[];
 }
 
-/** What a CSV import did. Named for the first importer; every CSV source returns it. */
-export interface StrongImportSummary {
+/** What an import did. Every importer returns it. */
+export interface ImportSummary {
   workouts: number;
   sets: number;
   skipped: number;
@@ -105,7 +106,19 @@ export interface StrongImportSummary {
   issues: string[];
   /** Exercises created because no exercise here had that name. */
   unmatched: string[];
+  /** Backups only. */
+  routines: number;
+  /** Routines whose name is already used here, so they were left out. */
+  routinesSkipped: number;
+  measurements: number;
+  measurementsSkipped: number;
+  /** What the file held and what was not imported. */
+  notes: string[];
 }
+
+export type ImportOutcome =
+  | { ok: true; summary: ImportSummary }
+  | { ok: false; errors: string[] };
 
 interface GymActions {
   hydrated: boolean;
@@ -161,8 +174,10 @@ interface GymActions {
   ensureWarmups: (workoutExerciseId: string) => void;
   exportBackup: () => LockdBackup;
   importBackup: (backup: LockdBackup, mode: "replace" | "merge") => void;
-  importStrongCsv: (csv: string, fileName?: string) => StrongImportSummary;
-  importHevyCsv: (csv: string, fileName?: string) => StrongImportSummary;
+  importStrongCsv: (csv: string, fileName?: string) => ImportSummary;
+  importHevyCsv: (csv: string, fileName?: string) => ImportSummary;
+  /** A backup file written by a sister app. Adds what is new; never replaces anything. */
+  importOtherAppBackup: (text: string, fileName?: string) => ImportOutcome;
   exportSetsCsvText: () => string;
   setLabLast: (text: string) => void;
   resetAll: () => void;
@@ -278,18 +293,30 @@ function applyInstalled(state: GymData, installed: InstalledProgram, activate: b
 }
 
 /** Reads a CSV with the common pipeline and adds what is new. Sessions already in the log are left out. */
-function runCsvImport(
+function runImport(
   state: GymState,
   set: (partial: Partial<GymState>) => void,
-  args: { analysis: ImportAnalysis; source: SourceProfile; fileName: string },
-): StrongImportSummary {
+  args: {
+    analysis: ImportAnalysis;
+    source: Pick<SourceProfile, "id" | "label">;
+    fileName: string;
+    notes?: string[];
+  },
+): ImportSummary {
   const batch = buildImportBatch(args.analysis, {
     source: args.source,
     fileName: args.fileName,
     existingExercises: state.exercises,
     existingFingerprints: storedFingerprints(state),
+    existingTemplates: state.templates,
+    existingMeasurements: state.measurements,
   });
-  if (batch.workouts.length > 0) set(applyImportBatch(state, batch));
+  const addsAnything =
+    batch.workouts.length > 0 ||
+    batch.templates.length > 0 ||
+    batch.measurements.length > 0 ||
+    batch.newExercises.length > 0;
+  if (addsAnything) set(applyImportBatch(state, batch));
   return {
     workouts: batch.workouts.length,
     sets: batch.job.setsImported,
@@ -297,6 +324,11 @@ function runCsvImport(
     duplicates: batch.duplicatesSkipped,
     issues: batch.issues.slice(0, 40).map((issue) => issue.message),
     unmatched: batch.newExercises.map((exercise) => exercise.name),
+    routines: batch.templates.length,
+    routinesSkipped: batch.templatesSkipped,
+    measurements: batch.measurements.length,
+    measurementsSkipped: batch.measurementsSkipped,
+    notes: args.notes ?? [],
   };
 }
 
@@ -1198,7 +1230,7 @@ export const useGym = create<GymState>()(
 
       importStrongCsv: (csv, fileName = "strong.csv") => {
         const state = get();
-        return runCsvImport(state, set, {
+        return runImport(state, set, {
           analysis: analyseStrongCsv(csv, { unit: weightUnitFor(state.settings.unitSystem) }),
           source: STRONG_PROFILE,
           fileName,
@@ -1207,11 +1239,26 @@ export const useGym = create<GymState>()(
 
       importHevyCsv: (csv, fileName = "hevy.csv") => {
         const state = get();
-        return runCsvImport(state, set, {
+        return runImport(state, set, {
           analysis: analyseHevyCsv(csv, { unit: weightUnitFor(state.settings.unitSystem) }),
           source: HEVY_PROFILE,
           fileName,
         });
+      },
+
+      importOtherAppBackup: (text, fileName = "backup.json") => {
+        const result = readRepforgeBackup(text);
+        if (!result.ok) return result;
+        const state = get();
+        return {
+          ok: true,
+          summary: runImport(state, set, {
+            analysis: result.analysis,
+            source: REPFORGE_SOURCE,
+            fileName,
+            notes: result.notes,
+          }),
+        };
       },
 
       exportSetsCsvText: () => {
