@@ -10,7 +10,7 @@ import type {
   WorkoutExercise,
   WorkoutSet,
 } from "@/domain/types";
-import { attributeMuscleVolume, hardSetCount, sessionTonnageG } from "@/domain/volume";
+import { attributeMuscleVolume, hardSetCount, totalsForGroups } from "@/domain/volume";
 
 export interface SessionSlice {
   workout: Workout;
@@ -33,8 +33,18 @@ export function sliceSessions(
     .sort((a, b) => a.workout.localDate.localeCompare(b.workout.localDate));
 }
 
+/**
+ * External-load tonnage of a session, in gram-reps. Tracking-type aware: only `weight_reps`
+ * sets count, so assisted-weight sets (which record the assistance, not the load lifted) and
+ * bodyweight, duration and distance sets add nothing. A set whose exercise row is missing has
+ * no tracking type to judge it by and is not counted.
+ */
 export function workoutTonnageG(slice: SessionSlice, excludeWarmups: boolean): number {
-  return sessionTonnageG(slice.sets, excludeWarmups);
+  const groups = slice.exercises.map((exercise) => ({
+    exercise,
+    sets: slice.sets.filter((set) => set.workoutExerciseId === exercise.id),
+  }));
+  return totalsForGroups(groups, { includeWarmups: !excludeWarmups }).volumeG;
 }
 
 export interface PersonalRecord {
