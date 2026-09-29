@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import {
   calendarHeat,
   computeRecords,
   muscleSetMap,
   previousSetsForExercise,
   sliceSessions,
+  stabiliseSlices,
   streakDays,
   weeklySeries,
 } from "./analytics";
@@ -30,10 +31,15 @@ export function useSlices() {
   const workouts = useGym((s) => s.workouts);
   const workoutExercises = useGym((s) => s.workoutExercises);
   const workoutSets = useGym((s) => s.workoutSets);
-  return useMemo(
-    () => sliceSessions(workouts, workoutExercises, workoutSets),
-    [workouts, workoutExercises, workoutSets],
-  );
+  const previous = useRef<ReturnType<typeof sliceSessions> | undefined>(undefined);
+  return useMemo(() => {
+    const next = stabiliseSlices(
+      previous.current,
+      sliceSessions(workouts, workoutExercises, workoutSets),
+    );
+    previous.current = next;
+    return next;
+  }, [workouts, workoutExercises, workoutSets]);
 }
 
 export function useGymDerived() {
@@ -52,7 +58,11 @@ export function useGymDerived() {
   const plates = useGym((s) => s.plates);
 
   return useMemo(() => {
-    const records = computeRecords(slices, settings.oneRepMaxFormula, settings.excludeWarmupsFromAnalytics);
+    const records = computeRecords(
+      slices,
+      settings.oneRepMaxFormula,
+      settings.excludeWarmupsFromAnalytics,
+    );
     const entries = loggedEntriesOf(slices);
     const analyticsOptions = {
       formula: settings.oneRepMaxFormula,
@@ -116,7 +126,9 @@ export function useGymDerived() {
     // The lifts tracked are the lifter's own goal lifts, or their most-trained if they picked none.
     // The lens chooses which blocks show; it never swaps the lifts for its own (I-19).
     const trackedIds = (
-      settings.goalLiftIds.length ? settings.goalLiftIds : records.slice(0, 3).map((row) => row.exerciseId)
+      settings.goalLiftIds.length
+        ? settings.goalLiftIds
+        : records.slice(0, 3).map((row) => row.exerciseId)
     ).filter((id, index, list) => list.indexOf(id) === index);
 
     const board = progressBoard(
@@ -139,7 +151,12 @@ export function useGymDerived() {
       settings.excludeWarmupsFromAnalytics,
     );
     const easier = easierWeekCall(board);
-    const chronicle = buildChronicle(slices, settings.oneRepMaxFormula, settings.goalLiftIds, eraNames);
+    const chronicle = buildChronicle(
+      slices,
+      settings.oneRepMaxFormula,
+      settings.goalLiftIds,
+      eraNames,
+    );
     const moments = buildMoments(slices, records, chronicle.eras, measurements);
     const intelligence = buildIntelligence({
       slices,
@@ -153,10 +170,20 @@ export function useGymDerived() {
       .map((id) => {
         const exercise = exercises.find((row) => row.id === id);
         if (!exercise) return null;
-        return buildLiftDna(exercise, slices, settings.oneRepMaxFormula, settings.excludeWarmupsFromAnalytics);
+        return buildLiftDna(
+          exercise,
+          slices,
+          settings.oneRepMaxFormula,
+          settings.excludeWarmupsFromAnalytics,
+        );
       })
       .filter((row): row is NonNullable<typeof row> => row !== null);
-    const autopsies = autopsyBoard(board, slices, settings.oneRepMaxFormula, settings.excludeWarmupsFromAnalytics);
+    const autopsies = autopsyBoard(
+      board,
+      slices,
+      settings.oneRepMaxFormula,
+      settings.excludeWarmupsFromAnalytics,
+    );
     const queue = milestoneQueue({
       exercises,
       slices,
@@ -166,7 +193,9 @@ export function useGymDerived() {
       unit: weightUnitFor(settings.unitSystem),
       goalIds: trackedIds,
     });
-    const activeProgram = programs.find((row) => row.isActive) ?? programs.find((row) => row.id === settings.activeProgramId);
+    const activeProgram =
+      programs.find((row) => row.isActive) ??
+      programs.find((row) => row.id === settings.activeProgramId);
     const nextProgram = activeProgram
       ? nextProgramSession(
           activeProgram,
@@ -174,7 +203,10 @@ export function useGymDerived() {
         )
       : undefined;
     const activeWeek = activeProgram
-      ? programWeeks.find((row) => row.programId === activeProgram.id && row.weekNumber === activeProgram.currentWeek)
+      ? programWeeks.find(
+          (row) =>
+            row.programId === activeProgram.id && row.weekNumber === activeProgram.currentWeek,
+        )
       : undefined;
 
     return {
