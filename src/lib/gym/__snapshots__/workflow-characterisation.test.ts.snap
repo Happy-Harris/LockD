@@ -1,0 +1,147 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`workflow characterisation — present behaviour, including import defects > BUG: current European Strong CSV parsing corrupts weights, repetitions and dates 1`] = `
+{
+  "dates": [
+    "2026-03-02",
+  ],
+  "preview": {
+    "issues": [],
+    "sets": 2,
+    "skipped": 0,
+    "unmatched": [
+      "Kniebeuge",
+    ],
+    "workouts": 1,
+  },
+  "sets": [
+    {
+      "reps": 0,
+      "weightG": undefined,
+    },
+    {
+      "reps": 0,
+      "weightG": undefined,
+    },
+  ],
+}
+`;
+
+exports[`workflow characterisation — present behaviour, including import defects > pins CSV parser, Strong import and exported set columns 1`] = `
+{
+  "export": "Date,Workout Name,Exercise Name,Set Order,Set Type,Weight,Reps,RPE,Seconds,Notes
+2026-02-03,Test,Bench Press,1,working,100,5,,,
+2026-02-03,Test,Bench Press,2,failure,105,3,,,",
+  "preview": {
+    "issues": [],
+    "sets": 2,
+    "skipped": 0,
+    "unmatched": [],
+    "workouts": 1,
+  },
+  "sets": [
+    {
+      "reps": 5,
+      "type": "working",
+      "weight": 100000,
+    },
+    {
+      "reps": 3,
+      "type": "failure",
+      "weight": 105000,
+    },
+  ],
+  "workout": [
+    {
+      "date": "2026-02-03",
+      "name": "Test",
+    },
+  ],
+}
+`;
+
+exports[`workflow characterisation — present behaviour, including import defects > pins program install, JSON export/import, load suggestions and pointer 1`] = `
+{
+  "counts": [
+    8,
+    3,
+    12,
+  ],
+  "deload": {
+    "reps": undefined,
+    "sets": 3,
+    "weightG": 101150,
+  },
+  "identity": {
+    "format": "lockd-program",
+    "version": 1,
+  },
+  "normal": {
+    "reps": 6,
+    "sets": 4,
+    "weightG": 105000,
+  },
+  "roundTrip": [
+    8,
+    3,
+    12,
+  ],
+  "suggestion": {
+    "reps": 8,
+    "sets": 4,
+    "weightG": 101000,
+  },
+}
+`;
+
+exports[`workflow characterisation — present behaviour, including import defects > pins template start, set completion, finish, discard and backup merge 1`] = `
+{
+  "backupFormat": "lockd-backup",
+  "completed": {
+    "at": "2026-09-28T18:00:00.000Z",
+    "reps": 6,
+    "type": "warmup",
+    "weight": 100000,
+  },
+  "counts": [
+    2,
+    2,
+    2,
+  ],
+  "finishPrs": 0,
+  "firstPrs": 0,
+  "programPrs": 0,
+  "programSnapshot": [
+    {
+      "reps": undefined,
+      "setType": "warmup",
+      "weight": undefined,
+    },
+    {
+      "reps": undefined,
+      "setType": "working",
+      "weight": undefined,
+    },
+    {
+      "reps": undefined,
+      "setType": "working",
+      "weight": undefined,
+    },
+    {
+      "reps": undefined,
+      "setType": "working",
+      "weight": undefined,
+    },
+    {
+      "reps": undefined,
+      "setType": "working",
+      "weight": undefined,
+    },
+    {
+      "reps": undefined,
+      "setType": "warmup",
+      "weight": undefined,
+    },
+  ],
+}
+`;
