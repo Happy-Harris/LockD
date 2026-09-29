@@ -37,8 +37,8 @@ export function ChangeFlagsCard({
   const claim = selected ? getClaim(selected.claimId) : undefined;
 
   return (
-    <Card className="border border-accent/30" data-testid="change-flags">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-accent">
+    <Card data-testid="change-flags">
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
         What should I change?
       </p>
       <h2 className="mt-1 font-display text-xl font-semibold tracking-tight text-ink">

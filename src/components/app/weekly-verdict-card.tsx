@@ -59,10 +59,10 @@ export function WeeklyVerdictCard({
 
   return (
     <section aria-labelledby="weekly-verdict-heading" data-testid="weekly-verdict">
-      <Card className="border border-accent/30">
+      <Card>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-accent">
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
               Weekly verdict
             </p>
             <h2
