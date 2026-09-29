@@ -72,7 +72,8 @@ test.describe("critical fixes", () => {
     // Take a copy through the real module (the dev server serves source modules).
     await page.evaluate(async () => {
       const safety = await import("/src/lib/storage/safety.ts");
-      const state = JSON.parse(localStorage.getItem("lockd-v1") || "{}").state;
+      const { DexieRepository } = await import("/src/lib/storage/dexie-repository.ts");
+      const state = await new DexieRepository().load();
       await safety.takeSafetyBackup("before-cloud-sign-in", {
         format: "lockd-backup",
         version: 3,

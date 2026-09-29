@@ -8,6 +8,7 @@ import { defaultQuickIncrementG } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
 import { SafetyBackups } from "@/components/app/safety-backups";
+import { eraseAllOnDevice } from "@/lib/storage/boot";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
@@ -273,7 +274,10 @@ function SettingsPage() {
             className="w-full"
             variant="danger"
             onClick={() => {
-              if (window.confirm("Delete everything on this device and re-seed the library?")) resetAll();
+              if (window.confirm("Delete everything on this device and re-seed the library? This also deletes the safety copies and the old saved copy of your log.")) {
+                resetAll();
+                void eraseAllOnDevice();
+              }
             }}
           >
             Delete local cache

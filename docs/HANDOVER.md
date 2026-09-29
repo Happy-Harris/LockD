@@ -6,6 +6,53 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 5d: durable storage is live
+
+**The app now saves to the `lockd` database, not `localStorage`.** Read this entry before touching
+storage.
+
+- **Boot** (`src/lib/storage/boot.ts`, called from `GymGate`): runs the migration (5c), loads the
+  log into the store, then a change subscriber writes only what changed. Changes in one tick share
+  one write; writes are chained so they arrive in order; a failed write is retried with the next
+  change and shows a notice. A change that removes more than 500 rows (delete everything, restore,
+  taking the cloud copy) is stored as `replaceAll`, because a bulk key-by-key delete of a 5-year log
+  took about 7 s. `flushWrites()` waits for the queue (tests, reload, erase).
+- **`localStorage['lockd-v1']` is never written again and never deleted by the app**, except by
+  "Delete local cache" (below). `persist` stays in the store as the fallback for one release, with
+  a switchable backend (`backend.ts`): `dexie` (persist does nothing), `local` (the old path, when
+  there is no IndexedDB or the copy did not verify), `frozen` (unreadable log and nowhere to keep a
+  copy: nothing is written).
+- **Logging gets cheaper, not dearer.** The backend is a `PersistStorage`, not `createJSONStorage`,
+  because the latter `JSON.stringify`s the whole log on every store update before the backend is
+  asked, even when it writes nothing. Now only the `local` fallback serialises.
+- **Decision for you: an unreadable old log.** The plan said "boot from the old path and show a
+  recoverable error". That path would overwrite the string on the next write. Instead: the raw string
+  is kept in `safetyBackups` (Settings, Safety copies, Download as `lockd-raw-log-….json`), the
+  `localStorage` key is left as it is, a **new log starts in the database**, and a notice says so.
+  Reversible: the notice text and behaviour are one function in `boot.ts`.
+- **Schema v3** drops the two secondary indexes on `workoutSets` and `workoutExercises`. Measured in
+  Chromium with a 15,000-set log: writing it took 14.4 s with them and 2.8 s without; nothing queries
+  by them. v2 is untouched (a v3 block removes them), with a test that upgrades a real v2 database.
+- **Numbers, measured** (Chromium, 4x CPU throttle, dev server): reading a 15,000-set, 822-session log
+  takes 325 to 425 ms (plan budget 500 ms), asserted in e2e as best of three. The 137-session sample
+  log takes about 125 ms. Writing that big log the first time (the one-off migration) takes about
+  3.5 s. **Not storage, but noticed:** rendering the home screen with the big log adds about 600 ms at
+  4x, from the engines running on render. `BootResult.readMs` stops before the store is set on
+  purpose, so that cost is not blamed on storage.
+- **Splash for guests too.** Everyone now waits for the log to load (a guest could tap "Start empty"
+  before the load finished and have it overwritten). It is a fraction of a second.
+- **Settings:** the pre-move copy is listed with **Restore** (takes a `before-restore` copy of the
+  current log first) and Download. **Delete local cache now also deletes the old `localStorage` copy
+  and every safety copy**, since those are full copies of the log.
+- **Known limit:** writes are asynchronous. Closing the tab within a few milliseconds of a change
+  could drop that change, where `localStorage` was synchronous. Nothing here waits on `pagehide`.
+- **Not in this PR:** cross-tab reload (`BroadcastChannel`). Two tabs write row by row now, so they
+  no longer overwrite each other's whole log as they did, but a tab does not see the other's changes
+  until it reloads. That is 5e. Deleting the old key stays a separate PR (30 days, three good boots).
+- e2e specs that read `localStorage` now read the database (`readLog` in `e2e/helpers.ts`). New
+  `e2e/storage.spec.ts`: migration leaves the old copy byte-identical, the budget, an unreadable log,
+  delete-everything.
+
 ### 2026-09-29 — Plan PR 5c: the migration runner
 
 - **Still not wired.** `src/lib/storage/migration.ts` is `runMigration({ repo, storage, freshData })`;

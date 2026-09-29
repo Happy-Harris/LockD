@@ -110,6 +110,14 @@ export class LockdDatabase extends Dexie {
       meta: "key",
       device: "key",
     });
+    // Measured in Chromium with a 5-year log (15,000 sets, 4,500 exercise blocks): writing them with
+    // the two indexes above took 14.4 s; with the primary key only, 2.8 s. Nothing queries by those
+    // indexes (the engines read the whole log from memory), so version 3 drops them. An index can
+    // be added back in a later version, which backfills it, when a query needs one.
+    this.version(3).stores({
+      workoutSets: "id",
+      workoutExercises: "id",
+    });
   }
 }
 

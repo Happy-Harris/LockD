@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist, type PersistStorage } from "zustand/middleware";
 import { uuid } from "@/domain/ids";
 import { nowParts } from "@/domain/time";
 import type {
@@ -51,7 +51,14 @@ import { generateWarmup } from "@/domain/warmup";
 import { restPersonalitySeconds, learnedRestSeconds } from "./dna";
 import { deleteClipBlob } from "./vault";
 import { defaultSettings } from "./settings";
-import { migratePersisted, PERSIST_KEY, PERSIST_VERSION, persistedSlice } from "@/lib/storage/persisted";
+import { switchableStorage } from "@/lib/storage/backend";
+import {
+  migratePersisted,
+  PERSIST_KEY,
+  PERSIST_VERSION,
+  persistedSlice,
+  type PersistedSlice,
+} from "@/lib/storage/persisted";
 
 export { defaultSettings };
 
@@ -1237,7 +1244,7 @@ export const useGym = create<GymState>()(
       name: PERSIST_KEY,
       version: PERSIST_VERSION,
       skipHydration: true,
-      storage: createJSONStorage(() => localStorage),
+      storage: switchableStorage as PersistStorage<PersistedSlice>,
       migrate: (persisted, version) => migratePersisted(persisted, version),
       partialize: (state) => persistedSlice(state),
       onRehydrateStorage: () => (state) => {

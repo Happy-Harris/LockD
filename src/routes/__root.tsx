@@ -1,4 +1,10 @@
-import { createRootRoute, HeadContent, Outlet, Scripts, useRouterState } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  HeadContent,
+  Outlet,
+  Scripts,
+  useRouterState,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { createServerFn } from "@tanstack/react-start";
@@ -11,6 +17,8 @@ import { StampMark } from "@/components/app/mark";
 import { CloudSync, useCloud } from "@/lib/cloud/sync";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useGym } from "@/lib/gym/store";
+import { StorageNoticeBanner } from "@/components/app/storage-notice";
+import { bootStorage } from "@/lib/storage/boot";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Lockd";
@@ -29,7 +37,11 @@ export const Route = createRootRoute({
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: APP_NAME },
       { name: "theme-color", content: "#0c0b0a" },
-      { name: "description", content: "Lock’d — a training operating system that remembers a lifting life. Keep the receipt." },
+      {
+        name: "description",
+        content:
+          "Lock’d — a training operating system that remembers a lifting life. Keep the receipt.",
+      },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
@@ -80,17 +92,27 @@ function GymGate() {
   const { status, booted } = useCloud();
   const publicRoute = isPublicPath(pathname);
   const knownUser = Boolean(user) || Boolean(sessionUser);
+  // Everyone waits for the log to load, guests included: an onboarding tap before it loads would
+  // be overwritten by it. Signed-in lifters also wait for the cloud pull.
   const showSplash =
-    !publicRoute && knownUser && (!hydrated || isPending || !booted || status === "pulling");
+    !publicRoute && (!hydrated || (knownUser && (isPending || !booted || status === "pulling")));
 
+  // Decide where the log lives (the `lockd` database, or the old `localStorage` as a fallback),
+  // load it, and start writing changes. Sets `hydrated` when the log is in the store.
   useEffect(() => {
-    const finish = () => {
-      if (!useGym.getState().hydrated) useGym.getState().setHydrated(true);
-    };
-    const unsub = useGym.persist.onFinishHydration(finish);
-    void useGym.persist.rehydrate();
-    if (useGym.persist.hasHydrated()) finish();
-    return unsub;
+    bootStorage()
+      .then((result) => {
+        if (!useGym.getState().hydrated) useGym.getState().setHydrated(true);
+        // Test hook: how long reading the log took (see `BootResult.readMs`).
+        if (result.readMs !== undefined) {
+          document.documentElement.dataset.gymBootMs = String(result.readMs);
+        }
+      })
+      .catch((error: unknown) => {
+        // Never leave the app on the splash screen: open with what is in memory.
+        console.error("Storage boot failed.", error);
+        useGym.getState().setHydrated(true);
+      });
   }, []);
 
   // Test hook: effects only run after React hydrates, so this marks "interactive and log loaded".
@@ -107,11 +129,15 @@ function GymGate() {
         <Splash locker={knownUser} />
       ) : onboarded ? (
         <>
+          <StorageNoticeBanner />
           <Outlet />
           <CommandPalette />
         </>
       ) : (
-        <Onboarding />
+        <>
+          <StorageNoticeBanner />
+          <Onboarding />
+        </>
       )}
       <Toaster
         theme={theme === "light" ? "light" : "dark"}
