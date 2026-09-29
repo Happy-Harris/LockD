@@ -6,6 +6,34 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 6a: what the app needs to run offline, apart from the service worker
+
+The offline plan (PLAN § 6) is split: **6a (this)** removes the things that reach out or break
+offline; **6b** adds the service worker, the update prompt and the offline cold-start e2e.
+
+- **Fonts are served by the app.** Barlow, Barlow Condensed and IBM Plex Mono (Latin, woff2 only,
+  from `@fontsource/*`) via `src/fonts.css`; the Google Fonts links and preconnects are gone. Same
+  faces, same names, so nothing looks different. Licences: `docs/FONTS.md` (OFL 1.1). The identity
+  PR replaces them.
+- **Own manifest and icons.** `public/manifest.webmanifest` (name Lock’d, standalone, 192, 512 and
+  maskable 512) and `apple-touch-icon.png`, rendered from the current `favicon.svg` "L" mark (the
+  identity PR redraws them). The root route links these instead of `/__grok/manifest.webmanifest`
+  and `/__grok/icon-180.png` (the latter was never in the repo). The scaffolding's head injector
+  used to add its own manifest link on deploys; it now skips a page that already has one (legacy
+  test added; that suite already has 7 unrelated failures on `main`, unchanged).
+- **The session lookup no longer breaks offline.** The root route calls a server function on every
+  navigation to ask who is signed in. Offline that threw and showed "Something went wrong". It now
+  carries on as a guest when the failure is a network one, and still throws real server errors.
+  The e2e fails without this change.
+- **Found, not fixed (owner call): the app loads a script from `https://grok.com` on every page.**
+  The scaffolding's head injector adds `https://grok.com/grok-app-builder/extensions.js`, in dev and,
+  through the Nitro middleware, on deploys. It is a third-party script running with access to the
+  page (so to the log). It goes with the scaffolding in plan PR 12, but consider moving that up. The
+  new e2e exempts exactly that URL, so anything else that reaches another origin fails it, and the
+  exemption comes out with PR 12.
+- **Known gap for 6b:** navigating offline to a screen never opened before fails, because route
+  code is split and only visited routes' chunks are on the device. The service worker precaches them.
+
 ### 2026-09-29 — Plan PR 5e: tabs stay in step
 
 - Closes plan PR 5. After each successful write a tab announces it on `BroadcastChannel('lockd-log')`.

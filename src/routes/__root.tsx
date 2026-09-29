@@ -30,7 +30,16 @@ const fetchSessionUser = createServerFn({ method: "GET" }).handler(async () => {
 });
 
 export const Route = createRootRoute({
-  beforeLoad: async () => ({ sessionUser: await fetchSessionUser() }),
+  // Offline, the session lookup cannot reach the server. Carry on as a guest, which always works:
+  // the log lives on this device. A real server error still surfaces.
+  beforeLoad: async () => ({
+    sessionUser: await fetchSessionUser().catch((error: unknown) => {
+      const offline =
+        typeof window !== "undefined" && (navigator.onLine === false || error instanceof TypeError);
+      if (offline) return null;
+      throw error;
+    }),
+  }),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -46,14 +55,8 @@ export const Route = createRootRoute({
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap",
-      },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   component: RootDocument,
