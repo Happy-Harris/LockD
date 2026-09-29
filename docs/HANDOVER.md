@@ -9,6 +9,23 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9f-2a: pin how left/right rows are counted today (characterisation only)
+
+- **No behaviour change.** `unilateral-characterisation.test.ts` (5) pins what the engines do with `side` rows, which
+  importers can already write: a row is a set (a left and a right row are two sets, two hard sets), tonnage adds across
+  sides, the muscle is credited one set per row, and the e1RM record is the best single row, never a sum of limbs.
+  It also pins that pair rows are indistinguishable from bilateral sets in every total.
+- **Why this comes first:** CLAUDE.md asks for fixtures before an engine's logic changes, so the counting change in 9f-2b
+  shows up as a reviewable diff of this file.
+- **Decision needed before 9f-2b:** should a left+right pair count as one hard set (the usual convention, so a
+  one-arm row is not counted as double the volume of a barbell row) or two (each limb did a set)? The donor's
+  `setGrouping.ts` would have answered this, but that repo is not reachable here (`list_repos` shows only
+  `LockD`, `Lock-D` and one unrelated repo). Recommendation: one hard set per pair, tonnage still summed across
+  sides, e1RM and PRs per limb, and the receipt says "pairs counted as one set".
+- **Rest of 9f-2:** 9f-2b counting rule; 9f-2c logging (create L/R rows sharing `pairId`, snapshot `unilateralSnapshot`,
+  rest only after the second side, ghost and previous values keyed by set number and side, a per-exercise Unilateral
+  toggle so existing installs need no seed migration).
+
 ### 2026-09-29 — Step 9f-1: supersets
 
 - **Link two exercises:** each exercise header has a link button that supersets it with the next exercise (press again to
