@@ -6,6 +6,21 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 4e: `exerciseTaxonomy`
+
+- `src/domain/exerciseTaxonomy.ts` is Strong-Pro's module, unchanged apart from formatting:
+  `suggestExerciseTaxonomy(name)` proposes a primary muscle, equipment and movement pattern from an
+  exercise's name, or returns `null`. Strong-Pro's 40 tests are ported; 4 new ones pin the Lock'd
+  contract (`exerciseTaxonomy.lockd.test.ts`).
+- **It only suggests.** Nothing calls it yet. The Strong and Hevy importers (plan PR 7) must show
+  the result for the lifter to confirm before saving; an unrecognised name stays `unmapped` (number
+  honesty: no silent muscle mapping).
+- Measured against the 66-exercise seed library: 49 names get a suggestion and 47 match the seed's
+  muscle. The two that differ are judgement calls (Sumo Deadlift: glutes in the seed, hamstrings
+  suggested; Close-Grip Bench Press: triceps in the seed, chest suggested), pinned in a test. With
+  no equipment word in the name (`Back Squat`) it says `other`, not a guess.
+- No behaviour change anywhere in the app; all characterisation snapshots unchanged.
+
 ### 2026-09-29 — Plan PR 4c: `volume`
 
 - `src/domain/volume.ts` is Strong-Pro's module (tracking-aware tonnage, `totalsForGroups`,
