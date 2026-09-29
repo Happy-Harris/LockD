@@ -49,6 +49,7 @@ import { buildDemoLog, emptyStarterPack } from "./demo";
 import {
   advanceProgramPointer,
   applyProgramLoad,
+  finishesProgram,
   duplicateInstalled,
   exportProgramFile,
   importProgramFile,
@@ -202,6 +203,8 @@ interface GymActions {
   installProgramPack: (packId: string) => string | undefined;
   duplicateProgram: (programId: string) => string | undefined;
   setActiveProgram: (programId: string | undefined) => void;
+  /** Back to week 1, session 1, and no longer complete. History is untouched. */
+  restartProgram: (programId: string) => void;
   substituteProgramExercise: (programExerciseId: string, exerciseId: string) => void;
   updateProgram: (programId: string, patch: Partial<Program>) => void;
   deleteProgram: (programId: string) => void;
@@ -976,8 +979,13 @@ export const useGym = create<GymState>()(
                 (row) => row.programId === program.id,
               ).length;
               const next = advanceProgramPointer(program, count);
+              // The block ends once: a session finished after that (run again from the program page) does not restamp it.
+              const completedAt =
+                program.completedAt ?? (finishesProgram(program, count) ? stamp : undefined);
               programs = state.programs.map((row) =>
-                row.id === program.id ? { ...row, ...next, updatedAt: stamp } : row,
+                row.id === program.id
+                  ? { ...row, ...next, ...(completedAt ? { completedAt } : {}), updatedAt: stamp }
+                  : row,
               );
             }
           }
@@ -1193,6 +1201,15 @@ export const useGym = create<GymState>()(
         set((state) => ({
           programs: state.programs.map((row) => ({ ...row, isActive: row.id === programId })),
           settings: { ...state.settings, activeProgramId: programId },
+        })),
+
+      restartProgram: (programId) =>
+        set((state) => ({
+          programs: state.programs.map((row) => {
+            if (row.id !== programId) return row;
+            const { completedAt: _done, ...rest } = row;
+            return { ...rest, currentWeek: 1, currentSessionOrder: 0, updatedAt: new Date().toISOString() };
+          }),
         })),
 
       substituteProgramExercise: (programExerciseId, exerciseId) =>
