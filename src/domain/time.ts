@@ -202,3 +202,12 @@ export function formatLocalDate(value: ISODate, opts?: Intl.DateTimeFormatOption
 export function formatWeekday(value: ISODate): string {
   return formatLocalDate(value, { weekday: "long", month: "long", day: "numeric" });
 }
+
+/**
+ * The Today header: the weekday and date on the lifter's own calendar. `toISOString()` is UTC, so the header
+ * (and any file named after "today") showed tomorrow for anyone west of UTC in the evening, and yesterday
+ * for anyone far east in the early morning (plan I-24).
+ */
+export function todayHeader(now: Date = new Date()): string {
+  return formatWeekday(localDateOf(now));
+}
