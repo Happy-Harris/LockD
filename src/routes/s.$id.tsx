@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useImportProgram } from "@/lib/gym/program-hooks";
 import { useEffect, useState } from "react";
 import { MomentPoster } from "@/components/app/moment-poster";
 import { PaperShell } from "@/components/app/paper-shell";
@@ -154,7 +155,7 @@ function ShareBody({ share }: { share: PublicShare }) {
 
 function ProgramShare({ share }: { share: PublicShare }) {
   const { user, isPending } = useCurrentUserState();
-  const importProgram = useGym((s) => s.importProgram);
+  const importProgram = useImportProgram();
   const navigate = useNavigate();
   const payload = share.payload;
   if (payload.kind !== "program") return null;

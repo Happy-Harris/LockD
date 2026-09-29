@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useImportProgram, useStartProgramSession } from "@/lib/gym/program-hooks";
 import { Play } from "lucide-react";
 import { Page } from "@/components/app/shell";
 import { Badge } from "@/components/ui/badge";
@@ -16,8 +17,8 @@ function ProgramsPage() {
   const navigate = useNavigate();
   const { programs, activeProgram, nextProgram, activeWeek } = useGymDerived();
   const installProgramPack = useGym((s) => s.installProgramPack);
-  const startFromProgramSession = useGym((s) => s.startFromProgramSession);
-  const importProgram = useGym((s) => s.importProgram);
+  const startFromProgramSession = useStartProgramSession();
+  const importProgram = useImportProgram();
 
   const onImport = async (file: File) => {
     const parsed = JSON.parse(await file.text()) as ProgramFile;

@@ -294,6 +294,12 @@ export interface ProgramExercise {
   substitutionOf?: UUID;
   rule: ProgressionRule;
   notes?: string;
+  /**
+   * Set when a program file named an exercise this library does not have. The row is kept with the name the
+   * file gave it, so nothing disappears silently (plan I-33); it is skipped when a session starts, and is picked
+   * up by name if the exercise is added to the library later.
+   */
+  unresolvedName?: string;
 }
 
 export interface EraName {

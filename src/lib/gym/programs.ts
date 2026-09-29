@@ -315,7 +315,7 @@ export function exportProgramFile(
         .sort((a, b) => a.order - b.order)
         .map((row) => ({
           exerciseId: row.exerciseId,
-          exerciseName: names.get(row.exerciseId) ?? row.exerciseId,
+          exerciseName: names.get(row.exerciseId) ?? row.unresolvedName ?? row.exerciseId,
           order: row.order,
           targetSets: row.targetSets,
           targetRepMin: row.targetRepMin,
@@ -367,11 +367,15 @@ export function importProgramFile(file: ProgramFile, stamp: string, library: Exe
       dayIndex: session.dayIndex,
     });
     session.exercises.forEach((entry, index) => {
-      const resolved = byName.get(entry.exerciseName.toLowerCase()) ?? entry.exerciseId;
+      const byNameId = byName.get(entry.exerciseName.toLowerCase());
+      const resolved = byNameId ?? entry.exerciseId;
+      // Neither the name nor the file's id is in this library: keep the name so the row is not anonymous.
+      const unresolved = !byNameId && !library.some((row) => row.id === entry.exerciseId);
       exercises.push({
         id: uuid(),
         programSessionId: sessionId,
         exerciseId: resolved,
+        ...(unresolved ? { unresolvedName: entry.exerciseName } : {}),
         order: entry.order ?? index,
         targetSets: entry.targetSets,
         targetRepMin: entry.targetRepMin,
@@ -447,3 +451,26 @@ export function advanceProgramPointer(program: Program, sessionCount: number): P
   }
   return { currentSessionOrder: nextOrder, currentWeek: program.currentWeek };
 }
+
+/**
+ * The library exercise a program row means: by id, or, for a row imported with a name this library did not have,
+ * by that name if it has since been added.
+ */
+export function resolveProgramExercise(row: ProgramExercise, library: readonly Exercise[]): Exercise | undefined {
+  const byId = library.find((exercise) => exercise.id === row.exerciseId);
+  if (byId) return byId;
+  if (!row.unresolvedName) return undefined;
+  const wanted = row.unresolvedName.toLowerCase();
+  return library.find((exercise) => exercise.name.toLowerCase() === wanted);
+}
+
+/** The program rows that cannot be started, with the name to show for each. Never a raw id when a name is known. */
+export function unresolvedProgramRows(
+  rows: readonly ProgramExercise[],
+  library: readonly Exercise[],
+): Array<{ row: ProgramExercise; name: string }> {
+  return rows
+    .filter((row) => !resolveProgramExercise(row, library))
+    .map((row) => ({ row, name: row.unresolvedName ?? row.exerciseId }));
+}
+
