@@ -22,6 +22,7 @@ function SettingsPage() {
   const exportBackup = useGym((s) => s.exportBackup);
   const importBackup = useGym((s) => s.importBackup);
   const importStrongCsv = useGym((s) => s.importStrongCsv);
+  const importHevyCsv = useGym((s) => s.importHevyCsv);
   const exportSetsCsvText = useGym((s) => s.exportSetsCsvText);
   const resetAll = useGym((s) => s.resetAll);
   const loadDemo = useGym((s) => s.loadDemo);
@@ -82,9 +83,9 @@ function SettingsPage() {
     if (warnings.length) setBackupProblems(warnings);
   };
 
-  const onCsv = async (file: File) => {
+  const onCsv = async (file: File, source: "strong" | "hevy") => {
     const text = await file.text();
-    const preview = importStrongCsv(text, file.name);
+    const preview = (source === "hevy" ? importHevyCsv : importStrongCsv)(text, file.name);
     setCsvNote(
       `Imported ${preview.workouts} sessions, ${preview.sets} sets. Skipped ${preview.skipped} rows.${
         preview.duplicates ? ` ${preview.duplicates} sessions were already here and were left out.` : ""
@@ -318,7 +319,22 @@ function SettingsPage() {
               className="block w-full text-sm text-muted file:mr-3 file:h-11 file:rounded-xl file:border-0 file:bg-raised file:px-4 file:text-sm file:text-ink"
               onChange={(event) => {
                 const file = event.target.files?.[0];
-                if (file) void onCsv(file);
+                event.target.value = ""; // so choosing the same file again still fires
+                if (file) void onCsv(file, "strong");
+              }}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs text-subtle">Import Hevy CSV</span>
+            <input
+              type="file"
+              accept="text/csv,.csv"
+              data-testid="hevy-csv-input"
+              className="block w-full text-sm text-muted file:mr-3 file:h-11 file:rounded-xl file:border-0 file:bg-raised file:px-4 file:text-sm file:text-ink"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = ""; // so choosing the same file again still fires
+                if (file) void onCsv(file, "hevy");
               }}
             />
           </label>

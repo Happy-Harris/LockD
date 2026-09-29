@@ -6,6 +6,30 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 7c: Hevy CSV importer
+
+- **`src/lib/import/hevy.ts`:** a source profile on the 7b engine (`start_time`, `title`,
+  `exercise_title`, `set_type`, `weight_kg`/`weight_lbs`, `distance_km`/`distance_miles`,
+  `duration_seconds`, `rpe`, `superset_id`, `exercise_notes`, `description`, `end_time`). Set types
+  are mapped by exact word (`normal`, `warmup`, `failure`, `dropset`); anything else is reported and
+  imported as a working set, never silently. A zero or empty external load is read as **missing**
+  (new `zeroWeightIsMissing` on the profile), so a pull-up never becomes a 0 kg set or tonnage.
+  Sessions with the same title are told apart by start time; the session length comes from
+  `end_time`. Distance, duration, RPE and superset are carried into the stored rows.
+- **Bug fixed in the engine (also affected Strong):** the lifter's unit setting overrode the unit in
+  the file's header, so a pounds file imported by a kilogram user was read as kilograms. The header
+  now wins and the setting is only the fallback for a file that does not say. Tests added for both.
+- **Settings:** an "Import Hevy CSV" input next to the Strong one; both reset their input so the
+  same file can be chosen again. The wizard (mapping, Resolve, Bulk Classify) is still 7e.
+- **Tests:** 21 in `hevy.test.ts` (both synthetic samples read in full, the lb file is the same
+  sessions as the kg file, set types, zero/blank loads, quoted commas, same-title sessions,
+  superset into stored blocks, re-import adds 0), mutation-checked, and a Hevy case in
+  `e2e/import-csv.spec.ts`.
+- **Verification label:** checked only against the two synthetic samples and the documented layout;
+  **not validated against a real Hevy export.** Hevy's help article does not publish a column
+  schema. A pound value of 110.2 lb imports as 49,986 g, as written, not rounded to 50 kg.
+- **Not done:** a Hevy export in a language other than English, or with columns beyond the samples.
+
 ### 2026-09-29 — Plan PR 7b: the import pipeline, and the Strong importer rebuilt on it
 
 - **`src/lib/import/`:** `csv.ts` (RFC 4180 parser, delimiter detection, BOM, escaped export cells),

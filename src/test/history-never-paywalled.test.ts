@@ -27,6 +27,7 @@ const HISTORY_SURFACES = [
   "src/routes/settings.tsx",
   "src/lib/gym/csv.ts",
   "src/lib/import/strong.ts",
+  "src/lib/import/hevy.ts",
   "src/lib/import/batch.ts",
   "src/lib/gym/store.ts",
 ];
