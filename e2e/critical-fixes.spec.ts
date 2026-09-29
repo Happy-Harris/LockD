@@ -11,6 +11,11 @@ test.describe("critical fixes", () => {
     await goTo(page, "/lab");
     await expect(page.getByTestId("lab-guest-note")).toContainText("Sign in");
     await expect(page.getByRole("button", { name: /Ask the Lab|Ask again/i })).toHaveCount(0);
+    // Guests get a cited answer computed on the device, not a model call.
+    await page.getByRole("button", { name: "Getting stronger?" }).click();
+    await expect(page.getByTestId("ask-lab-answer")).toContainText("Computed");
+    await page.getByRole("button", { name: "Training enough?" }).click();
+    await expect(page.getByRole("list", { name: "Cited claims" })).toBeVisible();
     await page.waitForTimeout(500);
     expect(posts).toEqual([]);
   });

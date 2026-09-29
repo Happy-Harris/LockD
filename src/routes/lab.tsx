@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Page } from "@/components/app/shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AskLab } from "@/components/app/ask-lab";
 import { Card, Stat } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { consultLab } from "@/lib/lab/ask";
@@ -58,8 +59,8 @@ function LabPage() {
       <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-subtle">The Lab</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">Ask the numbers.</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">
-        The read below is worked out on this device from your log. Signed in, you can also ask the Lab a question: it
-        reads your synced log — last sessions, stalls, DNA, the note you asked last time — and files the answer.
+        Everything here is worked out on this device from your log, and every answer cites what it used. Signed in, you
+        can also ask the Lab for a written second opinion: it reads your synced log and files the answer.
       </p>
 
       <div className="mt-6 grid grid-cols-3 gap-2">
@@ -73,6 +74,8 @@ function LabPage() {
           <Stat label="Era" value={chronicle.current?.name ?? "—"} />
         </Card>
       </div>
+
+      <AskLab />
 
       {autopsies.filter((row) => row.stalled).length > 0 ? (
         <section className="mt-6">
@@ -243,7 +246,7 @@ function LabPage() {
           <Link to="/login" className="text-accent underline-offset-2 hover:underline">
             Sign in
           </Link>{" "}
-          to ask the Lab a question. It reads your full synced log and files every answer.
+          for a written second opinion. It reads your full synced log and files every answer.
         </p>
       )}
       {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
@@ -255,7 +258,7 @@ function LabPage() {
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink">{labLast.text}</p>
         </Card>
       ) : (
-        <p className="mt-6 text-sm text-muted">The local read is above. Signed in, you can ask for a second opinion.</p>
+        <p className="mt-6 text-sm text-muted">The read above is worked out on this device. Signed in, you can ask for a second opinion.</p>
       )}
       {history.length > 1 ? (
         <section className="mt-8">
