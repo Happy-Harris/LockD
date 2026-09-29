@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { SetType, WorkoutSet } from "./types";
-import { attributeMuscleVolume, countsForVolume, hardSetCount } from "./volume";
+import { attributeMuscleVolume, completedSetCount, countsForVolume, hardSetCount } from "./volume";
 
 let n = 0;
 const set = (setType: SetType, isCompleted = true): WorkoutSet => ({
@@ -23,6 +23,16 @@ describe("the three set measures are different on purpose (see the table in volu
     set("failure"),
     set("working", false),
   ];
+
+  it("completedSetCount: every completed set after warming up, drop and failure included", () => {
+    expect(completedSetCount(sets)).toBe(4);
+    expect(completedSetCount([])).toBe(0);
+    expect(
+      completedSetCount([
+        { ...set("working"), weightG: undefined, reps: undefined, durationSeconds: 60 },
+      ]),
+    ).toBe(1);
+  });
 
   it("hardSetCount: completed working sets only; drop, failure and warm-ups are not hard sets", () => {
     expect(hardSetCount(sets)).toBe(2);

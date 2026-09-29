@@ -6,7 +6,7 @@ import { formatDuration, formatWeightWithUnit, weightUnitFor } from "@/domain/un
 import { elapsedSeconds } from "@/domain/time";
 import { workoutTonnageG } from "@/lib/gym/analytics";
 import { useGymDerived } from "@/lib/gym/hooks";
-import { hardSetCount } from "@/domain/volume";
+import { completedSetCount } from "@/domain/volume";
 
 export const Route = createFileRoute("/history")({ component: HistoryPage });
 
@@ -38,7 +38,7 @@ function HistoryPage() {
                     <div>
                       <p className="text-sm font-medium">{slice.workout.name}</p>
                       <p className="text-xs text-muted">
-                        {formatLocalDate(slice.workout.localDate)} · {hardSetCount(slice.sets)} sets ·{" "}
+                        {formatLocalDate(slice.workout.localDate)} · {completedSetCount(slice.sets)} sets ·{" "}
                         {formatDuration(
                           elapsedSeconds(slice.workout.startedAt, slice.workout.endedAt, slice.workout.pausedSeconds),
                         )}

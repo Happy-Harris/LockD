@@ -10,7 +10,7 @@ import { workoutDiff } from "@/lib/gym/ghost";
 import { sessionReplay } from "@/lib/gym/replay";
 import { useSlices } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
-import { hardSetCount } from "@/domain/volume";
+import { completedSetCount } from "@/domain/volume";
 
 export const Route = createFileRoute("/history_/$id")({ component: HistoryDetailPage });
 
@@ -57,7 +57,7 @@ function HistoryDetailPage() {
           />
         </Card>
         <Card className="p-3">
-          <Stat label="Sets" value={hardSetCount(slice.sets)} />
+          <Stat label="Sets" value={completedSetCount(slice.sets)} />
         </Card>
         <Card className="p-3">
           <Stat label="Tonnage" value={formatWeightWithUnit(workoutTonnageG(slice, true), unit)} />

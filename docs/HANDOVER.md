@@ -6,6 +6,18 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — History "Sets" counts every set after warm-up
+
+- **Decision (mine, as the owner asked me to judge):** a label must not promise more than the
+  number counts. History rows and the history detail said "Sets" but showed working sets only, so a
+  session with 3 working sets and a drop set read "3 sets". They now show `completedSetCount`: every
+  completed non-warm-up set, any tracking type. The session receipt keeps **"Hard sets"**
+  (working-only, honest as labelled), and the verdict, eras, Chronicle, Wrapped and the public
+  share payload keep `hardSetCount`. Nothing stored changes.
+- The table at the top of `volume.ts` now lists all four measures. The shared receipt's `hardSets`
+  field is untouched on purpose: it is part of the public share payload.
+- `CODEX-HANDOFF.md` stays out of the repo (owner's call).
+
 ### 2026-09-29 — Plan PR 4g: evidence catalog (closes plan PR 4)
 
 - `src/domain/evidence/` (types, catalog, index) is Strong-Pro's structure, but **only claims for

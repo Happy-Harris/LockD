@@ -20,12 +20,15 @@ import type { MuscleGroup, SetType, TrackingType, WorkoutExercise, WorkoutSet } 
  *
  *  | Measure                  | Counts                                  | Used for                        |
  *  |--------------------------|-----------------------------------------|---------------------------------|
- *  | `hardSetCount`           | completed `working` sets only           | verdict direction, eras, receipts |
+ *  | `hardSetCount`           | completed `working` sets only           | verdict direction, eras, the "Hard sets" on a receipt |
+ *  | `completedSetCount`      | every completed non-warm-up set         | the "Sets" a lifter counts, in history |
  *  | `countsForVolume`        | working + drop + failure (not warm-up) | recovery, `attributeMuscleVolume` |
  *  | tonnage (`totalsForGroups`) | every completed non-warm-up `weight_reps` set, drop and failure included | tonnage |
  *
  * Strong-Pro makes the same split in code (docs/analytics.md there is inconsistent about it).
- * Whether a receipt's "Sets" should include drop and failure sets is an open product decision.
+ * Decided: history's plain "Sets" counts everything a lifter did after warming up
+ * (`completedSetCount`), while the verdict, eras and the receipt's "Hard sets" stay working-only.
+ * A count is never shown under a label that promises more than it counts.
  */
 
 export const DEFAULT_SECONDARY_CREDIT = 0.5;
@@ -200,6 +203,11 @@ export function monthKey(date: Date): string {
 /** Completed `working` sets. Drop and failure sets are deliberately not "hard sets" here. */
 export function hardSetCount(sets: readonly WorkoutSet[]): number {
   return sets.filter((set) => set.isCompleted && set.setType === "working").length;
+}
+
+/** Every completed set except warm-ups, of any tracking type: the "sets" a lifter would count. */
+export function completedSetCount(sets: readonly WorkoutSet[]): number {
+  return sets.filter((set) => set.isCompleted && set.setType !== "warmup").length;
 }
 
 /** Set types that add to per-muscle volume and count as training a muscle (never warm-ups). */
