@@ -26,6 +26,36 @@ doc to rewrite.
 - The Codex handoff (`CODEX-HANDOFF.md`) was never in this repo; it was deleted from the planning
   repo's branch too. Root `HANDOFF.md` is the app-builder era's handoff (dated 2026-09-22) and is still
   here: plan PR 13 rewrites it from the code.
+### 2026-09-29 — Plan PR 7a: backups are checked before they are restored
+
+Plan PR 7 (data portability) is split. **7a (this):** validate and safely restore `lockd-backup`
+files. Still to come: 7b the common import pipeline (fingerprints, dedupe, `ImportJob`) with the
+Strong CSV importer rebuilt on it (European files, time-zone sign); 7c the Hevy importer (contract:
+`docs/consolidation/HEVY-IMPORT.md`); 7d importers for `repforge-backup` v1 and the knurl-os vault;
+7e the wizard with Resolve and Bulk Classify; 7f the CSV exporter and the seed library top-up.
+
+- **Before:** Settings did `JSON.parse` and a format check, then merged straight into the log. A
+  malformed file threw with no message, a bad value went into the log unchecked, and nothing was
+  copied first.
+- **`src/lib/backup/schema.ts` (Zod 4):** every collection and setting is checked. Unknown keys are
+  dropped, text is bounded, grams, reps, seconds and metres must be whole and in a real range,
+  `tzOffsetMinutes` must be whole minutes within a day (its sign is never touched), dates must be
+  dates, enums must be known values (the runtime lists fail to compile if a union in `types.ts`
+  drifts). Rows must point at rows that exist and ids must be unique. A file that fails is refused
+  with the first eight reasons and where they are; **nothing is repaired or dropped silently**.
+  Backups from a newer app version are refused with that reason. Older backups load: missing
+  collections come back empty (a test loads the pre-type-union fixture from 5's work unchanged).
+- **`src/lib/backup/apply.ts`:** takes a `before-restore` safety copy first and changes nothing if
+  it cannot. Settings now has two inputs, **Add a backup to this log** (merge) and **Replace this
+  log with a backup**; each says what is in the file and asks first. The result is a toast
+  ("Added 12 sessions", "Nothing new", "Replaced your log…").
+- **Tests:** `schema.test.ts` (round-trips a real export of the 137-session sample log, prototype
+  pollution keys, every refusal above, and the restore order) and `e2e/backup.spec.ts` (refuses junk
+  and a bad value with the reason, merging a log into itself adds nothing, replace keeps a copy,
+  declining changes nothing).
+- **Not done here, decided later in 7:** foreign formats, the wizard, and what "merge" should do
+  about a session that exists on both sides with different contents (today: the row already here
+  wins, as before).
 
 ### 2026-09-29 — Plan PR 6b: the service worker (closes plan PR 6)
 
