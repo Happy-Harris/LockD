@@ -33,9 +33,50 @@ export interface IntelligenceReport {
   relative: RelativeLift[];
 }
 
+/** Smallest week-to-week e1RM difference between high and low volume weeks worth calling a pattern (2.5 kg, one plate step). */
+export const VOLUME_RESPONSE_MIN_EFFECT_G = 2500;
+/** Week pairs needed before volume is read against progress, and needed in each of the high and low groups. */
+export const VOLUME_RESPONSE_MIN_PAIRS = 6;
+export const VOLUME_RESPONSE_MIN_GROUP = 3;
+
 function mean(values: number[]): number {
   if (values.length === 0) return 0;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+/**
+ * Reads weekly hard sets against the next exposure's e1RM change. Null below the minimum number of week pairs (the caller keeps
+ * its "not enough weeks" line). A pattern is only claimed when both the high and low groups have enough weeks and the gap
+ * is at least VOLUME_RESPONSE_MIN_EFFECT_G; otherwise it says there is no clear link, with n.
+ */
+export function readVolumeResponse(
+  pairs: Array<{ volume: number; next: number }>,
+): { text: string; pattern: boolean } | null {
+  if (pairs.length < VOLUME_RESPONSE_MIN_PAIRS) return null;
+  const n = `from ${pairs.length} weeks`;
+  const avgVolume = mean(pairs.map((item) => item.volume));
+  const high = pairs.filter((row) => row.volume >= avgVolume);
+  const low = pairs.filter((row) => row.volume < avgVolume);
+  if (high.length >= VOLUME_RESPONSE_MIN_GROUP && low.length >= VOLUME_RESPONSE_MIN_GROUP) {
+    const highDelta = mean(high.map((row) => row.next));
+    const lowDelta = mean(low.map((row) => row.next));
+    if (highDelta - lowDelta >= VOLUME_RESPONSE_MIN_EFFECT_G) {
+      return {
+        text: `Higher-volume weeks have been followed by better estimated 1RM on the main lift (${n}).`,
+        pattern: true,
+      };
+    }
+    if (lowDelta - highDelta >= VOLUME_RESPONSE_MIN_EFFECT_G) {
+      return {
+        text: `The main lift has tended to move more after quieter volume weeks (${n}).`,
+        pattern: true,
+      };
+    }
+  }
+  return {
+    text: `No clear link between weekly volume and next-week progress (${n}).`,
+    pattern: false,
+  };
 }
 
 function restSecondsBetween(sets: Array<{ completedAt?: string }>): number[] {
@@ -83,7 +124,9 @@ export function buildIntelligence(opts: {
     if (typical) {
       exposuresToProgress.push({ exerciseId: call.exerciseId, name: call.exerciseName, typical });
       if (call.exposuresAtLoad >= typical && call.action === "add_load") {
-        insights.push(`${call.exerciseName}: you usually progress after ${typical} exposures at a load. This is that session.`);
+        insights.push(
+          `${call.exerciseName}: you usually progress after ${typical} exposures at a load. This is that session.`,
+        );
       }
     }
   }
@@ -107,7 +150,7 @@ export function buildIntelligence(opts: {
       const tightMean = mean(tight.map((row) => row.e1rm));
       const roomyMean = mean(roomy.map((row) => row.e1rm));
       if (roomyMean > 0 && tightMean < roomyMean * 0.97) {
-        const note = `${call.exerciseName} is usually stronger with 4+ days since the last exposure.`;
+        const note = `${call.exerciseName} is usually stronger with 4+ days since the last exposure (${tight.length} short and ${roomy.length} long gaps).`;
         fatigue.push({ name: call.exerciseName, note });
         insights.push(note);
       }
@@ -122,24 +165,20 @@ export function buildIntelligence(opts: {
     for (let i = 0; i < weeks.length - 1; i += 1) {
       const week = weeks[i]!;
       const nextWeek = weeks[i + 1]!;
-      const here = series.filter((row) => row.date >= week.weekStart && row.date < nextWeek.weekStart);
+      const here = series.filter(
+        (row) => row.date >= week.weekStart && row.date < nextWeek.weekStart,
+      );
       const there = series.filter((row) => row.date >= nextWeek.weekStart);
       if (!here.length || !there.length) continue;
-      pairs.push({ volume: week.hardSets, next: there[0]!.bestE1rm - here[here.length - 1]!.bestE1rm });
+      pairs.push({
+        volume: week.hardSets,
+        next: there[0]!.bestE1rm - here[here.length - 1]!.bestE1rm,
+      });
     }
-    if (pairs.length >= 4) {
-      const high = pairs.filter((row) => row.volume >= mean(pairs.map((item) => item.volume)));
-      const low = pairs.filter((row) => row.volume < mean(pairs.map((item) => item.volume)));
-      const highDelta = mean(high.map((row) => row.next));
-      const lowDelta = mean(low.map((row) => row.next));
-      if (highDelta > lowDelta) {
-        volumeResponse = "Higher-volume weeks have been followed by better estimated 1RM on the main lift.";
-      } else if (lowDelta > highDelta) {
-        volumeResponse = "The main lift has tended to move more after quieter volume weeks.";
-      } else {
-        volumeResponse = "Volume and next-week progress are roughly flat against each other.";
-      }
-      insights.push(volumeResponse);
+    const read = readVolumeResponse(pairs);
+    if (read) {
+      volumeResponse = read.text;
+      if (read.pattern) insights.push(read.text);
     }
   }
 
@@ -149,7 +188,10 @@ export function buildIntelligence(opts: {
   for (const slice of recent) {
     for (const exercise of slice.exercises) {
       const sets = slice.sets
-        .filter((set) => set.workoutExerciseId === exercise.id && set.isCompleted && set.setType !== "warmup")
+        .filter(
+          (set) =>
+            set.workoutExerciseId === exercise.id && set.isCompleted && set.setType !== "warmup",
+        )
         .sort((a, b) => a.order - b.order);
       const gaps = restSecondsBetween(sets);
       if (!gaps.length) continue;
@@ -163,7 +205,7 @@ export function buildIntelligence(opts: {
     const hitRest = mean(restHits);
     const missRest = mean(restMisses);
     if (hitRest > missRest + 15) {
-      restNote = `Hits cluster around ${Math.round(hitRest)}s rest. Misses are closer to ${Math.round(missRest)}s.`;
+      restNote = `Hits cluster around ${Math.round(hitRest)}s rest. Misses are closer to ${Math.round(missRest)}s (${restHits.length} hit and ${restMisses.length} missed exercises).`;
       insights.push(restNote);
     } else {
       restNote = "Rest length is not clearly separating hits from misses.";
@@ -171,10 +213,14 @@ export function buildIntelligence(opts: {
   }
 
   const rpesRecent = recent.flatMap((slice) =>
-    slice.sets.filter((set) => set.isCompleted && set.rpe != null && set.setType !== "warmup").map((set) => set.rpe!),
+    slice.sets
+      .filter((set) => set.isCompleted && set.rpe != null && set.setType !== "warmup")
+      .map((set) => set.rpe!),
   );
   const rpesPrior = prior.flatMap((slice) =>
-    slice.sets.filter((set) => set.isCompleted && set.rpe != null && set.setType !== "warmup").map((set) => set.rpe!),
+    slice.sets
+      .filter((set) => set.isCompleted && set.rpe != null && set.setType !== "warmup")
+      .map((set) => set.rpe!),
   );
   let rpeDrift: IntelligenceReport["rpeDrift"] = null;
   if (rpesRecent.length >= 8 && rpesPrior.length >= 8) {
@@ -215,7 +261,9 @@ export function buildIntelligence(opts: {
   const relative: RelativeLift[] = [];
   if (body && body.value > 0) {
     for (const id of goalIds) {
-      const last = [...slices].reverse().find((slice) => slice.exercises.some((row) => row.exerciseId === id));
+      const last = [...slices]
+        .reverse()
+        .find((slice) => slice.exercises.some((row) => row.exerciseId === id));
       if (!last) continue;
       const row = last.exercises.find((item) => item.exerciseId === id)!;
       const sets = last.sets.filter((set) => set.workoutExerciseId === row.id);
@@ -231,14 +279,18 @@ export function buildIntelligence(opts: {
     }
   }
 
-  const easierWeek = calls.filter((call) => call.action === "easier_week" || call.action === "deload").length >= 2;
-  if (easierWeek) insights.unshift("The progression engine wants an easier week. Trust the misses, not the ego.");
+  const easierWeek =
+    calls.filter((call) => call.action === "easier_week" || call.action === "deload").length >= 2;
+  if (easierWeek)
+    insights.unshift("The progression engine wants an easier week. Trust the misses, not the ego.");
   if (recentHits > 0) {
     insights.push(`Progression hit-rate on tracked lifts is ${Math.round(recentHits * 100)}%.`);
   }
   if (slices.length) {
     const lastHard = hardSetCount(slices[slices.length - 1]!.sets);
-    insights.push(`Last session: ${lastHard} hard sets in ${slices[slices.length - 1]!.workout.name}.`);
+    insights.push(
+      `Last session: ${lastHard} hard sets in ${slices[slices.length - 1]!.workout.name}.`,
+    );
   }
 
   return {
