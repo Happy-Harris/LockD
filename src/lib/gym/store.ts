@@ -67,6 +67,7 @@ import { withPlateCount } from "./equipment";
 import { buildSlots, pairIsDone, priorForSlot } from "./pairs";
 import { endsSuperset, relinkSuperset } from "./superset";
 import { restSecondsAfter, restSuggestion } from "./rest";
+import { CLIP_PURGE_GRACE_MS, UNDO_WINDOW_MS, clipIdsForSets, withoutClips } from "./clips";
 import { deleteClipBlob } from "./vault";
 import { defaultSettings } from "./settings";
 import { switchableStorage } from "@/lib/storage/backend";
@@ -256,6 +257,11 @@ export function freshData(): GymData {
     namedPrs: [],
     clips: [],
   };
+}
+
+/** Deletes the video files for clips whose rows are gone. A failure leaves a file behind; it never blocks the app. */
+function dropClipBlobs(clipIds: readonly string[]) {
+  for (const id of clipIds) void deleteClipBlob(id).catch(() => undefined);
 }
 
 function snapshotExercise(
@@ -754,13 +760,20 @@ export const useGym = create<GymState>()(
         });
       },
 
-      removeExerciseFromWorkout: (workoutExerciseId) =>
-        set((state) => ({
+      removeExerciseFromWorkout: (workoutExerciseId) => {
+        // No undo here, so the exercise's clips go with it (plan I-34).
+        const state = get();
+        const setIds = state.workoutSets
+          .filter((row) => row.workoutExerciseId === workoutExerciseId)
+          .map((row) => row.id);
+        const clipIds = clipIdsForSets(state.clips, setIds);
+        set({
           workoutExercises: state.workoutExercises.filter((row) => row.id !== workoutExerciseId),
-          workoutSets: state.workoutSets.filter(
-            (row) => row.workoutExerciseId !== workoutExerciseId,
-          ),
-        })),
+          workoutSets: state.workoutSets.filter((row) => row.workoutExerciseId !== workoutExerciseId),
+          clips: withoutClips(state.clips, clipIds),
+        });
+        dropClipBlobs(clipIds);
+      },
 
       swapExercise: (workoutExerciseId, exerciseId) => {
         const state = get();
@@ -926,14 +939,28 @@ export const useGym = create<GymState>()(
           ),
         })),
 
-      deleteSet: (setId) =>
-        set((state) => ({ workoutSets: state.workoutSets.filter((row) => row.id !== setId) })),
+      deleteSet: (setId) => {
+        const clipIds = clipIdsForSets(get().clips, [setId]);
+        set((state) => ({ workoutSets: state.workoutSets.filter((row) => row.id !== setId) }));
+        if (clipIds.length === 0) return;
+        // Undo restores the set with its clip, so the clip stays through the undo window. Only if the set
+        // is still gone after it are the clip and its file removed. (A reload inside the window leaves the file behind.)
+        setTimeout(() => {
+          const state = get();
+          if (state.workoutSets.some((row) => row.id === setId)) return;
+          set({ clips: withoutClips(state.clips, clipIds) });
+          dropClipBlobs(clipIds);
+        }, UNDO_WINDOW_MS + CLIP_PURGE_GRACE_MS);
+      },
 
       restoreSet: (row) =>
         set((state) => {
           if (state.workoutSets.some((item) => item.id === row.id)) return {};
           if (!state.workoutExercises.some((item) => item.id === row.workoutExerciseId)) return {};
-          return { workoutSets: [...state.workoutSets, row] };
+          // If the clip was already removed (Undo pressed late), the set comes back without a dangling reference.
+          const clipId =
+            row.clipId && state.clips.some((clip) => clip.id === row.clipId) ? row.clipId : undefined;
+          return { workoutSets: [...state.workoutSets, { ...row, clipId }] };
         }),
 
       finishWorkout: (workoutId, notes) => {
@@ -974,13 +1001,20 @@ export const useGym = create<GymState>()(
         return detectPrsForWorkout(workoutId, slices, state.settings.oneRepMaxFormula);
       },
 
-      discardWorkout: (workoutId) =>
-        set((state) => ({
+      discardWorkout: (workoutId) => {
+        // Discarding asks first and cannot be undone, so the workout's clips go with it (plan I-34).
+        const state = get();
+        const setIds = state.workoutSets.filter((row) => row.workoutId === workoutId).map((row) => row.id);
+        const clipIds = clipIdsForSets(state.clips, setIds);
+        set({
           workouts: state.workouts.filter((row) => row.id !== workoutId),
           workoutExercises: state.workoutExercises.filter((row) => row.workoutId !== workoutId),
           workoutSets: state.workoutSets.filter((row) => row.workoutId !== workoutId),
+          clips: withoutClips(state.clips, clipIds),
           restTimer: state.restTimer?.workoutId === workoutId ? null : state.restTimer,
-        })),
+        });
+        dropClipBlobs(clipIds);
+      },
 
       updateWorkout: (workoutId, patch) =>
         set((state) => ({
