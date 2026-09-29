@@ -144,3 +144,27 @@ summary). The code exists, but users could not reach any of it. PR 2 (#3) makes 
 renaming the files to the un-nested form; URLs are unchanged. Two problems became visible on the
 summary once it rendered, and are logged for characterisation: skipped exercises count as "behind",
 and guests are told "The session is on the locker".
+
+
+## 10. Owner decisions — 29 Sep 2026 (supersedes A-1 and A-2)
+
+- Product repository: `motivatedc-creator/LockD`. Earlier `Happy-Harris/LockD`
+  references describe the prior location.
+- Privacy lands as a small standalone PR before plan PR 3. New profiles are private.
+  **All existing public lockers are switched to private**, with a persistent one-time
+  notice to the owner. Publishing the profile again requires explicit opt-in. This
+  replaces the earlier proposal to retain public visibility pending a prompt.
+  Owner-scoped share unpublish remains part of the approved privacy work.
+- Every PR targets `main`, never another feature branch. If stacking becomes necessary,
+  tell the owner and block merging until the PR is retargeted to `main`.
+- Hevy: the owner supplied only `hevy-synthetic-kg-km.csv` and
+  `hevy-synthetic-lb-miles.csv`, both synthetic. They may be committed as fixtures;
+  do not commit real personal exports. The Hevy importer is approved for plan PR 7
+  using these samples plus Hevy's documented export, without waiting for real data.
+  Support `weight_kg` / `distance_km` and `weight_lbs` / `distance_miles`, empty
+  and zero bodyweight load cells, and explicit `warmup`, `normal`, `failure`,
+  `dropset` handling. Preserve missing values; do not infer body mass from an
+  empty external-load cell. Label verification as **documented and public samples
+  only; not validated against a real export**. Samples establish format coverage,
+  not complete edge-case coverage.
+- Next: plan PR 3 characterisation, from `main`, preserving current engine behaviour.

@@ -59,7 +59,8 @@ npm run test:legacy  # old scaffolding suites, not part of verify
 ## How work lands
 
 - Follow the PR order in `docs/consolidation/PLAN.md` § 3 (as amended by `PLAN-ADDENDUM.md`).
-- One area per PR, its own branch, tests with the code, `verify` and e2e green in CI.
+- One area per PR, its own branch from `main`, tests with the code, `verify` and e2e green in CI.
+- Every PR targets `main`. If stacking is necessary, tell the owner and do not merge until retargeted.
 - Characterise before you change: an engine gets fixture tests pinning current behaviour before
   its logic changes, so every behaviour change shows up as a reviewable test diff.
 - Any change to stored data ships a migration, a test and an old-format fixture that still loads.
