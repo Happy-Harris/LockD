@@ -14,6 +14,14 @@ export type AutopsyCode =
   | "high_workload"
   | "short_rests";
 
+/**
+ * Lowers the first letter so a title reads inside a sentence, and leaves the rest alone. Lowercasing the
+ * whole title turned "1RM" into "1rm" and "RPE" into "rpe" (plan I-25).
+ */
+export function lowerFirst(title: string): string {
+  return title.charAt(0).toLowerCase() + title.slice(1);
+}
+
 export interface AutopsyFinding {
   code: AutopsyCode;
   title: string;
@@ -140,7 +148,7 @@ export function autopsyLift(
     ? `${call.exerciseName} is still moving. No autopsy needed.`
     : findings.length === 0
       ? `${call.exerciseName} is stalled, but the log does not show a clean pattern yet.`
-      : `${call.exerciseName}: ${findings.map((row) => row.title.toLowerCase()).join(", ")}.`;
+      : `${call.exerciseName}: ${findings.map((row) => lowerFirst(row.title)).join(", ")}.`;
 
   return {
     exerciseId: call.exerciseId,
