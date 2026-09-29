@@ -2,6 +2,7 @@
 // Usage (from repo root, with `npm run dev` already listening on :8080):
 //   CHROMIUM_PATH=/opt/pw-browsers/chromium node .claude/skills/run-lockd/driver.mjs [outDir] [route ...]
 // No routes given → onboards with the sample log, then shoots the main screens at phone and desktop widths.
+// FULL=1 saves the whole scrolled page instead of the first viewport.
 import { chromium } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 
@@ -34,7 +35,7 @@ for (const [name, opts] of Object.entries(sizes)) {
     await page.goto(base + route);
     await ready();
     const file = `${out}/${name}${route === "/" ? "-today" : route.replace(/\//g, "-")}.png`;
-    await page.screenshot({ path: file, fullPage: false });
+    await page.screenshot({ path: file, fullPage: process.env.FULL === "1" });
     console.log(file, "-", await page.title());
   }
   await context.close();

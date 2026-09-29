@@ -31,7 +31,12 @@ import type {
 import { BACKUP_FORMAT, BACKUP_VERSION, PROGRAM_FORMAT } from "@/domain/types";
 import type { CloudGym } from "@/lib/cloud/types";
 import { defaultQuickIncrementG, weightUnitFor } from "@/domain/units";
-import { detectPrsForWorkout, previousSetsForExercise, sliceSessions, type PersonalRecord } from "./analytics";
+import {
+  detectPrsForWorkout,
+  previousSetsForExercise,
+  sliceSessions,
+  type PersonalRecord,
+} from "./analytics";
 import { applyImportBatch, buildImportBatch, storedFingerprints } from "@/lib/import/batch";
 import type { ImportAnalysis, SourceProfile } from "@/lib/import/engine";
 import { analyseHevyCsv, HEVY_PROFILE } from "@/lib/import/hevy";
@@ -57,6 +62,7 @@ import { progressExercise } from "./progression";
 import { seedBarProfiles, seedExercises, seedPlateInventories } from "./seed";
 import { generateWarmup } from "@/domain/warmup";
 import { learnedRestSeconds } from "./dna";
+import { withPlateCount } from "./equipment";
 import { restSecondsAfter, restSuggestion } from "./rest";
 import { deleteClipBlob } from "./vault";
 import { defaultSettings } from "./settings";
@@ -130,15 +136,19 @@ export interface PreparedImport {
   notes?: string[];
 }
 
-export type ImportOutcome =
-  | { ok: true; summary: ImportSummary }
-  | { ok: false; errors: string[] };
+export type ImportOutcome = { ok: true; summary: ImportSummary } | { ok: false; errors: string[] };
 
 interface GymActions {
   hydrated: boolean;
   setHydrated: (value: boolean) => void;
   completeOnboarding: (opts: { loadDemo: boolean; unitSystem: AppSettings["unitSystem"] }) => void;
   updateSettings: (patch: Partial<AppSettings>) => void;
+  updateBar: (
+    id: string,
+    patch: Partial<Pick<BarProfile, "name" | "weightG" | "collarWeightG">>,
+  ) => void;
+  addBar: (bar: Pick<BarProfile, "name" | "weightG">) => string;
+  setPlateCount: (inventoryId: string, weightG: number, count: number) => void;
   startEmptyWorkout: (name?: string) => string;
   startFromTemplate: (templateId: string) => string;
   startFromProgramSession: (programId: string, sessionId?: string) => string;
@@ -163,11 +173,23 @@ interface GymActions {
   saveTemplateFromWorkout: (workoutId: string, name: string) => string;
   upsertTemplate: (template: Template, exercises: TemplateExercise[]) => void;
   deleteTemplate: (templateId: string) => void;
-  addCustomExercise: (exercise: Omit<Exercise, "id" | "createdAt" | "updatedAt" | "isCustom" | "isArchived">) => string;
+  addCustomExercise: (
+    exercise: Omit<Exercise, "id" | "createdAt" | "updatedAt" | "isCustom" | "isArchived">,
+  ) => string;
   updateExercise: (id: string, patch: Partial<Exercise>) => void;
-  addMeasurement: (metric: MeasurementMetric, value: number, displayUnit: BodyMeasurement["displayUnit"]) => void;
+  addMeasurement: (
+    metric: MeasurementMetric,
+    value: number,
+    displayUnit: BodyMeasurement["displayUnit"],
+  ) => void;
   deleteMeasurement: (id: string) => void;
-  startRestTimer: (seconds: number, workoutId?: string, setId?: string, label?: string, suggestedSeconds?: number) => void;
+  startRestTimer: (
+    seconds: number,
+    workoutId?: string,
+    setId?: string,
+    label?: string,
+    suggestedSeconds?: number,
+  ) => void;
   adjustRestTimer: (deltaSeconds: number) => void;
   stopRestTimer: () => void;
   installProgramPack: (packId: string) => string | undefined;
@@ -231,7 +253,12 @@ export function freshData(): GymData {
   };
 }
 
-function snapshotExercise(exercise: Exercise, workoutId: string, order: number, restSeconds: number): WorkoutExercise {
+function snapshotExercise(
+  exercise: Exercise,
+  workoutId: string,
+  order: number,
+  restSeconds: number,
+): WorkoutExercise {
   return {
     id: uuid(),
     workoutId,
@@ -250,7 +277,8 @@ function cloneWorkout(
   state: GymData,
   sourceId: string,
   asBeat: boolean,
-): { workout: Workout; workoutExercises: WorkoutExercise[]; workoutSets: WorkoutSet[] } | undefined {
+):
+  { workout: Workout; workoutExercises: WorkoutExercise[]; workoutSets: WorkoutSet[] } | undefined {
   const last = state.workouts.find((row) => row.id === sourceId);
   if (!last) return undefined;
   const parts = nowParts();
@@ -295,7 +323,11 @@ function cloneWorkout(
   return { workout, workoutExercises, workoutSets };
 }
 
-function applyInstalled(state: GymData, installed: InstalledProgram, activate: boolean): Partial<GymData> {
+function applyInstalled(
+  state: GymData,
+  installed: InstalledProgram,
+  activate: boolean,
+): Partial<GymData> {
   const programs = [
     ...state.programs.map((row) => (activate ? { ...row, isActive: false } : row)),
     { ...installed.program, isActive: activate },
@@ -305,7 +337,9 @@ function applyInstalled(state: GymData, installed: InstalledProgram, activate: b
     programWeeks: [...state.programWeeks, ...installed.weeks],
     programSessions: [...state.programSessions, ...installed.sessions],
     programExercises: [...state.programExercises, ...installed.exercises],
-    settings: activate ? { ...state.settings, activeProgramId: installed.program.id } : state.settings,
+    settings: activate
+      ? { ...state.settings, activeProgramId: installed.program.id }
+      : state.settings,
   };
 }
 
@@ -390,8 +424,10 @@ export const useGym = create<GymState>()(
               demoLoaded: true,
               goalLens: "powerbuilding",
               activeProgramId: demo.programs[0]?.id,
-              defaultBarProfileId: unitSystem === "metric" ? "seed-bar-olympic-kg" : "seed-bar-olympic-lb",
-              defaultPlateInventoryId: unitSystem === "metric" ? "seed-plates-kg" : "seed-plates-lb",
+              defaultBarProfileId:
+                unitSystem === "metric" ? "seed-bar-olympic-kg" : "seed-bar-olympic-lb",
+              defaultPlateInventoryId:
+                unitSystem === "metric" ? "seed-plates-kg" : "seed-plates-lb",
             },
           });
           return;
@@ -418,6 +454,31 @@ export const useGym = create<GymState>()(
           },
         });
       },
+
+      updateBar: (id, patch) =>
+        set((state) => ({
+          bars: state.bars.map((bar) => (bar.id === id ? { ...bar, ...patch } : bar)),
+        })),
+
+      addBar: (bar) => {
+        const id = uuid();
+        set((state) => ({
+          bars: [
+            ...state.bars,
+            { id, name: bar.name, weightG: bar.weightG, collarWeightG: 0, isDefault: false },
+          ],
+        }));
+        return id;
+      },
+
+      setPlateCount: (inventoryId, weightG, count) =>
+        set((state) => ({
+          plates: state.plates.map((inventory) =>
+            inventory.id === inventoryId
+              ? { ...inventory, plates: withPlateCount(inventory.plates, weightG, count) }
+              : inventory,
+          ),
+        })),
 
       updateSettings: (patch) =>
         set((state) => ({
@@ -520,7 +581,9 @@ export const useGym = create<GymState>()(
         const state = get();
         const program = state.programs.find((row) => row.id === programId);
         if (!program) return get().startEmptyWorkout();
-        const sessions = state.programSessions.filter((row) => row.programId === programId).sort((a, b) => a.order - b.order);
+        const sessions = state.programSessions
+          .filter((row) => row.programId === programId)
+          .sort((a, b) => a.order - b.order);
         const session = sessionId
           ? sessions.find((row) => row.id === sessionId)
           : nextProgramSession(program, sessions);
@@ -559,7 +622,8 @@ export const useGym = create<GymState>()(
             exerciseId: exercise.id,
             exerciseName: exercise.name,
             trackingType: exercise.trackingType,
-            incrementG: row.rule.incrementG ?? exercise.incrementG ?? state.settings.quickIncrementG,
+            incrementG:
+              row.rule.incrementG ?? exercise.incrementG ?? state.settings.quickIncrementG,
             targetRepMin: row.targetRepMin,
             targetRepMax: row.targetRepMax,
             targetSets: row.targetSets,
@@ -631,14 +695,20 @@ export const useGym = create<GymState>()(
         return cloned.workout.id;
       },
 
-      resumeActiveWorkoutId: () => get().workouts.find((workout) => workout.status === "active")?.id,
+      resumeActiveWorkoutId: () =>
+        get().workouts.find((workout) => workout.status === "active")?.id,
 
       addExerciseToWorkout: (workoutId, exerciseId) => {
         const state = get();
         const exercise = state.exercises.find((row) => row.id === exerciseId);
         if (!exercise) return;
         const existing = state.workoutExercises.filter((row) => row.workoutId === workoutId);
-        const we = snapshotExercise(exercise, workoutId, existing.length, state.settings.defaultRestSeconds);
+        const we = snapshotExercise(
+          exercise,
+          workoutId,
+          existing.length,
+          state.settings.defaultRestSeconds,
+        );
         const previous = previousSetsForExercise(
           exercise.id,
           sliceSessions(state.workouts, state.workoutExercises, state.workoutSets),
@@ -663,7 +733,9 @@ export const useGym = create<GymState>()(
       removeExerciseFromWorkout: (workoutExerciseId) =>
         set((state) => ({
           workoutExercises: state.workoutExercises.filter((row) => row.id !== workoutExerciseId),
-          workoutSets: state.workoutSets.filter((row) => row.workoutExerciseId !== workoutExerciseId),
+          workoutSets: state.workoutSets.filter(
+            (row) => row.workoutExerciseId !== workoutExerciseId,
+          ),
         })),
 
       swapExercise: (workoutExerciseId, exerciseId) => {
@@ -692,14 +764,20 @@ export const useGym = create<GymState>()(
           workoutSets: state.workoutSets.map((set) => {
             if (set.workoutExerciseId !== workoutExerciseId || set.isCompleted) return set;
             const prior = previous[set.order] ?? previous[0];
-            return { ...set, weightG: prior?.weightG ?? set.weightG, reps: prior?.reps ?? set.reps };
+            return {
+              ...set,
+              weightG: prior?.weightG ?? set.weightG,
+              reps: prior?.reps ?? set.reps,
+            };
           }),
         });
       },
 
       addSet: (workoutExerciseId, setType = "working") => {
         const state = get();
-        const existing = state.workoutSets.filter((row) => row.workoutExerciseId === workoutExerciseId);
+        const existing = state.workoutSets.filter(
+          (row) => row.workoutExerciseId === workoutExerciseId,
+        );
         const last = existing[existing.length - 1];
         const we = state.workoutExercises.find((row) => row.id === workoutExerciseId);
         if (!we) return;
@@ -719,7 +797,9 @@ export const useGym = create<GymState>()(
 
       updateSet: (setId, patch) =>
         set((state) => ({
-          workoutSets: state.workoutSets.map((row) => (row.id === setId ? { ...row, ...patch } : row)),
+          workoutSets: state.workoutSets.map((row) =>
+            row.id === setId ? { ...row, ...patch } : row,
+          ),
         })),
 
       nudgeSetWeight: (setId, deltaG) =>
@@ -756,7 +836,13 @@ export const useGym = create<GymState>()(
           const seconds = restSecondsAfter(setRow.setType, we.restSeconds, state.settings);
           if (seconds != null) {
             const learned = learnedRestSeconds(we.exerciseId, slices);
-            get().startRestTimer(seconds, setRow.workoutId, setId, we.exerciseNameSnapshot, restSuggestion(learned, seconds));
+            get().startRestTimer(
+              seconds,
+              setRow.workoutId,
+              setId,
+              we.exerciseNameSnapshot,
+              restSuggestion(learned, seconds),
+            );
           }
         }
         return detectPrsForWorkout(setRow.workoutId, slices, state.settings.oneRepMaxFormula);
@@ -787,7 +873,9 @@ export const useGym = create<GymState>()(
           if (workout?.programId) {
             const program = state.programs.find((row) => row.id === workout.programId);
             if (program) {
-              const count = state.programSessions.filter((row) => row.programId === program.id).length;
+              const count = state.programSessions.filter(
+                (row) => row.programId === program.id,
+              ).length;
               const next = advanceProgramPointer(program, count);
               programs = state.programs.map((row) =>
                 row.id === program.id ? { ...row, ...next, updatedAt: stamp } : row,
@@ -797,7 +885,13 @@ export const useGym = create<GymState>()(
           return {
             workouts: state.workouts.map((row) =>
               row.id === workoutId
-                ? { ...row, status: "completed" as const, endedAt: stamp, notes: notes ?? row.notes, updatedAt: stamp }
+                ? {
+                    ...row,
+                    status: "completed" as const,
+                    endedAt: stamp,
+                    notes: notes ?? row.notes,
+                    updatedAt: stamp,
+                  }
                 : row,
             ),
             programs,
@@ -936,9 +1030,19 @@ export const useGym = create<GymState>()(
       adjustRestTimer: (deltaSeconds) => {
         const timer = get().restTimer;
         if (!timer) return;
-        const remaining = Math.max(0, Math.ceil((Date.parse(timer.endsAt) - Date.now()) / 1000) + deltaSeconds);
+        const remaining = Math.max(
+          0,
+          Math.ceil((Date.parse(timer.endsAt) - Date.now()) / 1000) + deltaSeconds,
+        );
         if (remaining <= 0) {
-          set({ restTimer: { ...timer, endsAt: new Date().toISOString(), durationSeconds: 0, isRunning: false } });
+          set({
+            restTimer: {
+              ...timer,
+              endsAt: new Date().toISOString(),
+              durationSeconds: 0,
+              isRunning: false,
+            },
+          });
           return;
         }
         get().startRestTimer(remaining, timer.workoutId, timer.setId, timer.label);
@@ -964,7 +1068,9 @@ export const useGym = create<GymState>()(
             weeks: state.programWeeks.filter((row) => row.programId === programId),
             sessions: state.programSessions.filter((row) => row.programId === programId),
             exercises: state.programExercises.filter((row) =>
-              state.programSessions.some((session) => session.programId === programId && session.id === row.programSessionId),
+              state.programSessions.some(
+                (session) => session.programId === programId && session.id === row.programSessionId,
+              ),
             ),
           },
           new Date().toISOString(),
@@ -1004,7 +1110,9 @@ export const useGym = create<GymState>()(
             programs: state.programs.filter((row) => row.id !== programId),
             programWeeks: state.programWeeks.filter((row) => row.programId !== programId),
             programSessions: state.programSessions.filter((row) => row.programId !== programId),
-            programExercises: state.programExercises.filter((row) => !sessionIds.has(row.programSessionId)),
+            programExercises: state.programExercises.filter(
+              (row) => !sessionIds.has(row.programSessionId),
+            ),
             settings:
               state.settings.activeProgramId === programId
                 ? { ...state.settings, activeProgramId: undefined }
@@ -1022,7 +1130,9 @@ export const useGym = create<GymState>()(
             weeks: state.programWeeks.filter((row) => row.programId === programId),
             sessions: state.programSessions.filter((row) => row.programId === programId),
             exercises: state.programExercises.filter((row) =>
-              state.programSessions.some((session) => session.programId === programId && session.id === row.programSessionId),
+              state.programSessions.some(
+                (session) => session.programId === programId && session.id === row.programSessionId,
+              ),
             ),
           },
           state.exercises,
@@ -1041,7 +1151,9 @@ export const useGym = create<GymState>()(
           const existing = state.eraNames.some((row) => row.startDate === startDate);
           return {
             eraNames: existing
-              ? state.eraNames.map((row) => (row.startDate === startDate ? { startDate, name } : row))
+              ? state.eraNames.map((row) =>
+                  row.startDate === startDate ? { startDate, name } : row,
+                )
               : [...state.eraNames, { startDate, name }],
           };
         }),
@@ -1052,7 +1164,9 @@ export const useGym = create<GymState>()(
           const exists = state.machineSetups.some((item) => item.exerciseId === row.exerciseId);
           return {
             machineSetups: exists
-              ? state.machineSetups.map((item) => (item.exerciseId === row.exerciseId ? { ...item, ...row } : item))
+              ? state.machineSetups.map((item) =>
+                  item.exerciseId === row.exerciseId ? { ...item, ...row } : item,
+                )
               : [...state.machineSetups, row],
           };
         }),
@@ -1070,7 +1184,8 @@ export const useGym = create<GymState>()(
         set((state) => ({ lessons: [...state.lessons, row] }));
       },
 
-      deleteLesson: (id) => set((state) => ({ lessons: state.lessons.filter((row) => row.id !== id) })),
+      deleteLesson: (id) =>
+        set((state) => ({ lessons: state.lessons.filter((row) => row.id !== id) })),
 
       namePr: (exerciseId, workoutId, note) => {
         const trimmed = note.trim();
@@ -1088,14 +1203,18 @@ export const useGym = create<GymState>()(
       attachClip: (meta) =>
         set((state) => ({
           clips: [...state.clips.filter((row) => row.setId !== meta.setId), meta],
-          workoutSets: state.workoutSets.map((row) => (row.id === meta.setId ? { ...row, clipId: meta.id } : row)),
+          workoutSets: state.workoutSets.map((row) =>
+            row.id === meta.setId ? { ...row, clipId: meta.id } : row,
+          ),
         })),
 
       detachClip: (clipId) => {
         void deleteClipBlob(clipId);
         set((state) => ({
           clips: state.clips.filter((row) => row.id !== clipId),
-          workoutSets: state.workoutSets.map((row) => (row.clipId === clipId ? { ...row, clipId: undefined } : row)),
+          workoutSets: state.workoutSets.map((row) =>
+            row.clipId === clipId ? { ...row, clipId: undefined } : row,
+          ),
         }));
       },
 
@@ -1109,8 +1228,11 @@ export const useGym = create<GymState>()(
         if (existing.some((set) => set.setType === "warmup")) return;
         const working = existing.find((set) => set.setType === "working" && (set.weightG ?? 0) > 0);
         if (!working?.weightG) return;
-        const bar = state.bars.find((row) => row.id === state.settings.defaultBarProfileId) ?? state.bars[0];
-        const plates = state.plates.find((row) => row.id === state.settings.defaultPlateInventoryId) ?? state.plates[0];
+        const bar =
+          state.bars.find((row) => row.id === state.settings.defaultBarProfileId) ?? state.bars[0];
+        const plates =
+          state.plates.find((row) => row.id === state.settings.defaultPlateInventoryId) ??
+          state.plates[0];
         const exercise = state.exercises.find((row) => row.id === we.exerciseId);
         const steps =
           exercise?.equipment === "barbell" && bar && plates
@@ -1212,37 +1334,61 @@ export const useGym = create<GymState>()(
             programs: new Set(state.programs.map((row) => row.id)),
           };
           return {
-            exercises: [...state.exercises, ...backup.exercises.filter((row) => !ids.exercises.has(row.id))],
-            templates: [...state.templates, ...backup.templates.filter((row) => !ids.templates.has(row.id))],
+            exercises: [
+              ...state.exercises,
+              ...backup.exercises.filter((row) => !ids.exercises.has(row.id)),
+            ],
+            templates: [
+              ...state.templates,
+              ...backup.templates.filter((row) => !ids.templates.has(row.id)),
+            ],
             templateExercises: [
               ...state.templateExercises,
-              ...backup.templateExercises.filter((row) => !state.templateExercises.some((x) => x.id === row.id)),
+              ...backup.templateExercises.filter(
+                (row) => !state.templateExercises.some((x) => x.id === row.id),
+              ),
             ],
-            workouts: [...state.workouts, ...backup.workouts.filter((row) => !ids.workouts.has(row.id))],
+            workouts: [
+              ...state.workouts,
+              ...backup.workouts.filter((row) => !ids.workouts.has(row.id)),
+            ],
             workoutExercises: [
               ...state.workoutExercises,
-              ...backup.workoutExercises.filter((row) => !state.workoutExercises.some((x) => x.id === row.id)),
+              ...backup.workoutExercises.filter(
+                (row) => !state.workoutExercises.some((x) => x.id === row.id),
+              ),
             ],
             workoutSets: [
               ...state.workoutSets,
-              ...backup.workoutSets.filter((row) => !state.workoutSets.some((x) => x.id === row.id)),
+              ...backup.workoutSets.filter(
+                (row) => !state.workoutSets.some((x) => x.id === row.id),
+              ),
             ],
             measurements: [
               ...state.measurements,
               ...backup.measurements.filter((row) => !ids.measurements.has(row.id)),
             ],
-            programs: [...state.programs, ...(backup.programs ?? []).filter((row) => !ids.programs.has(row.id))],
+            programs: [
+              ...state.programs,
+              ...(backup.programs ?? []).filter((row) => !ids.programs.has(row.id)),
+            ],
             programWeeks: [
               ...state.programWeeks,
-              ...(backup.programWeeks ?? []).filter((row) => !state.programWeeks.some((x) => x.id === row.id)),
+              ...(backup.programWeeks ?? []).filter(
+                (row) => !state.programWeeks.some((x) => x.id === row.id),
+              ),
             ],
             programSessions: [
               ...state.programSessions,
-              ...(backup.programSessions ?? []).filter((row) => !state.programSessions.some((x) => x.id === row.id)),
+              ...(backup.programSessions ?? []).filter(
+                (row) => !state.programSessions.some((x) => x.id === row.id),
+              ),
             ],
             programExercises: [
               ...state.programExercises,
-              ...(backup.programExercises ?? []).filter((row) => !state.programExercises.some((x) => x.id === row.id)),
+              ...(backup.programExercises ?? []).filter(
+                (row) => !state.programExercises.some((x) => x.id === row.id),
+              ),
             ],
             machineSetups: [
               ...state.machineSetups,
@@ -1250,12 +1396,24 @@ export const useGym = create<GymState>()(
                 (row) => !state.machineSetups.some((item) => item.exerciseId === row.exerciseId),
               ),
             ],
-            lessons: [...state.lessons, ...(backup.lessons ?? []).filter((row) => !state.lessons.some((item) => item.id === row.id))],
+            lessons: [
+              ...state.lessons,
+              ...(backup.lessons ?? []).filter(
+                (row) => !state.lessons.some((item) => item.id === row.id),
+              ),
+            ],
             namedPrs: [
               ...state.namedPrs,
-              ...(backup.namedPrs ?? []).filter((row) => !state.namedPrs.some((item) => item.id === row.id)),
+              ...(backup.namedPrs ?? []).filter(
+                (row) => !state.namedPrs.some((item) => item.id === row.id),
+              ),
             ],
-            clips: [...state.clips, ...(backup.clips ?? []).filter((row) => !state.clips.some((item) => item.id === row.id))],
+            clips: [
+              ...state.clips,
+              ...(backup.clips ?? []).filter(
+                (row) => !state.clips.some((item) => item.id === row.id),
+              ),
+            ],
           };
         });
       },
