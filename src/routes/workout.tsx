@@ -13,7 +13,6 @@ import type { GrindFeel, SetType, WorkoutSet } from "@/domain/types";
 import { formatDuration, formatWeight, parseWeightInput, weightUnitFor } from "@/domain/units";
 import { uuid } from "@/domain/ids";
 import { compareSet, findGhostSlice, formatGhostSet, ghostHeader, ghostSetsForExercise } from "@/lib/gym/ghost";
-import { restPersonalitySeconds, learnedRestSeconds } from "@/lib/gym/dna";
 import { progressExercise, actionLabel } from "@/lib/gym/progression";
 import { useSlices } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
@@ -173,9 +172,7 @@ function ActiveWorkoutPage() {
             formula: settings.oneRepMaxFormula,
             excludeWarmups: settings.excludeWarmupsFromAnalytics,
           });
-          const restHint = block.catalog
-            ? restPersonalitySeconds(block.catalog, learnedRestSeconds(block.catalog.id, slices))
-            : block.exercise.restSeconds;
+          const restHint = block.exercise.restSeconds;
           return (
             <article key={block.exercise.id} className="rounded-[28px] bg-surface p-4 hairline">
               <div className="mb-3 flex items-start justify-between gap-3">

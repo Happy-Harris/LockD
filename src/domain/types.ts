@@ -353,6 +353,8 @@ export interface AppSettings {
   secondaryMuscleCredit: number;
   /** Optional per-muscle weekly set targets. Missing entries use the research default. */
   personalMuscleTargets?: PersonalMuscleTargets;
+  /** Rest after a warm-up set, in seconds. Missing or 0 means no timer after warm-ups. */
+  warmupRestSeconds?: number;
   /** Missing means off. */
   restTimerVibrate?: boolean;
   /** Missing means off. */
@@ -405,6 +407,8 @@ export interface TimerState {
   durationSeconds: number;
   isRunning: boolean;
   label?: string;
+  /** What this lifter usually rests on this exercise, when it differs from `durationSeconds`. Offered, not applied. */
+  suggestedSeconds?: number;
 }
 
 export interface WorkoutDetail {

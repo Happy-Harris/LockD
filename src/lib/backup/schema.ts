@@ -265,6 +265,7 @@ const settings = z.object({
   excludeWarmupsFromAnalytics: z.boolean(),
   secondaryMuscleCredit: z.number().min(0).max(1),
   personalMuscleTargets: z.partialRecord(z.enum(MUSCLES), band).optional(),
+  warmupRestSeconds: seconds.optional(),
   restTimerVibrate: z.boolean().optional(),
   restTimerNotification: z.boolean().optional(),
   goalLiftIds: z.array(id).max(50),

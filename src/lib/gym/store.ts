@@ -56,7 +56,8 @@ import { barbellSnap } from "./loads";
 import { progressExercise } from "./progression";
 import { seedBarProfiles, seedExercises, seedPlateInventories } from "./seed";
 import { generateWarmup } from "@/domain/warmup";
-import { restPersonalitySeconds, learnedRestSeconds } from "./dna";
+import { learnedRestSeconds } from "./dna";
+import { restSecondsAfter, restSuggestion } from "./rest";
 import { deleteClipBlob } from "./vault";
 import { defaultSettings } from "./settings";
 import { switchableStorage } from "@/lib/storage/backend";
@@ -166,7 +167,7 @@ interface GymActions {
   updateExercise: (id: string, patch: Partial<Exercise>) => void;
   addMeasurement: (metric: MeasurementMetric, value: number, displayUnit: BodyMeasurement["displayUnit"]) => void;
   deleteMeasurement: (id: string) => void;
-  startRestTimer: (seconds: number, workoutId?: string, setId?: string, label?: string) => void;
+  startRestTimer: (seconds: number, workoutId?: string, setId?: string, label?: string, suggestedSeconds?: number) => void;
   adjustRestTimer: (deltaSeconds: number) => void;
   stopRestTimer: () => void;
   installProgramPack: (packId: string) => string | undefined;
@@ -749,13 +750,12 @@ export const useGym = create<GymState>()(
         if (!setRow) return [];
         const we = state.workoutExercises.find((row) => row.id === setRow.workoutExerciseId);
         const slices = sliceSessions(state.workouts, state.workoutExercises, state.workoutSets);
-        if (state.settings.restTimerAutoStart && we && setRow.setType !== "warmup") {
-          const exercise = state.exercises.find((row) => row.id === we.exerciseId);
-          const learned = exercise ? learnedRestSeconds(exercise.id, slices) : null;
-          const seconds = exercise
-            ? restPersonalitySeconds(exercise, learned) || we.restSeconds
-            : we.restSeconds;
-          get().startRestTimer(seconds, setRow.workoutId, setId, we.exerciseNameSnapshot);
+        if (state.settings.restTimerAutoStart && we) {
+          const seconds = restSecondsAfter(setRow.setType, we.restSeconds, state.settings);
+          if (seconds != null) {
+            const learned = learnedRestSeconds(we.exerciseId, slices);
+            get().startRestTimer(seconds, setRow.workoutId, setId, we.exerciseNameSnapshot, restSuggestion(learned, seconds));
+          }
         }
         return detectPrsForWorkout(setRow.workoutId, slices, state.settings.oneRepMaxFormula);
       },
@@ -914,7 +914,7 @@ export const useGym = create<GymState>()(
       deleteMeasurement: (id) =>
         set((state) => ({ measurements: state.measurements.filter((row) => row.id !== id) })),
 
-      startRestTimer: (seconds, workoutId, setId, label) => {
+      startRestTimer: (seconds, workoutId, setId, label, suggestedSeconds) => {
         const started = new Date();
         const ends = new Date(started.getTime() + seconds * 1000);
         set({
@@ -926,6 +926,7 @@ export const useGym = create<GymState>()(
             durationSeconds: seconds,
             isRunning: true,
             label,
+            suggestedSeconds,
           },
         });
       },

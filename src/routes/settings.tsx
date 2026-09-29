@@ -178,11 +178,45 @@ function SettingsPage() {
           checked={settings.restTimerAutoStart}
           onChange={(restTimerAutoStart) => updateSettings({ restTimerAutoStart })}
         />
+        <p className="mb-2 mt-4 text-xs text-subtle">After a warm-up set</p>
+        <Segment
+          value={String(settings.warmupRestSeconds ?? 0)}
+          options={[
+            ["0", "No timer"],
+            ["30", "0:30"],
+            ["45", "0:45"],
+            ["60", "1:00"],
+          ]}
+          onChange={(value) => updateSettings({ warmupRestSeconds: Number(value) })}
+        />
         <Toggle
           label="Chime when rest ends"
           checked={settings.restTimerSound}
           onChange={(restTimerSound) => updateSettings({ restTimerSound })}
         />
+        <Toggle
+          label="Vibrate when rest ends"
+          checked={settings.restTimerVibrate ?? false}
+          onChange={(restTimerVibrate) => updateSettings({ restTimerVibrate })}
+        />
+        <Toggle
+          label="Notify when rest ends"
+          checked={settings.restTimerNotification ?? false}
+          onChange={(restTimerNotification) => {
+            if (!restTimerNotification) {
+              updateSettings({ restTimerNotification: false });
+              return;
+            }
+            if (typeof Notification === "undefined") return;
+            void Notification.requestPermission().then((permission) =>
+              updateSettings({ restTimerNotification: permission === "granted" }),
+            );
+          }}
+        />
+        <p className="mt-2 text-xs text-subtle">
+          Vibrate and notify work while Lock'd is open in the background. A locked phone can delay them, and some
+          browsers (iPhone Safari) do not vibrate.
+        </p>
       </Section>
 
       <Section title="Appearance">

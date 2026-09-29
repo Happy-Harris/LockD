@@ -15,6 +15,7 @@ describe("backup round trip and the widened domain types (plan PR 4f)", () => {
     expect(state.workouts[0]!.tzOffsetMinutes).toBe(300);
     expect(state.settings.intensityMode).toBe("rpe");
     expect(state.settings.restTimerVibrate).toBeUndefined();
+    expect(state.settings.warmupRestSeconds).toBeUndefined();
     expect(state.settings.personalMuscleTargets).toBeUndefined();
   });
 
@@ -33,6 +34,7 @@ describe("backup round trip and the widened domain types (plan PR 4f)", () => {
         intensityMode: "rir",
         restTimerVibrate: true,
         restTimerNotification: false,
+        warmupRestSeconds: 30,
         personalMuscleTargets: { chest: { min: 10, max: 16 } },
       },
     };
