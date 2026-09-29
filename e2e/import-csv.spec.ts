@@ -136,7 +136,11 @@ test.describe("importing a vault from another app", () => {
     const after = await readLog(page);
     const arms = after.measurements.find((m) => m.metric === "arms");
     expect(arms).toMatchObject({ value: 348, displayUnit: "cm" });
-    expect(after.measurements.some((m) => m.metric === "arm_left" && m.value === 348)).toBe(false);
+    // No sided row is created by the import. Compared against the count before, not a value: the sample log's own
+    // (whole-millimetre) left arms can land on 348 too.
+    const sided = (log: typeof after) =>
+      log.measurements.filter((m) => m.metric === "arm_left").length;
+    expect(sided(after)).toBe(sided(before));
     // Raw sign kept: -60 there is -60 here.
     expect(
       after.workouts.find((w) => w.startedAt === "2026-02-03T17:30:00.000Z")?.tzOffsetMinutes,
