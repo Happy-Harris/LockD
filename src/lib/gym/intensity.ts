@@ -32,3 +32,21 @@ export function intensityPatch(
   if (mode === "rpe") return { rpe: clear ? undefined : picked };
   return {};
 }
+
+/** The effort the routine asks for, in the lifter's current mode. Undefined when the routine sets none: nothing is invented. */
+export function intensityTarget(
+  mode: IntensityMode,
+  prescription: { targetRpe?: number; targetRir?: number } | undefined,
+): number | undefined {
+  if (mode === "rir") return prescription?.targetRir;
+  if (mode === "rpe") return prescription?.targetRpe;
+  return undefined;
+}
+
+export function intensityTargetLabel(
+  mode: IntensityMode,
+  prescription: { targetRpe?: number; targetRir?: number } | undefined,
+): string | undefined {
+  const value = intensityTarget(mode, prescription);
+  return value == null ? undefined : `target ${mode === "rir" ? "RIR" : "RPE"} ${value}`;
+}

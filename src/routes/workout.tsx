@@ -43,6 +43,8 @@ import {
   intensityChoices,
   intensityLabel,
   intensityPatch,
+  intensityTarget,
+  intensityTargetLabel,
   intensityValue,
 } from "@/lib/gym/intensity";
 import { useSlices } from "@/lib/gym/hooks";
@@ -247,6 +249,9 @@ function ActiveWorkoutPage() {
           const blockIncrement = block.catalog?.incrementG ?? increment;
           const suggestion = suggestions.get(block.exercise.id);
           const restHint = block.exercise.restSeconds;
+          // Effort is logged beside reps, so an exercise without a reps row (a plank) shows no effort target.
+          const effortPrescription = usesReps(tracking) ? block.prescription : undefined;
+          const effortTarget = intensityTargetLabel(settings.intensityMode, effortPrescription);
           return (
             <article key={block.exercise.id} className="rounded-[28px] bg-surface p-4 hairline">
               <div className="mb-3 flex items-start justify-between gap-3">
@@ -262,6 +267,7 @@ function ActiveWorkoutPage() {
                   <p className="text-xs text-muted">
                     {titleCase(block.exercise.primaryMuscleGroupSnapshot)}
                     {target ? ` · ${target}` : ""}
+                    {effortTarget ? ` · ${effortTarget}` : ""}
                     {` · rest ${restHint}s`}
                   </p>
                 </div>
@@ -350,6 +356,7 @@ function ActiveWorkoutPage() {
                       showWeight={usesWeight(tracking)}
                       showReps={usesReps(tracking)}
                       intensityMode={settings.intensityMode}
+                      effortTarget={intensityTarget(settings.intensityMode, effortPrescription)}
                       ghost={ghost}
                       targetMin={block.prescription?.targetRepMin}
                       targetMax={block.prescription?.targetRepMax}
@@ -487,6 +494,7 @@ function SetRow({
   showWeight,
   showReps,
   intensityMode,
+  effortTarget,
   onChange,
   onNudgeWeight,
   onNudgeReps,
@@ -505,6 +513,8 @@ function SetRow({
   showWeight: boolean;
   showReps: boolean;
   intensityMode: IntensityMode;
+  /** What the routine asks for, in the current mode. Marked in the pick sheet; never filled in for the lifter. */
+  effortTarget?: number;
   onChange: (patch: Partial<WorkoutSet>) => void;
   onNudgeWeight: (deltaG: number) => void;
   onNudgeReps: (delta: number) => void;
@@ -699,13 +709,18 @@ function SetRow({
                 intensityValue(intensityMode, set) === choice
                   ? "bg-accent text-canvas"
                   : "bg-raised text-ink",
+                effortTarget === choice && "ring-2 ring-accent/70",
               )}
+              aria-label={effortTarget === choice ? `${choice}, the routine's target` : undefined}
               onClick={() => {
                 onChange(intensityPatch(intensityMode, set, choice));
                 setPickingIntensity(false);
               }}
             >
               {choice}
+              {effortTarget === choice ? (
+                <span className="block text-[10px] font-normal">target</span>
+              ) : null}
             </button>
           ))}
         </div>
