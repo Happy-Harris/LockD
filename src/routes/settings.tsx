@@ -4,7 +4,14 @@ import { Page } from "@/components/app/shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { type AccentTheme, type AppSettings, type ThemeMode, type UnitSystem, type WeekStartDay } from "@/domain/types";
+import {
+  type AccentTheme,
+  type AppSettings,
+  type IntensityMode,
+  type ThemeMode,
+  type UnitSystem,
+  type WeekStartDay,
+} from "@/domain/types";
 import { applyBackup, restoreMessage, type RestoreMode } from "@/lib/backup/apply";
 import { parseBackup } from "@/lib/backup/schema";
 import { takeSafetyBackup } from "@/lib/storage/safety";
@@ -51,7 +58,10 @@ function SettingsPage() {
     const state = useGym.getState();
     const file = csvFiles(
       state,
-      { mass: weightUnitFor(state.settings.unitSystem), length: lengthUnitFor(state.settings.unitSystem) },
+      {
+        mass: weightUnitFor(state.settings.unitSystem),
+        length: lengthUnitFor(state.settings.unitSystem),
+      },
       new Date().toISOString().slice(0, 10),
     )[kind];
     // A byte-order mark so Excel reads names with accents correctly; the importer ignores it.
@@ -83,7 +93,8 @@ function SettingsPage() {
       apply: importBackup,
       safetyCopy: (backup) => takeSafetyBackup("before-restore", backup),
       sessions: () =>
-        useGym.getState().workouts.filter((w) => w.status === "completed" || w.status === "active").length,
+        useGym.getState().workouts.filter((w) => w.status === "completed" || w.status === "active")
+          .length,
     });
     if (!result.ok) {
       setBackupProblems([result.error]);
@@ -97,7 +108,9 @@ function SettingsPage() {
   const onCsv = async (file: File, source: "strong" | "hevy") => {
     const text = await file.text();
     setBackupProblems(null);
-    setCsvNote(describeImport((source === "hevy" ? importHevyCsv : importStrongCsv)(text, file.name)));
+    setCsvNote(
+      describeImport((source === "hevy" ? importHevyCsv : importStrongCsv)(text, file.name)),
+    );
   };
 
   const onOtherAppBackup = async (file: File) => {
@@ -115,8 +128,13 @@ function SettingsPage() {
   return (
     <Page>
       <h1 className="font-display text-4xl font-semibold tracking-tight">Settings</h1>
-      <p className="mt-1 text-sm text-muted">Units, lens, and backups. The log itself lives on the locker when you are signed in.</p>
-      <Link to="/locker" className="mt-4 block text-sm text-accent underline-offset-2 hover:underline">
+      <p className="mt-1 text-sm text-muted">
+        Units, lens, and backups. The log itself lives on the locker when you are signed in.
+      </p>
+      <Link
+        to="/locker"
+        className="mt-4 block text-sm text-accent underline-offset-2 hover:underline"
+      >
         Open locker — handle, public stamps, published links
       </Link>
 
@@ -144,7 +162,9 @@ function SettingsPage() {
             ["sunday", "Sunday"],
             ["saturday", "Saturday"],
           ]}
-          onChange={(weekStartDay) => updateSettings({ weekStartDay: weekStartDay as WeekStartDay })}
+          onChange={(weekStartDay) =>
+            updateSettings({ weekStartDay: weekStartDay as WeekStartDay })
+          }
         />
       </Section>
 
@@ -159,9 +179,28 @@ function SettingsPage() {
             updateSettings({ oneRepMaxFormula: oneRepMaxFormula as "epley" | "brzycki" })
           }
         />
-        <p className="mt-2 text-xs text-subtle">Only sets of 12 reps or fewer. Warm-ups excluded.</p>
+        <p className="mt-2 text-xs text-subtle">
+          Only sets of 12 reps or fewer. Warm-ups excluded.
+        </p>
       </Section>
 
+      <Section title="Effort">
+        <Segment
+          value={settings.intensityMode}
+          options={[
+            ["rpe", "RPE"],
+            ["rir", "RIR"],
+            ["none", "Off"],
+          ]}
+          onChange={(intensityMode) =>
+            updateSettings({ intensityMode: intensityMode as IntensityMode })
+          }
+        />
+        <p className="mt-2 text-xs text-subtle">
+          RPE and RIR are stored separately and never converted. Switching hides the other; nothing
+          is deleted.
+        </p>
+      </Section>
       <Section title="Rest timer">
         <Segment
           value={String(settings.defaultRestSeconds)}
@@ -214,8 +253,8 @@ function SettingsPage() {
           }}
         />
         <p className="mt-2 text-xs text-subtle">
-          Vibrate and notify work while Lock'd is open in the background. A locked phone can delay them, and some
-          browsers (iPhone Safari) do not vibrate.
+          Vibrate and notify work while Lock'd is open in the background. A locked phone can delay
+          them, and some browsers (iPhone Safari) do not vibrate.
         </p>
       </Section>
 
@@ -272,17 +311,26 @@ function SettingsPage() {
 
       <Section title="Goal lifts">
         <p className="mb-2 text-xs text-subtle">
-          The weekly verdict and stall flags track up to three. Pick none and your most-trained lifts are used, labelled
-          as a guess.
+          The weekly verdict and stall flags track up to three. Pick none and your most-trained
+          lifts are used, labelled as a guess.
         </p>
         <p className="text-sm text-ink" data-testid="goal-lifts-summary">
           {settings.goalLiftIds.length
             ? settings.goalLiftIds
-                .map((id) => exercises.find((row) => row.id === id)?.name ?? "A lift no longer in the library")
+                .map(
+                  (id) =>
+                    exercises.find((row) => row.id === id)?.name ??
+                    "A lift no longer in the library",
+                )
                 .join(", ")
             : "None picked: using your most-trained lifts."}
         </p>
-        <Button className="mt-3" variant="secondary" size="sm" onClick={() => setPickingGoalLifts(true)}>
+        <Button
+          className="mt-3"
+          variant="secondary"
+          size="sm"
+          onClick={() => setPickingGoalLifts(true)}
+        >
           Choose goal lifts
         </Button>
         <GoalLiftPicker
@@ -296,12 +344,14 @@ function SettingsPage() {
 
       <Section title="Data">
         <div className="mb-3 rounded-xl bg-raised px-3 py-3" data-testid="history-promise">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">{HISTORY_PROMISE_TITLE}</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+            {HISTORY_PROMISE_TITLE}
+          </p>
           <p className="mt-1 text-sm leading-relaxed text-ink">{HISTORY_PROMISE}</p>
         </div>
         <p className="text-sm leading-relaxed text-muted">
-          Signed in, every session writes to the locker. JSON and CSV are still here if you want a file in your hand.
-          Strong CSV imports locally, then syncs up.
+          Signed in, every session writes to the locker. JSON and CSV are still here if you want a
+          file in your hand. Strong CSV imports locally, then syncs up.
         </p>
         <div className="mt-3 space-y-2">
           <Button className="w-full" variant="secondary" onClick={download}>
@@ -339,7 +389,9 @@ function SettingsPage() {
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-xs text-subtle">Replace this log with a Lock’d backup</span>
+            <span className="mb-1 block text-xs text-subtle">
+              Replace this log with a Lock’d backup
+            </span>
             <input
               type="file"
               accept="application/json,.json"
@@ -353,7 +405,11 @@ function SettingsPage() {
             />
           </label>
           {backupProblems ? (
-            <div role="alert" data-testid="backup-problems" className="rounded-xl bg-raised p-3 text-xs text-muted">
+            <div
+              role="alert"
+              data-testid="backup-problems"
+              className="rounded-xl bg-raised p-3 text-xs text-muted"
+            >
               <ul className="list-disc space-y-1 pl-4">
                 {backupProblems.map((problem) => (
                   <li key={problem}>{problem}</li>
@@ -361,7 +417,10 @@ function SettingsPage() {
               </ul>
             </div>
           ) : null}
-          <Link to="/import" className="block text-sm text-accent underline-offset-2 hover:underline">
+          <Link
+            to="/import"
+            className="block text-sm text-accent underline-offset-2 hover:underline"
+          >
             Import wizard: choose columns, review sessions, match exercises
           </Link>
           <label className="block">
@@ -393,7 +452,9 @@ function SettingsPage() {
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-xs text-subtle">Import a backup from another app (JSON)</span>
+            <span className="mb-1 block text-xs text-subtle">
+              Import a backup from another app (JSON)
+            </span>
             <input
               type="file"
               accept="application/json,.json"
@@ -419,7 +480,11 @@ function SettingsPage() {
             className="w-full"
             variant="danger"
             onClick={() => {
-              if (window.confirm("Delete everything on this device and re-seed the library? This also deletes the safety copies and the old saved copy of your log.")) {
+              if (
+                window.confirm(
+                  "Delete everything on this device and re-seed the library? This also deletes the safety copies and the old saved copy of your log.",
+                )
+              ) {
                 resetAll();
                 void eraseAllOnDevice();
               }
@@ -481,9 +546,15 @@ function Toggle({
   onChange: (value: boolean) => void;
 }) {
   return (
-    <button type="button" className="mt-3 flex min-h-11 w-full items-center justify-between" onClick={() => onChange(!checked)}>
+    <button
+      type="button"
+      className="mt-3 flex min-h-11 w-full items-center justify-between"
+      onClick={() => onChange(!checked)}
+    >
       <span className="text-sm">{label}</span>
-      <span className={checked ? "text-accent text-sm font-medium" : "text-subtle text-sm"}>{checked ? "On" : "Off"}</span>
+      <span className={checked ? "text-accent text-sm font-medium" : "text-subtle text-sm"}>
+        {checked ? "On" : "Off"}
+      </span>
     </button>
   );
 }

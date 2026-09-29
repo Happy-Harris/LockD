@@ -7,9 +7,10 @@ import { Page } from "@/components/app/shell";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
+import { Sheet } from "@/components/ui/sheet";
 import { SET_TYPES, titleCase, usesReps, usesWeight } from "@/domain/taxonomy";
 import { elapsedSeconds } from "@/domain/time";
-import type { GrindFeel, SetType, WorkoutSet } from "@/domain/types";
+import type { GrindFeel, IntensityMode, SetType, WorkoutSet } from "@/domain/types";
 import {
   formatDuration,
   formatWeightInput,
@@ -18,8 +19,20 @@ import {
   weightUnitFor,
 } from "@/domain/units";
 import { uuid } from "@/domain/ids";
-import { compareSet, findGhostSlice, formatGhostSet, ghostHeader, ghostSetsForExercise } from "@/lib/gym/ghost";
+import {
+  compareSet,
+  findGhostSlice,
+  formatGhostSet,
+  ghostHeader,
+  ghostSetsForExercise,
+} from "@/lib/gym/ghost";
 import { progressExercise, actionLabel } from "@/lib/gym/progression";
+import {
+  intensityChoices,
+  intensityLabel,
+  intensityPatch,
+  intensityValue,
+} from "@/lib/gym/intensity";
 import { useSlices } from "@/lib/gym/hooks";
 import { barbellSnap } from "@/lib/gym/loads";
 import { useGym } from "@/lib/gym/store";
@@ -105,18 +118,33 @@ function ActiveWorkoutPage() {
         lesson: [...lessons].reverse().find((row) => row.exerciseId === exercise.exerciseId),
         catalog: exercises.find((row) => row.id === exercise.exerciseId),
       }));
-  }, [workout, workoutExercises, workoutSets, templateExercises, ghostSlice, machineSetups, lessons, exercises]);
+  }, [
+    workout,
+    workoutExercises,
+    workoutSets,
+    templateExercises,
+    ghostSlice,
+    machineSetups,
+    lessons,
+    exercises,
+  ]);
 
   if (!workout) return null;
 
   const elapsed = elapsedSeconds(workout.startedAt, undefined, workout.pausedSeconds);
   void now;
-  const completed = workoutSets.filter((set) => set.workoutId === workout.id && set.isCompleted).length;
+  const completed = workoutSets.filter(
+    (set) => set.workoutId === workout.id && set.isCompleted,
+  ).length;
   const total = workoutSets.filter((set) => set.workoutId === workout.id).length;
   const workingDone = blocks.flatMap((block) =>
-    block.sets.filter((set) => set.isCompleted && set.setType !== "warmup").map((set, index) => ({ set, ghost: block.ghost[index] })),
+    block.sets
+      .filter((set) => set.isCompleted && set.setType !== "warmup")
+      .map((set, index) => ({ set, ghost: block.ghost[index] })),
   );
-  const beats = workingDone.filter(({ set, ghost }) => compareSet(set, ghost).verdict === "beat").length;
+  const beats = workingDone.filter(
+    ({ set, ghost }) => compareSet(set, ghost).verdict === "beat",
+  ).length;
 
   const finish = () => {
     leaving.current = true;
@@ -202,7 +230,12 @@ function ActiveWorkoutPage() {
                     type="button"
                     className="grid size-11 place-items-center rounded-xl text-subtle hover:bg-raised"
                     onClick={() =>
-                      startRestTimer(restHint, workout.id, undefined, block.exercise.exerciseNameSnapshot)
+                      startRestTimer(
+                        restHint,
+                        workout.id,
+                        undefined,
+                        block.exercise.exerciseNameSnapshot,
+                      )
                     }
                     aria-label="Start rest"
                   >
@@ -229,12 +262,13 @@ function ActiveWorkoutPage() {
                 </p>
               ) : null}
               {block.lesson ? (
-                <p className="mb-2 text-xs leading-relaxed text-muted">Pinned: {block.lesson.text}</p>
+                <p className="mb-2 text-xs leading-relaxed text-muted">
+                  Pinned: {block.lesson.text}
+                </p>
               ) : null}
               {block.ghost.length > 0 ? (
                 <p className="mb-2 font-mono text-xs text-subtle">
-                  Ghost:{" "}
-                  {block.ghost.map((set) => formatGhostSet(set, unit)).join("  ")}
+                  Ghost: {block.ghost.map((set) => formatGhostSet(set, unit)).join("  ")}
                 </p>
               ) : null}
               {suggestion.why ? (
@@ -246,8 +280,11 @@ function ActiveWorkoutPage() {
 
               <div className="space-y-2">
                 {block.sets.map((set, index) => {
-                  const ghostIndex = block.sets.slice(0, index + 1).filter((row) => row.setType !== "warmup").length - 1;
-                  const ghost = set.setType === "warmup" ? undefined : block.ghost[Math.max(0, ghostIndex)];
+                  const ghostIndex =
+                    block.sets.slice(0, index + 1).filter((row) => row.setType !== "warmup")
+                      .length - 1;
+                  const ghost =
+                    set.setType === "warmup" ? undefined : block.ghost[Math.max(0, ghostIndex)];
                   return (
                     <SetRow
                       key={set.id}
@@ -257,7 +294,7 @@ function ActiveWorkoutPage() {
                       incrementG={blockIncrement}
                       showWeight={usesWeight(tracking)}
                       showReps={usesReps(tracking)}
-                      showRpe={settings.intensityMode === "rpe"}
+                      intensityMode={settings.intensityMode}
                       ghost={ghost}
                       targetMin={block.prescription?.targetRepMin}
                       targetMax={block.prescription?.targetRepMax}
@@ -268,7 +305,8 @@ function ActiveWorkoutPage() {
                         if (set.isCompleted) uncompleteSet(set.id);
                         else {
                           const prs = completeSet(set.id);
-                          if (prs.length) toast(`${prs.map((pr) => pr.exerciseName).join(", ")} — new e1RM`);
+                          if (prs.length)
+                            toast(`${prs.map((pr) => pr.exerciseName).join(", ")} — new e1RM`);
                           const cmp = compareSet(set, ghost);
                           if (cmp.verdict === "beat") toast(`Beat last time · ${cmp.label}`);
                           if (cmp.verdict === "tie") toast("Tied last time");
@@ -322,7 +360,9 @@ function ActiveWorkoutPage() {
       </div>
 
       {blocks.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted">No lifts yet. Add an exercise to start logging.</p>
+        <p className="py-10 text-center text-sm text-muted">
+          No lifts yet. Add an exercise to start logging.
+        </p>
       ) : null}
 
       <Button variant="secondary" className="mt-4 w-full" onClick={() => setPicker("add")}>
@@ -367,7 +407,7 @@ function SetRow({
   targetMax,
   showWeight,
   showReps,
-  showRpe,
+  intensityMode,
   onChange,
   onNudgeWeight,
   onNudgeReps,
@@ -384,7 +424,7 @@ function SetRow({
   targetMax?: number;
   showWeight: boolean;
   showReps: boolean;
-  showRpe: boolean;
+  intensityMode: IntensityMode;
   onChange: (patch: Partial<WorkoutSet>) => void;
   onNudgeWeight: (deltaG: number) => void;
   onNudgeReps: (delta: number) => void;
@@ -392,8 +432,11 @@ function SetRow({
   onDelete: () => void;
   onClip: (file: File) => void;
 }) {
-  const [weight, setWeight] = useState(() => (set.weightG != null ? formatWeightInput(set.weightG, unit) : ""));
+  const [weight, setWeight] = useState(() =>
+    set.weightG != null ? formatWeightInput(set.weightG, unit) : "",
+  );
   const [reps, setReps] = useState(() => (set.reps != null ? String(set.reps) : ""));
+  const [pickingIntensity, setPickingIntensity] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -478,17 +521,14 @@ function SetRow({
             }}
             onEnter={onToggle}
           />
-          {showRpe ? (
+          {intensityMode !== "none" ? (
             <button
               type="button"
               className="h-11 shrink-0 rounded-xl bg-surface px-3 text-xs text-muted hairline"
-              onClick={() => {
-                const current = set.rpe ?? 6;
-                const next = current >= 10 ? 6 : Math.round((current + 0.5) * 2) / 2;
-                onChange({ rpe: next });
-              }}
+              aria-label={`Set ${index + 1} ${intensityMode === "rir" ? "reps in reserve" : "RPE"}`}
+              onClick={() => setPickingIntensity(true)}
             >
-              RPE {set.rpe ?? "—"}
+              {intensityLabel(intensityMode, set)}
             </button>
           ) : null}
         </div>
@@ -504,7 +544,13 @@ function SetRow({
             onChange({ grind: next });
           }}
         >
-          <Flame className={cn("size-3.5", set.grind === "grind" && "text-accent", set.grind === "easy" && "text-success")} />
+          <Flame
+            className={cn(
+              "size-3.5",
+              set.grind === "grind" && "text-accent",
+              set.grind === "easy" && "text-success",
+            )}
+          />
         </button>
         <button
           type="button"
@@ -545,6 +591,37 @@ function SetRow({
                       : "Long-press check to delete"}
         </p>
       </div>
+      <Sheet
+        open={pickingIntensity}
+        onClose={() => setPickingIntensity(false)}
+        title={intensityMode === "rir" ? "Reps in reserve" : "RPE"}
+        description={
+          intensityMode === "rir"
+            ? "How many more reps you could have done. Tap the chosen value again to clear it."
+            : "How hard the set felt, 10 being no reps left. Tap the chosen value again to clear it."
+        }
+      >
+        <div className="grid grid-cols-3 gap-2">
+          {intensityChoices(intensityMode).map((choice) => (
+            <button
+              key={choice}
+              type="button"
+              className={cn(
+                "h-14 rounded-xl text-lg font-medium tabular hairline",
+                intensityValue(intensityMode, set) === choice
+                  ? "bg-accent text-canvas"
+                  : "bg-raised text-ink",
+              )}
+              onClick={() => {
+                onChange(intensityPatch(intensityMode, set, choice));
+                setPickingIntensity(false);
+              }}
+            >
+              {choice}
+            </button>
+          ))}
+        </div>
+      </Sheet>
     </div>
   );
 }
