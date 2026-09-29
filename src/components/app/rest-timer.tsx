@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { formatDuration } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
 import { cn } from "@/lib/utils";
+import { BRAND } from "@/lib/brand";
 
 function remainingMs(endsAt: string) {
   return Date.parse(endsAt) - Date.now();
@@ -42,7 +43,12 @@ function alertRestDone(opts: { vibrate: boolean; notify: boolean; label?: string
     /* vibration is best-effort */
   }
   try {
-    if (opts.notify && typeof Notification !== "undefined" && Notification.permission === "granted" && document.hidden) {
+    if (
+      opts.notify &&
+      typeof Notification !== "undefined" &&
+      Notification.permission === "granted" &&
+      document.hidden
+    ) {
       new Notification("Rest done", { body: opts.label ?? "Next set", tag: "lockd-rest" });
     }
   } catch {
@@ -56,11 +62,11 @@ function paintLockArt(seconds: number, label: string): string {
   canvas.height = 512;
   const ctx = canvas.getContext("2d");
   if (!ctx) return "";
-  ctx.fillStyle = "#0c0b0a";
+  ctx.fillStyle = BRAND.mill;
   ctx.fillRect(0, 0, 512, 512);
-  ctx.fillStyle = "#c24a32";
+  ctx.fillStyle = BRAND.oxide;
   ctx.fillRect(0, 0, 512, 18);
-  ctx.fillStyle = "#f6f1e8";
+  ctx.fillStyle = BRAND.inkOnDark;
   ctx.font = "700 42px Barlow Condensed, sans-serif";
   ctx.fillText("LOCK'D", 36, 90);
   ctx.font = "800 160px Barlow Condensed, sans-serif";
@@ -116,7 +122,8 @@ export function RestTimerBar() {
       return;
     }
     const displaySeconds = left <= 0 ? 0 : Math.ceil(left / 1000);
-    document.title = left <= 0 ? "Rest done · Lock'd" : `${formatDuration(displaySeconds)} rest · Lock'd`;
+    document.title =
+      left <= 0 ? "Rest done · Lock'd" : `${formatDuration(displaySeconds)} rest · Lock'd`;
     return () => {
       document.title = title.current;
     };
@@ -124,7 +131,9 @@ export function RestTimerBar() {
 
   useEffect(() => {
     if (!restTimer?.isRunning || typeof navigator === "undefined") return;
-    const nav = navigator as Navigator & { wakeLock?: { request: (type: "screen") => Promise<{ release: () => Promise<void> }> } };
+    const nav = navigator as Navigator & {
+      wakeLock?: { request: (type: "screen") => Promise<{ release: () => Promise<void> }> };
+    };
     let sentinel: { release: () => Promise<void> } | null = null;
     void nav.wakeLock
       ?.request("screen")
@@ -137,7 +146,9 @@ export function RestTimerBar() {
     };
   }, [restTimer?.isRunning, restTimer?.endsAt]);
 
-  const stillActive = workouts.some((row) => row.status === "active" && row.id === restTimer?.workoutId);
+  const stillActive = workouts.some(
+    (row) => row.status === "active" && row.id === restTimer?.workoutId,
+  );
   const done = Boolean(restTimer) && left <= 0;
   const display = done ? 0 : Math.ceil(Math.max(0, left) / 1000);
 
@@ -153,10 +164,17 @@ export function RestTimerBar() {
       });
       navigator.mediaSession.setActionHandler("pause", () => {
         const remaining = Math.max(1, Math.ceil(remainingMs(restTimer.endsAt) / 1000));
-        useGym.setState({ restTimer: { ...restTimer, isRunning: false, durationSeconds: remaining } });
+        useGym.setState({
+          restTimer: { ...restTimer, isRunning: false, durationSeconds: remaining },
+        });
       });
       navigator.mediaSession.setActionHandler("play", () => {
-        startRestTimer(restTimer.durationSeconds, restTimer.workoutId, restTimer.setId, restTimer.label);
+        startRestTimer(
+          restTimer.durationSeconds,
+          restTimer.workoutId,
+          restTimer.setId,
+          restTimer.label,
+        );
       });
       navigator.mediaSession.setActionHandler("seekforward", () => adjustRestTimer(15));
       navigator.mediaSession.setActionHandler("seekbackward", () => adjustRestTimer(-15));
@@ -200,12 +218,21 @@ export function RestTimerBar() {
               restTimer: { ...restTimer, isRunning: false, durationSeconds: remaining },
             });
           } else {
-            startRestTimer(restTimer.durationSeconds, restTimer.workoutId, restTimer.setId, restTimer.label);
+            startRestTimer(
+              restTimer.durationSeconds,
+              restTimer.workoutId,
+              restTimer.setId,
+              restTimer.label,
+            );
           }
         }}
         aria-label={restTimer.isRunning ? "Pause rest" : "Resume rest"}
       >
-        {done ? null : restTimer.isRunning ? <Pause className="size-4" /> : <Play className="size-4" />}
+        {done ? null : restTimer.isRunning ? (
+          <Pause className="size-4" />
+        ) : (
+          <Play className="size-4" />
+        )}
       </button>
       <button
         type="button"
@@ -226,10 +253,13 @@ export function RestTimerBar() {
             <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-subtle">
               {done ? "On the clock" : "Lock-screen rest"}
             </p>
-            <p className="mt-3 font-display text-7xl font-semibold tracking-tight tabular">{formatDuration(display)}</p>
+            <p className="mt-3 font-display text-7xl font-semibold tracking-tight tabular">
+              {formatDuration(display)}
+            </p>
             <p className="mt-2 text-sm text-muted">{restTimer.label ?? "Between sets"}</p>
             <p className="mt-1 text-xs text-subtle">
-              Screen stays awake. If the phone supports it, rest also shows on the lock screen via media controls.
+              Screen stays awake. If the phone supports it, rest also shows on the lock screen via
+              media controls.
             </p>
             <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-raised">
               <div
@@ -238,7 +268,11 @@ export function RestTimerBar() {
               />
             </div>
             <div className="mt-5 flex items-center justify-end gap-1">{controls}</div>
-            <button type="button" className="mt-3 w-full py-3 text-sm text-muted" onClick={() => setExpanded(false)}>
+            <button
+              type="button"
+              className="mt-3 w-full py-3 text-sm text-muted"
+              onClick={() => setExpanded(false)}
+            >
               Collapse
             </button>
           </div>
@@ -246,9 +280,22 @@ export function RestTimerBar() {
       ) : null}
       <div className="pointer-events-none fixed inset-x-0 bottom-[4.6rem] z-40 px-3 lg:bottom-6">
         <div className="pointer-events-auto mx-auto flex max-w-lg items-center gap-2 rounded-2xl bg-raised px-3 py-2.5 hairline">
-          <button type="button" className="relative size-11 shrink-0" onClick={() => setExpanded(true)} aria-label="Expand rest">
+          <button
+            type="button"
+            className="relative size-11 shrink-0"
+            onClick={() => setExpanded(true)}
+            aria-label="Expand rest"
+          >
             <svg viewBox="0 0 36 36" className="size-11 -rotate-90">
-              <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeWidth="3" className="text-line" />
+              <circle
+                cx="18"
+                cy="18"
+                r="15"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                className="text-line"
+              />
               <circle
                 cx="18"
                 cy="18"
@@ -265,15 +312,28 @@ export function RestTimerBar() {
               {formatDuration(display)}
             </span>
           </button>
-          <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setExpanded(true)}>
-            <p className="truncate text-sm font-medium text-ink">{done ? "Rest complete" : "Rest"}</p>
+          <button
+            type="button"
+            className="min-w-0 flex-1 text-left"
+            onClick={() => setExpanded(true)}
+          >
+            <p className="truncate text-sm font-medium text-ink">
+              {done ? "Rest complete" : "Rest"}
+            </p>
             <p className="truncate text-xs text-muted">{restTimer.label ?? "Between sets"}</p>
           </button>
           {restTimer.suggestedSeconds && restTimer.isRunning && !done ? (
             <button
               type="button"
               className="shrink-0 rounded-xl px-2 py-1 text-[11px] font-medium text-accent hairline"
-              onClick={() => startRestTimer(restTimer.suggestedSeconds!, restTimer.workoutId, restTimer.setId, restTimer.label)}
+              onClick={() =>
+                startRestTimer(
+                  restTimer.suggestedSeconds!,
+                  restTimer.workoutId,
+                  restTimer.setId,
+                  restTimer.label,
+                )
+              }
             >
               You usually rest {formatDuration(restTimer.suggestedSeconds)}
             </button>

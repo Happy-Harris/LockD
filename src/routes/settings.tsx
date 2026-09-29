@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import {
-  type AccentTheme,
   type AppSettings,
   type IntensityMode,
   type ThemeMode,
@@ -272,17 +271,6 @@ function SettingsPage() {
             ["system", "System"],
           ]}
           onChange={(themeMode) => updateSettings({ themeMode: themeMode as ThemeMode })}
-        />
-        <p className="mb-2 mt-4 text-xs text-subtle">Accent</p>
-        <Segment
-          value={settings.accentTheme}
-          options={[
-            ["stamp", "Stamp"],
-            ["glacier", "Glacier"],
-            ["moss", "Moss"],
-            ["ember", "Ember"],
-          ]}
-          onChange={(accentTheme) => updateSettings({ accentTheme: accentTheme as AccentTheme })}
         />
         <p className="mb-2 mt-4 text-xs text-subtle">Presentation</p>
         <Segment
