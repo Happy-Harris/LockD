@@ -260,6 +260,8 @@ export interface Program {
   isArchived: boolean;
   origin: "pack" | "custom" | "duplicated";
   packId?: string;
+  /** Set when the last session of the last week is finished. Restarting the block clears it. */
+  completedAt?: ISODateTime;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
 }
