@@ -5,7 +5,7 @@ this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HAND
 last PRs did and did not verify). Keep this file current: update the tables in the same PR that
 changes a status.
 
-_Last updated: 2026-09-29, after `LockD#47` merged. In flight: Step 9f-3 (show routine effort targets); next the Step 9 timed e2e, then mark Step 9 done._
+_Last updated: 2026-09-29, after `LockD#48` merged. In flight: the Step 9 logging-speed e2e, which closes Step 9; next Step 10 (visual identity), after the owner's answers on the open items below._
 
 ## 1. How to read the labels
 
@@ -93,7 +93,7 @@ State: **done**, **in flight**, **not started**. "GitHub" gives the pull request
 | 8d-1 | Goal lifts are the lifter's own, with pickers; est. 1RM labelled and rounded | done | LockD#33 |
 | 8d-2 | Progression merge (I-20): windowed stall with a layoff guard, loads on the increment grid or buildable with the lifter's plates, program `linear` rule fixed | **done** | branch `claude/step8d2-progression` |
 | 8d-3 | Deterministic Ask the Lab, so guests get an answer that cites the log (I-4, D3) | **done** | branch `claude/step8d3-ask-lab` |
-| 9 | Logging details (sub-steps: 9a input fixes I-27 to I-30; 9b rest timers I-21 and notification/vibrate; 9c intensity pick and RIR I-31; 9d workout-page speed I-26; 9e equipment editor I-35; 9f per-set targets, supersets, unilateral): per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | in progress: 9a done (`LockD#38`), 9b done (`LockD#40`), 9c done (`LockD#41`), 9d done (`LockD#42`), 9e done (`LockD#43`), 9f-1 supersets done (`LockD#44`), 9f-2a done (`LockD#45`), 9f-2b done (`LockD#46`), 9f-2c done (`LockD#47`), 9f-3 in flight | `claude/step9a-input-fixes`, `claude/step9b-rest-timers`, `claude/step9c-intensity`, `claude/step9d-workout-speed`, `claude/step9e-equipment`, `claude/step9f1-supersets`, `claude/step9f2-unilateral`, `claude/step9f2b-pair-counting`, `claude/step9f2c-unilateral-logging`, `claude/step9f3-effort-targets` |
+| 9 | Logging details (sub-steps: 9a input fixes I-27 to I-30; 9b rest timers I-21 and notification/vibrate; 9c intensity pick and RIR I-31; 9d workout-page speed I-26; 9e equipment editor I-35; 9f per-set targets, supersets, unilateral): per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | **done, with carried items** (see "Open items carried by Step 9"): 9a `LockD#38`, 9b `LockD#40`, 9c `LockD#41`, 9d `LockD#42`, 9e `LockD#43`, 9f-1 supersets `LockD#44`, 9f-2a `LockD#45`, 9f-2b `LockD#46`, 9f-2c `LockD#47`, 9f-3 `LockD#48`; the logging-speed e2e is in flight | `claude/step9a-input-fixes`, `claude/step9b-rest-timers`, `claude/step9c-intensity`, `claude/step9d-workout-speed`, `claude/step9e-equipment`, `claude/step9f1-supersets`, `claude/step9f2-unilateral`, `claude/step9f2b-pair-counting`, `claude/step9f2c-unilateral-logging`, `claude/step9f3-effort-targets`, `claude/step9-timed-e2e` |
 | 10 | Visual identity: knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | not started | |
 | 11 | Approved improvements, one PR each: I-14, I-15, I-16, I-17/I-18/O2 (eras), I-23, I-24, I-25, I-33, I-34, I-37, I-41 | not started | |
 | 12 | Scaffolding removal: Grok scripts and middleware, preview bridge, app-data, multiplayer; the OG tags move into `/s` and `/u` first (needs the owner's go-ahead); auth and cloud behind config (D16 dead-code deletions need the owner's yes) | not started | |
@@ -178,8 +178,13 @@ handover entry says so. The open ones:
 
 ## Open items carried by Step 9 (added 2026-09-29)
 
-- **Step 9 acceptance:** the plan asks for a timed e2e that checks principle 1 (logging speed). None of 9a to 9f has added
-  it. Step 9 is not done until it exists (put it in 9f-3 or a closing PR).
+- **Step 9 acceptance:** `e2e/logging-speed.spec.ts` now checks principle 1 in CI at 390 and 1024 px: one tap per set for a
+  whole repeated workout, tap to rest timer within 1.5 s (about 0.44 s measured locally, an upper bound), previous values
+  inline, typed values win, and the active workout and rest timer survive a reload. Its time budget has never been seen
+  to fail, so treat it as a tripwire for large regressions only.
+- **Per-set targets are not built as the plan describes.** 9f-3 only shows the routine's existing RPE or RIR target. A
+  different target for each set needs the donor's module (not reachable) or a new stored structure and a migration.
+  No screen edits `targetRpe`/`targetRir`, so today they come from imported routines only.
 - **Workout-page screenshots:** 9c, 9d and 9f-1 changed the workout page without 390/1024 px screenshots. The
   `run-lockd` driver can now reach `/workout` (`WORKOUT=bilateral|unilateral`), and 9f-2c looked at it at 390 and 1024
   px; 9c, 9d and 9f-1 were not re-shot, and none was compared with `docs/consolidation/baseline/`.

@@ -9,6 +9,21 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9 closes: logging-speed e2e (principle 1)
+
+- **`e2e/logging-speed.spec.ts` (4 tests, run at 390 and 1024 px, 8 in all):** a whole repeated workout is logged with exactly one
+  tap per set and nothing else; one tap completes a set and the rest timer shows within a 1.5 s budget; previous values
+  are inline and a typed weight wins over the prefill; the active workout and the rest timer survive a reload.
+- **Measured locally:** tap to rest timer about 433 ms (phone) and 444 ms (desktop). That includes Playwright's own
+  polling, so it is an upper bound. The budget has about 3x headroom for CI on the dev server.
+- **Honest limits:** the time budget has never been seen to fail (no deliberate regression was tried), so it catches large
+  regressions, not small ones. The tap-count assertion is exact. Nothing here measures logging with a screen reader,
+  a slow phone, or a real gym network.
+- The first run failed twice, both mistakes in the test (it assumed every set carries a load, and it read the wrong
+  exercise's set), not in the app.
+- **Step 9 is done with carried items:** true per-set targets, and baseline comparison of the workout page for 9c, 9d
+  and 9f-1 (see STATUS, "Open items carried by Step 9").
+
 ### 2026-09-29 — Step 9f-3: show the routine's effort target (small version)
 
 - **What:** when a routine sets an effort target, the exercise header shows it ("target RIR 2" or "target RPE 8", in the
