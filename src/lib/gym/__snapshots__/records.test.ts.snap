@@ -1,0 +1,27 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`personal records — current behaviour, including the first-exposure defect > BUG: the first session on file reports a PR for every lift in it 1`] = `
+[
+  "Bench Press",
+  "Overhead Press",
+  "Incline Dumbbell Press",
+  "Cable Triceps Pushdown",
+]
+`;
+
+exports[`personal records — current behaviour, including the first-exposure defect > pins the Chronicle's PR runs, which count those first stamps 1`] = `
+[
+  {
+    "count": 9,
+    "id": "prrun-2026-08-26",
+  },
+  {
+    "count": 81,
+    "id": "prrun-2026-02-20",
+  },
+  {
+    "count": 156,
+    "id": "prrun-2025-10-06",
+  },
+]
+`;
