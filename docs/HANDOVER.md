@@ -19,6 +19,14 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 - **Characterisation diff:** none. The pinned autopsy fixture holds its load constant, so its text is unchanged, which is the point: the clauses stay when they are true.
 - **Tests:** three added to `engine-characterisation.test.ts`: held (0% and +4%) keeps both clauses, +20% drops both, and no logged load or an empty window is never "similar". The +20% case fails on the old code.
 - **Checked:** `npm run verify`. `short_rests` (an autopsy code nothing produces) is still open; it needs a decision on whether to build or delete it, so it is left as is.
+### 2026-09-29 — Step 11 (I-23): the demo stores whole millimetres
+
+- **The bug (plan I-23):** the demo data stored fractional millimetres for the waist, and also for both arms (137 values in all), against principle 3 (canonical integer storage).
+- **The fix:** the `measurement()` helper in `demo.ts` stores `Math.round(value)`. The app's own entry path already rounds through `toMillimetres`, so only the demo was off.
+- **Tests:** `demo-integers.test.ts` (3): every stored measurement is an integer, for the waist and both arms; it fails without the fix. No snapshot changed.
+- **Nothing broke before:** the backup schema accepts fractions, so this was a principle 3 breach, not a crash.
+- **A test that leaned on the fractions:** `e2e/import-csv.spec.ts` asserted that no `arm_left` of 348 exists after importing an unsided 348 arm. Rounded, a sample-log left arm can be 348 too, so it now compares the count of sided arms before and after the import (the intent: the import creates no sided row).
+- **Checked:** `npm run verify` and `import-csv.spec.ts` on both projects. Existing installs that already loaded the demo keep their fractional values; they are not rewritten (that would edit stored history).
 
 ### 2026-09-29 — Step 11 (I-33): a program file's unknown exercise is kept, named and announced
 
