@@ -9,6 +9,14 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 13: README and HANDOFF rewritten from the code, and one more unused dependency
+
+- **What:** `README.md` and the root `HANDOFF.md` are rewritten from what the code does today, not from the app-builder-era brief. The README states the promise, what the app is, the stack (only what is imported now), how to run and check it, and where things live. The HANDOFF states the product test,
+  how the code is arranged, what is built, **what is not verified** (real importer files, a real database round trip, real devices, 1024 px for several late changes, long real histories), what is still to do (Step 12 and the owner decisions), and what not to do. Neither file is deleted; STATUS had asked "delete now?", and the answer taken is to keep and rewrite.
+- **`vaul` removed too:** my dependency sweep in `LockD#69` counted `vaul` as used because the string also matches "vault"; no file imports it. The kept Radix set is Dialog, Alert Dialog and Slot.
+- **Not done:** Step 12. The HANDOFF says so plainly, including that `.env.example` and sign-in still mention the Grok broker. `AGENTS.md` (added in `LockD#68` for Codex) sits beside `CLAUDE.md` and only points at it; STATUS's cleanup row says an earlier `AGENTS.md` was folded into `CLAUDE.md`, so this is a deliberate re-add on the owner's request, not a reversal.
+- **Checked:** `npm run verify`, `npm run check:brand` (0 findings). The claims in the two files were checked against `package.json`, `src/lib/brand.ts`, `docs/OFFLINE.md` and the route list.
+
 ### 2026-09-29 — Step 13 (I-40): 30 unused dependencies removed
 
 - **What:** `npm uninstall` of every package with no reference anywhere in `src`, `scripts`, `server` or the config files: `@hookform/resolvers`, `react-hook-form`, `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/router-plugin`, `cmdk`, `date-fns`, `react-day-picker`,

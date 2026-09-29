@@ -1,91 +1,46 @@
 # Handoff — Lock’d (Keep the receipt)
 
-Give this file to the next AI along with the repo. Snapshot date: **2026-09-22**.
-
-You are continuing **Lock’d**, not Strong-Pro. Strong-Pro is the original local-first logger at `motivatedc-creator/Strong-Pro`. This codebase is the rebuilt product.
+Written from the code on 2026-09-29, after Step 11 of the consolidation plan. It replaces the app-builder-era brief.
+For the running state read `docs/STATUS.md` (what is done and what is next) and the top of `docs/HANDOVER.md` (what shipped, most recent first). `CLAUDE.md` is the rulebook.
 
 ## Product
 
-Lock’d is a **training OS that remembers a lifter’s entire log**. Tagline is **Keep the receipt.** Do not drop that. Brand:
+Lock’d is a training operating system for people who lift for years. **Keep the receipt** is the line and the test: *does a change help a lifter trust and understand their own record?* The record lives on the device (guest and offline work); sign-in upgrades it (sync, a public locker and share links, a Lab over the full history) and never gates logging. History, charts and export are free forever, and a test and an ESLint rule enforce it.
 
-- Name: **Lock’d** (apostrophe). Stamp **L** mark.
-- Palette: vermillion `#C24A32` on warm near-black `#0C0B0A`, paper cream `#F4EFE6`.
-- Aesthetic: paper, perforation, receipts, posters — not a generic fitness dashboard.
+Brand: Lock’d / LOCKD / `lockd`. Palette in `src/lib/brand.ts` (Mill, Chalk, Steel, Oxide, Verdigris); faces are Big Shoulders Display, Archivo and IBM Plex Mono, self-hosted. The old names (RepForge, Strong-Pro, Certified, Knurl, Grok) never appear in user-facing copy; `npm run check:brand` reports them.
 
-The owner (Harris / Happy Haris, GitHub `motivatedc-creator`) explicitly rejected “local-first” as a selling point. Guest-on-device still works, but accounts, cloud vault, public locker, real share URLs, and a Lab that reads the full locker are the product.
+## How the code is arranged
 
-## What is already built (do not rebuild)
+- The log lives in one Zustand store (`src/lib/gym/store.ts`), persisted through the IndexedDB repository in `src/lib/storage/`. The old `localStorage['lockd-v1']` key is migrated, verified, and left in place as a safety copy. Video clips are blobs in IndexedDB `lockd-vault`, with `ClipMeta` in the store.
+- Nothing derived is stored. Screens read `useGymDerived()` (`src/lib/gym/hooks.ts`), which builds session slices and runs the engines on read.
+- Storage is integers: grams, millimetres, metres, seconds. kg/lb and cm/in are display only, so code that words a weight takes a `WeightUnit`.
+- A new stored field is optional and travels through `src/domain/types.ts`, the zod schema in `src/lib/backup/schema.ts`, and the store's export/import, with an old-format fixture that still loads.
+- Server functions (`src/lib/cloud/api.ts`, `src/lib/lab/ask.ts`) use `authMiddleware` and validate input with `src/lib/cloud/validate.ts`. Never trust a client-sent user id. Tables: `lockd_vaults`, `lockd_profiles`, `lockd_shares`, `lockd_lab_notes` (`migrations/`).
+- Deterministic engines are never replaced by a chatbot. Lab answers cite the log.
+- Product thresholds that are not research are exported constants plus an `implementation_heuristic` claim in `src/domain/evidence/catalog.ts`.
 
-Core logger (from Strong-Pro, restyled):
+## What is built
 
-- Workouts, routines, exercises, RPE, rest timer, plate calculator, warm-ups
-- Strong CSV import, JSON backup, body measurements
-- Units (kg/lb), plate inventory, e1RM, volume, muscle taxonomy
+Logger (sets, rest timer, previous values, ghost, unilateral pairs, supersets, RIR/RPE, clips), routines and programs (packs, import/export, progression rules, completion), history and analytics (weekly verdict, muscle sets, change flags, records, Chronicle eras, autopsy, DNA, moments, wrapped), import and export (Strong, Hevy, two sister apps, JSON backup with validated restore, CSV), offline (service worker, `docs/OFFLINE.md`), sign-in, vault sync, public locker and shares, and the Lab.
 
-Headline features (working):
+## What is not verified
 
-- **Ghost Session** — overlay today vs last comparable workout set-by-set (`src/lib/gym/ghost.ts`)
-- **Training Chronicle** — auto-detected eras, PR runs, layoffs, comebacks (`chronicle.ts`)
-- **Lift DNA** — per-exercise profile (`dna.ts`)
-- **Plateau Autopsy** — stall “why” with evidence (`autopsy.ts`)
-- **Progression Engine** — next target + why + easier-week (`progression.ts`)
-- **Goal Lenses** — Powerbuilding / Hypertrophy / Strength / … (`lenses.ts`)
-- **Machine Memory** — seat/lever/pin setups
-- **Program Compiler** — multi-week programs, substitutions
-- **Moment posters / yearly receipts / wrapped** (`moments.ts`, `wrapped.ts`)
-- **Live rest timer** — MediaSession + wake lock
-- **Local video set vault** — IndexedDB clips + metadata
-- **Ask the Lab** — client brief + signed-in `consultLab` server path (`src/lib/lab/`, `src/lib/cloud/api.ts`)
-- **Cloud vault** — per-user JSON blob in `lockd_vaults`
-- **Public shares** — `/s/$id` moments, receipts, wrapped, programs
-- **Public locker** — `/u/$handle`, handle uniqueness
+- **Real files.** The Hevy, sister-app and Strong importers are checked against synthetic or donor fixtures only, not against a fresh real export.
+- **A database.** Sign-in, sync, shares and the server Lab have not been exercised end to end against a database in the recent sessions (none was available); the server input validators are unit-tested, the handlers are unchanged.
+- **Real devices.** Rest-timer notifications and vibration, clip storage against a real recording, and the service worker on a phone were tested in headless Chromium only.
+- **Screens at 1024 px** for several late changes (Chronicle eras, program-complete, the unit-aware Today milestones) were not looked at.
+- **Long real histories.** Era detection and the thin-evidence gates were tuned on the demo year and synthetic logs, not on a multi-year import.
 
-Auth is **ON**. Database is **ON**. Google + X sign-in. Guest logging still allowed.
+## Still to do
 
-## Architecture notes
-
-- Gym state is a Zustand store with persist + migrate (`src/lib/gym/store.ts`, `BACKUP_VERSION = 3`). Cloud slice uses `replaceFromCloud` / `cloudPayloadFromState`. `CloudSync` debounce ~1.6s, `applyingRef` to avoid echo.
-- `GymGate` in `src/routes/__root.tsx` handles splash vs onboarding vs app. Guests must **not** get stuck on “opening the locker”. Signed-in users splash until vault pull + hydration.
-- Public routes (`/login`, `/s/$id`, `/u/$handle`) use `PaperShell`, not the signed-in `Page` chrome.
-- Server functions: TanStack `createServerFn` + `authMiddleware`. Never trust a client-sent `userId`.
-- Tables (`migrations/0002_lockd_cloud.sql`): `lockd_vaults`, `lockd_profiles`, `lockd_shares`, `lockd_lab_notes`.
-- Preview vs deploy: `isWorkspacePreview()` is `!GROK_PROJECT_ID`. Auth federates through **Grok’s auth broker** (`GROK_AUTH_ISSUER`, `GROK_PROVIDERS` in `src/lib/auth/providers.ts`). **Outside Grok App Builder you must rewire Better Auth to real Google/X OAuth** (or keep email) and set `DATABASE_URL` to Neon/Postgres. PGLite is the no-config fallback.
-- Do not strip `PreviewHostBridge`, `grokPwaPlugin`, or the “Created with Grok” pill while the app still lives in Grok preview. Outside Grok they are inert-ish; you may drop them in a fork.
-
-## How to run
-
-```bash
-npm install
-npm run dev        # Vite, port 8080
-npm run typecheck
-npm run build
-```
-
-See `.env.example`. Guest demo: onboarding → load sample log.
-
-## Quality bar the previous session held
-
-- `npm run typecheck` and `npm run build` pass.
-- Desktop + mobile smoke. Receipt / paper UI, no generic AI-slop cards.
-- Domain engines stay deterministic (ghost compare, autopsy evidence, chronicle eras). Do not replace them with a chatbot.
-- Lab answers must cite the actual log (receipts), not vibe.
-
-## Known constraints / next work
-
-- Auth broker is Grok-specific. Standalone deploy needs real OAuth secrets + `BETTER_AUTH_SECRET` + `DATABASE_URL`.
-- Vault is a full JSON blob, not incremental deltas. Fine for demo size; large logs will want deltas.
-- Native Live Activities (Capacitor) not done; web timer + MediaSession is the current stand-in.
-- Video clips stay on-device (IndexedDB); they are not in the cloud vault blob.
-- Moment poster text wrapping has been a recurring visual bug — test long lift names (“100 kg bench”).
-- Chronicle era detection was iterated hard; do not “simplify” it without fixtures.
-
-## Original vision dump
-
-`docs/VISION.md` is the user’s 80-idea board (Ghost, Autopsy, DNA, Chronicle, Machine Memory, Program Compiler, Live Activity, video vault, Milestone Queue, Ask the Lab, plus the rest). Prioritize quality of existing surfaces over adding 70 more half-features.
+- **Step 12, waiting on the owner:** remove the app-builder scaffolding (`scripts/grok-*`, `server/middleware/grok-pwa.ts`, `src/lib/app-data/`, `src/lib/multiplayer/`, the preview bridge, the third-party script). The OG tags for `/s` and `/u` are still injected by that middleware and must move into the routes first. Auth and cloud become config-driven (plan § 5). The D16 dead-code deletions (multiplayer, `counterfactual`, `wouldBePr`, `sessionCountStreak`) need the owner’s yes. Until then `.env.example` still mentions the Grok broker and sign-in still federates through it in preview.
+- **Owner decisions** are collected in `docs/STATUS.md` § 5: the era rules, the autopsy load band, the pounds milestone ladder, the server size caps, D6's readings, `percent_deload`, `eraSplits`, `short_rests`, the default goal lifts.
+- **Phase 3 and 4** (the owner's opportunities) come after stabilising; see `docs/STATUS.md` § 4. Native Live Activities (Capacitor) are not started; the web timer with MediaSession stands in.
 
 ## What not to do
 
-- Do not market “local-first” as the value prop.
-- Do not overwrite `motivatedc-creator/Strong-Pro` unless the owner says so.
-- Do not invent fake wellness scores. Momentum / autopsy / DNA are evidence from the log.
-- Do not gate basic logging behind sign-in. Sign-in **upgrades** (sync, locker, public links, Lab with full history).
+- Do not market local-first as the value proposition; the record is the product, and the device is where it starts.
+- Do not gate logging behind sign-in, and never paywall history.
+- Do not invent targets or wellness scores. Missing data stays visible; it is never shown as zero or as a positive state.
+- Do not rename a live identifier as a cleanup (`lockd-v1`, `lockd-vault`, `lockd-backup`, `lockd-program`, `/s/$id`, `/u/$handle`, the `lockd_*` tables): each is a migration.
+- Do not force-push `main`, and ask before deleting a Lock’d feature.
