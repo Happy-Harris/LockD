@@ -1,12 +1,13 @@
 # Project-level Codex settings. User-level settings in ~/.codex/config.toml still apply underneath;
-# this file only sets safe defaults for working in this repository. No model, key or URL is set here.
+# this file only sets defaults for working in this repository. No model, key or URL is set here.
 
-# Ask before running commands that leave the workspace sandbox.
+# "Auto" in Codex's own terms: edits and routine commands run without asking, and Codex asks only when it needs
+# to step outside the sandbox.
 approval_policy = "on-request"
 
-# Read the repo and write inside it. The sandbox has no network by default: install dependencies once
-# (`npm ci`) before a session, or approve the request when Codex asks.
+# Read the repo and write inside it.
 sandbox_mode = "workspace-write"
 
 [sandbox_workspace_write]
-network_access = false
+# Full network access, so `npm ci`, the Playwright browser and the GitHub tools work without a prompt.
+network_access = true
