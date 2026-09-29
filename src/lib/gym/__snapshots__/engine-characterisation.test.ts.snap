@@ -144,7 +144,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
       "title": "Rising RPE",
     },
   ],
-  "headline": "Bench Press: missed reps, falling volume, rising rpe.",
+  "headline": "Bench Press: missed reps, falling volume, rising RPE.",
   "name": "Bench Press",
   "stallSessions": 0,
   "stalled": true,
