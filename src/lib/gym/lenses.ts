@@ -1,3 +1,4 @@
+import type { VerdictLens } from "@/domain/analytics/lens";
 import type { GoalLens } from "@/domain/types";
 
 export interface LensDef {
@@ -5,7 +6,9 @@ export interface LensDef {
   label: string;
   kicker: string;
   blurb: string;
-  today: Array<"verdict" | "goals" | "progression" | "volume" | "recovery" | "relative" | "skills" | "moments">;
+  today: Array<
+    "verdict" | "goals" | "progression" | "volume" | "recovery" | "relative" | "skills" | "moments"
+  >;
   recordKind: "e1rm" | "weight" | "reps" | "volume";
   skillIds: string[];
 }
@@ -27,7 +30,12 @@ export const LENSES: LensDef[] = [
     blurb: "Estimated 1RMs, stalls, and the next kilo. Volume is support.",
     today: ["goals", "progression", "verdict", "moments"],
     recordKind: "e1rm",
-    skillIds: ["seed-bench-press", "seed-back-squat", "seed-conventional-deadlift", "seed-overhead-press"],
+    skillIds: [
+      "seed-bench-press",
+      "seed-back-squat",
+      "seed-conventional-deadlift",
+      "seed-overhead-press",
+    ],
   },
   {
     id: "hypertrophy",
@@ -73,4 +81,16 @@ export function lensDef(id: GoalLens): LensDef {
 
 export function lensShows(id: GoalLens, block: LensDef["today"][number]): boolean {
   return lensDef(id).today.includes(block);
+}
+
+/**
+ * How the weekly verdict words a week for each preset. The wording changes; no figure does.
+ * Strength reads a held intensity as a deliberate block, and a hybrid lifter, whose week is
+ * shared with other training, is told that steady is fine. Every other preset gets the default
+ * "build" framing: more hard sets on a muscle is the aim.
+ */
+export function verdictFraming(id: GoalLens): VerdictLens {
+  if (id === "strength") return "strength";
+  if (id === "hybrid") return "maintain";
+  return "build";
 }

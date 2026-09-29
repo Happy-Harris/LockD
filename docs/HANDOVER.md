@@ -6,6 +6,34 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 8a: the analytics engines (ported, tested, not wired yet)
+
+Plan PR 8 is split, as the plan allows. The owner confirmed "replace as planned" (Lock'd's verdict,
+landmark bands and standards bands are replaced by the ported versions, plan D4 to D6).
+**8a (this):** the pure engines and their tests, with nothing on screen changed. **8b:** the weekly
+verdict and training flags on screen (replacing Lock'd's verdict, with evidence sheets). **8c:**
+muscle sets and personal targets (replacing MEV/MAV/MRV), the recovery copy (I-9) and standards
+(D4, I-11). **8d:** goal lifts and one lens module (I-19), the progression merge (I-20), and the
+deterministic Ask the Lab.
+
+- **`src/domain/analytics/`:** `compute` (the logged-entry shape and analytics options),
+  `trainingWeeks`, `weeklyVerdict` (+ `metrics`, `util`, `presentation`), `trainingFlags` (deload and
+  spike flags), `muscleSets`. Copied from the donor with only import paths, quotes and formatting
+  changed; the donor's 134 unit tests and its golden fixtures came with them and pass unchanged.
+- **`src/domain/progression.ts`:** the donor's windowed stall rule, next-load and receipt logic,
+  with its tests. Lock'd's own `src/lib/gym/progression.ts` is untouched; the merge (I-20) is 8d.
+- **Lens:** the engines' wording input is `VerdictLens` (`build | strength | maintain`, copy only,
+  never a figure). Lock'd's six presets map onto it in `verdictFraming` (`lenses.ts`): strength →
+  strength, hybrid → maintain, the other four → build. **This mapping is a product call made here**;
+  change it in one place if it is wrong.
+- **Evidence:** only the `RESEARCH_WEEKLY_SET_BAND` constant (10–20) is added. The donor's claims
+  for the verdict, flags and personal targets are **not** restored yet: they come with the screens
+  that show them (8b, 8c), so the catalog never describes behaviour the app does not have. One donor
+  source (Refalo 2023) is also left out until a claim uses it and its DOI is checked.
+- **Tests:** the donor's (134) plus `lenses.test.ts`. The paywall guard now also walks the new
+  modules.
+- **Not verified:** nothing here is reachable from a screen, so no user-visible behaviour changed.
+
 ### 2026-09-29 — Plan PR 7f: CSV export rewrite and the seed library top-up (closes plan PR 7)
 
 - **CSV export (`src/lib/export/csv.ts`, replaces `src/lib/gym/csv.ts`):** Settings now has five

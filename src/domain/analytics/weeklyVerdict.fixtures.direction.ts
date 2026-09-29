@@ -1,0 +1,80 @@
+import type { VerdictFixture } from "./weeklyVerdict.fixtures.helpers";
+import { fixtureEntry, mondayBaseline } from "./weeklyVerdict.fixtures.helpers";
+
+export const DIRECTION_FIXTURES: VerdictFixture[] = [
+  {
+    name: "direction: exactly +10% is up",
+    group: "direction",
+    weekStart: "monday",
+    reference: "2026-09-17T12:00:00.000Z",
+    entries: [...mondayBaseline(10), fixtureEntry("2026-09-08", "last", { hardSets: 11 })],
+    expected: { state: "full", directionBand: "up" },
+  },
+  {
+    name: "direction: +9.9% stays steady",
+    group: "direction",
+    weekStart: "monday",
+    reference: "2026-09-17T12:00:00.000Z",
+    entries: [...mondayBaseline(100), fixtureEntry("2026-09-08", "last", { hardSets: 109 })],
+    expected: { state: "full", directionBand: "steady" },
+  },
+  {
+    name: "direction: exactly +50% is up not big_jump",
+    group: "direction",
+    weekStart: "monday",
+    reference: "2026-09-17T12:00:00.000Z",
+    entries: [...mondayBaseline(10), fixtureEntry("2026-09-08", "last", { hardSets: 15 })],
+    expected: { state: "full", directionBand: "up" },
+  },
+  {
+    name: "direction: +50.1% is big_jump",
+    group: "direction",
+    weekStart: "monday",
+    reference: "2026-09-17T12:00:00.000Z",
+    entries: [...mondayBaseline(10), fixtureEntry("2026-09-08", "last", { hardSets: 16 })],
+    expected: { state: "full", directionBand: "big_jump" },
+  },
+  {
+    name: "direction: exactly -10% is down",
+    group: "direction",
+    weekStart: "monday",
+    reference: "2026-09-17T12:00:00.000Z",
+    entries: [...mondayBaseline(10), fixtureEntry("2026-09-08", "last", { hardSets: 9 })],
+    expected: { state: "full", directionBand: "down" },
+  },
+  {
+    name: "direction: -9.9% stays steady",
+    group: "direction",
+    weekStart: "monday",
+    reference: "2026-09-17T12:00:00.000Z",
+    entries: [...mondayBaseline(100), fixtureEntry("2026-09-08", "last", { hardSets: 91 })],
+    expected: { state: "full", directionBand: "steady" },
+  },
+  {
+    name: "direction: exactly -30% is well_down",
+    group: "direction",
+    weekStart: "monday",
+    reference: "2026-09-17T12:00:00.000Z",
+    entries: [...mondayBaseline(10), fixtureEntry("2026-09-08", "last", { hardSets: 7 })],
+    expected: { state: "full", directionBand: "well_down" },
+  },
+  {
+    name: "direction: -29.9% is down not well_down",
+    group: "direction",
+    weekStart: "monday",
+    reference: "2026-09-17T12:00:00.000Z",
+    entries: [...mondayBaseline(100), fixtureEntry("2026-09-08", "last", { hardSets: 71 })],
+    expected: { state: "full", directionBand: "down" },
+  },
+  {
+    name: "direction: tonnage ignored for direction band",
+    group: "direction",
+    weekStart: "monday",
+    reference: "2026-09-17T12:00:00.000Z",
+    entries: [
+      ...mondayBaseline(10),
+      fixtureEntry("2026-09-08", "last", { hardSets: 10, weightG: 500_000, reps: 10 }),
+    ],
+    expected: { state: "full", directionBand: "steady" },
+  },
+];
