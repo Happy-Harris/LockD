@@ -42,6 +42,11 @@ function AnalyticsPage() {
           lens={verdictLens}
           lensLabel={lensDef(settings.goalLens).label}
           muscleBalance={subjectBalance}
+          exercises={exercises}
+          goalLiftIds={settings.goalLiftIds}
+          onGoalLiftIdsChange={(goalLiftIds) => updateSettings({ goalLiftIds })}
+          lensId={settings.goalLens}
+          onLensChange={(goalLens) => updateSettings({ goalLens })}
         />
         <ChangeFlagsCard flags={flags} weightUnit={weightUnitFor(settings.unitSystem)} />
         <MuscleSetsCard

@@ -4,7 +4,6 @@ import { autopsyBoard } from "@/lib/gym/autopsy";
 import { buildChronicle } from "@/lib/gym/chronicle";
 import { buildLiftDna } from "@/lib/gym/dna";
 import { buildIntelligence } from "@/lib/gym/intelligence";
-import { lensDef } from "@/lib/gym/lenses";
 import { easierWeekCall, progressBoard } from "@/lib/gym/progression";
 import { milestoneQueue } from "@/lib/gym/queue";
 import { defaultSettings } from "@/lib/gym/store";
@@ -32,10 +31,8 @@ export function buildLabBrief(
   const settings = { ...defaultSettings(), ...data.settings };
   const unit = weightUnitFor(settings.unitSystem);
   const slices = sliceSessions(data.workouts, data.workoutExercises, data.workoutSets);
-  const lens = lensDef(settings.goalLens);
-  const trackedIds = (
-    lens.skillIds.length ? lens.skillIds : settings.goalLiftIds.length ? settings.goalLiftIds : []
-  ).filter((id, index, list) => list.indexOf(id) === index);
+  // The lifter's own goal lifts; the lens never swaps them for its own (I-19).
+  const trackedIds = settings.goalLiftIds.filter((id, index, list) => list.indexOf(id) === index);
   const board = progressBoard(
     trackedIds.map((id) => {
       const exercise = data.exercises.find((row) => row.id === id);

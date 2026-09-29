@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { formatLocalDate, formatWeekday } from "@/domain/time";
 import type { GoalLens } from "@/domain/types";
 import { titleCase } from "@/domain/taxonomy";
-import { formatWeight, formatWeightWithUnit, weightUnitFor } from "@/domain/units";
+import { formatWeight, formatWeightWithUnit, roundEstimateG, weightUnitFor } from "@/domain/units";
 import { e1rmSeries } from "@/lib/gym/analytics";
 import { LENSES, lensShows } from "@/lib/gym/lenses";
 import { formatSets, stateLabel } from "@/lib/gym/muscle-labels";
@@ -164,6 +164,11 @@ function TodayPage() {
             lensLabel={lens.label}
             stamp
             muscleBalance={subjectBalance}
+            exercises={exercises}
+            goalLiftIds={settings.goalLiftIds}
+            onGoalLiftIdsChange={(goalLiftIds) => updateSettings({ goalLiftIds })}
+            lensId={settings.goalLens}
+            onLensChange={(goalLens) => updateSettings({ goalLens })}
           />
         </div>
       ) : null}
@@ -201,9 +206,16 @@ function TodayPage() {
                 <Card className="flex items-end justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium">{card.name}</p>
-                    <p className="mt-1 font-display text-3xl font-semibold tabular">
-                      {card.latest ? formatWeightWithUnit(card.latest.value, unit) : "—"}
+                    <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-subtle">Est. 1RM</p>
+                    <p className="font-display text-3xl font-semibold tabular">
+                      {card.latest ? formatWeightWithUnit(roundEstimateG(card.latest.value, unit), unit) : "—"}
                     </p>
+                    {card.latest ? (
+                      <p className="text-[11px] text-subtle">
+                        from {formatWeight(card.latest.source.weightG, unit)} {unit} × {card.latest.source.reps},{" "}
+                        {formatLocalDate(card.latest.date)}
+                      </p>
+                    ) : null}
                     {card.call ? <p className="mt-1 text-xs text-muted">{card.call.why}</p> : null}
                     {dna.find((row) => row.exerciseId === card.id)?.personality ? (
                       <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-subtle">

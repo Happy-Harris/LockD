@@ -336,8 +336,14 @@ export function e1rmSeries(
   exerciseId: string,
   slices: SessionSlice[],
   formula: OneRepMaxFormula,
-): Array<{ date: string; value: number; label: string }> {
-  const points: Array<{ date: string; value: number; label: string }> = [];
+): Array<{ date: string; value: number; label: string; source: { weightG: number; reps: number } }> {
+  const points: Array<{
+    date: string;
+    value: number;
+    label: string;
+    /** The set the estimate came from, so a screen can show it. */
+    source: { weightG: number; reps: number };
+  }> = [];
   for (const slice of slices) {
     const row = slice.exercises.find((exercise) => exercise.exerciseId === exerciseId);
     if (!row) continue;
@@ -348,6 +354,7 @@ export function e1rmSeries(
       date: slice.workout.localDate,
       value: best.value,
       label: `${best.set.weightG}×${best.set.reps}`,
+      source: { weightG: best.set.weightG ?? 0, reps: best.set.reps ?? 0 },
     });
   }
   return points;

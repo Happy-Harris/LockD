@@ -6,6 +6,34 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 8d-1: goal lifts are the lifter's own (I-19), with pickers; est. 1RM labelled and rounded (I-13)
+
+Plan 8d is split. **8d-1 (this).** **8d-2:** the progression merge (I-20) and the deterministic Ask the
+Lab (I-4, D3).
+
+- **I-19 fixed:** the lifts tracked by the progression board, DNA, autopsies, milestone queue and the
+  Lab brief were the **lens's own list** whenever a lens had one (Powerbuilding, Strength, Calisthenics,
+  Hybrid), silently replacing the lifts the lifter had picked. Now they are the lifter's goal lifts,
+  or their three most-trained if they picked none. The lens only chooses which blocks show and how the
+  verdict is worded; the Skills block still uses a lens's own skill list because that is what it
+  is. Effect: under Strength the board tracks three lifts (the lifter's) instead of four. A hook test
+  runs every lens and checks the board's lifts are the lifter's, and fails if the swap returns.
+- **Goal-lift picker** (`GoalLiftPicker`, a sheet): search the library, pick up to three, or "Use my
+  top lifts instead" (none picked, and the verdict says it is a guess). Reached from the verdict
+  card's "Choose"/"Edit" (Today and Data Lab) and from Settings, which shows the current lifts by
+  name and replaces the old six-chip pool. **Lens sheet** (`GoalLensSheet`): "Change" on the verdict
+  card, same six presets as the Today chips and Settings, said plainly: it never changes a number
+  and never changes which lifts are tracked.
+- **I-13:** the goal-lift card on Today labelled an estimated 1RM as a bare weight at two decimals
+  (132.71 kg). It now says **Est. 1RM**, rounds to half a kilogram or a whole pound
+  (`roundEstimateG`), and shows the set it came from and the date ("from 110 kg × 5, Mar 3").
+  `e1rmSeries` points now carry that set.
+- **Default goal lifts:** a new log still starts with bench, squat and deadlift as goal lifts (the
+  onboarding default), so the verdict calls them "chosen". Unchanged here; changing the default is a
+  product call.
+- **Tests:** picker and lens sheet (RTL), the every-lens hook test (mutation-checked), `roundEstimateG`,
+  e2e for picking lifts and for the Est. 1RM card.
+
 ### 2026-09-29 — Plan PR 8c-2: "last trained" replaces recovery states; standards bands replaced by a ratio
 
 - **Recovery (plan I-9):** Today's recovery block is now **Last trained** and states a fact:
