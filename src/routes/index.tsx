@@ -333,7 +333,19 @@ function TodayPage() {
             Train
           </Link>
         </div>
-        {activeProgram && nextProgram ? (
+        {activeProgram?.completedAt ? (
+          <Link
+            to="/programs/$id"
+            params={{ id: activeProgram.id }}
+            className="mb-3 block rounded-[28px] bg-raised px-4 py-5 hairline"
+          >
+            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+              {activeProgram.name}
+            </p>
+            <p className="mt-1 font-display text-3xl font-semibold tracking-tight">Program complete</p>
+            <p className="text-sm text-muted">Restart the block or choose another.</p>
+          </Link>
+        ) : activeProgram && nextProgram ? (
           <button
             type="button"
             onClick={() => {

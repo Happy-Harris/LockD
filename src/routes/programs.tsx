@@ -37,7 +37,20 @@ function ProgramsPage() {
         Multi-week blocks with progression rules and deloads. Publish a link, install one, or keep a file.
       </p>
 
-      {activeProgram && nextProgram ? (
+      {activeProgram?.completedAt ? (
+        <Card className="mt-6" data-testid="program-complete">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Active block</p>
+          <h2 className="mt-2 font-display text-2xl font-semibold">{activeProgram.name}</h2>
+          <p className="mt-1 text-sm text-muted">
+            Program complete · all {activeProgram.weekCount} weeks finished on {activeProgram.completedAt.slice(0, 10)}.
+          </p>
+          <Button className="mt-4 w-full" variant="secondary" asChild>
+            <Link to="/programs/$id" params={{ id: activeProgram.id }}>
+              Restart it or choose another
+            </Link>
+          </Button>
+        </Card>
+      ) : activeProgram && nextProgram ? (
         <Card className="mt-6">
           <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Active block</p>
           <h2 className="mt-2 font-display text-2xl font-semibold">{activeProgram.name}</h2>
@@ -67,7 +80,7 @@ function ProgramsPage() {
                 <div>
                   <p className="font-medium">{program.name}</p>
                   <p className="text-xs text-muted">
-                    {program.weekCount} weeks · week {program.currentWeek}
+                    {program.weekCount} weeks · {program.completedAt ? "complete" : `week ${program.currentWeek}`}
                   </p>
                 </div>
                 {program.isActive ? <Badge tone="accent">Active</Badge> : null}
