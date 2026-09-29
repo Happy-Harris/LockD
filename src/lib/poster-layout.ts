@@ -148,3 +148,19 @@ export function receiptHeight(
 ): number {
   return Math.max(opts.minHeight, opts.top + lineCount * opts.lineHeight + opts.bottom);
 }
+
+/**
+ * Browsers cap canvas size (iPhone Safari allows about 4096 x 4096 in area), so a huge receipt has to stop
+ * somewhere. It stops with a visible last line that says how many lines were left out; it never drops them
+ * silently.
+ */
+export function fitReceiptLines(
+  lines: string[],
+  opts: { top: number; lineHeight: number; bottom: number; maxHeight: number },
+): { lines: string[]; cut: number } {
+  const room = Math.floor((opts.maxHeight - opts.top - opts.bottom) / opts.lineHeight);
+  if (lines.length <= room) return { lines, cut: 0 };
+  const kept = lines.slice(0, Math.max(room - 1, 0));
+  const cut = lines.length - kept.length;
+  return { lines: [...kept, `… ${cut} more lines not shown`], cut };
+}

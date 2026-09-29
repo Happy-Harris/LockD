@@ -1,7 +1,13 @@
 import { useEffect } from "react";
+import { loadCanvasFonts } from "@/lib/fonts";
 import { useGym } from "@/lib/gym/store";
 
 export function ThemeSync() {
+  // Load the faces the posters, receipts and lock-screen art draw with, so a download never waits or falls back.
+  useEffect(() => {
+    void loadCanvasFonts();
+  }, []);
+
   const themeMode = useGym((s) => s.settings.themeMode);
   const presentation = useGym((s) => s.settings.presentationMode);
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { layoutPoster, POSTER, receiptHeight, wrapLines } from "./poster-layout";
+import { fitReceiptLines, layoutPoster, POSTER, receiptHeight, wrapLines } from "./poster-layout";
 
 /** A fake face: every character is `px * 0.5` wide in the title and 14 px in the detail. */
 const measureTitle = (text: string, px: number) => text.length * px * 0.5;
@@ -140,5 +140,27 @@ describe("receiptHeight", () => {
     const height = receiptHeight(lines, opts);
     expect(height).toBe(180 + 200 * 30 + 60);
     expect(180 + (lines - 1) * 30).toBeLessThanOrEqual(height - 60);
+  });
+});
+
+describe("fitReceiptLines", () => {
+  const opts = { top: 180, lineHeight: 30, bottom: 60, maxHeight: 1080 };
+  const room = Math.floor((1080 - 180 - 60) / 30);
+
+  it("keeps every line when they fit", () => {
+    const lines = Array.from({ length: room }, (_, i) => `line ${i}`);
+    expect(fitReceiptLines(lines, opts)).toEqual({ lines, cut: 0 });
+  });
+
+  it("when they do not, says how many were left out, and the count is right", () => {
+    const lines = Array.from({ length: room + 10 }, (_, i) => `line ${i}`);
+    const fit = fitReceiptLines(lines, opts);
+    expect(fit.lines).toHaveLength(room);
+    expect(fit.lines.at(-1)).toBe(`… ${fit.cut} more lines not shown`);
+    // Everything either drawn as itself or counted in the note.
+    expect(fit.lines.length - 1 + fit.cut).toBe(lines.length);
+    expect(receiptHeight(fit.lines.length, { ...opts, minHeight: 0 })).toBeLessThanOrEqual(
+      opts.maxHeight,
+    );
   });
 });

@@ -9,6 +9,26 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 10d: poster and receipt layout that cannot overlap or cut (I-32)
+
+- **Poster:** `src/lib/poster-layout.ts` (pure, 15 tests with a fake measure) decides the lines and y positions. One- and two-line titles land exactly where
+  they always did (value at 500, detail at 560), so those posters do not change. A longer title pushes the value and detail down
+  (the old fixed y made a three-line title overlap them), then shrinks the type (96 to 44 px), and a detail that still cannot fit is
+  cut with a visible "…", never the title. A single word wider than the poster is broken by character instead of running off the edge.
+  A test walks title lengths 1 to 40 words and checks nothing overlaps or leaves the poster.
+- **Receipt (not in the plan, found reading the code):** the PNG used to stop drawing at the canvas height (`if (y > height - 60) break`),
+  so a long session's receipt was cut with no notice. The canvas is now as tall as its lines need. Past a 16,000 px cap (browsers cap canvas
+  size) the last line says "… N more lines not shown". `receiptHeight` and `fitReceiptLines` are tested.
+- **Fonts (I-32):** `src/lib/fonts.ts` loads the three families; `ThemeSync` preloads them, and the poster and receipt downloads stay synchronous
+  inside the tap when the fonts are ready, and only wait if one is still loading.
+- **Looked at, in the running app** (the real download functions, saved as PNGs and opened): a short poster (unchanged), a four-line title
+  (value and detail clear beneath), an absurd single word (broken by character, nothing off the edge), and a 60-set receipt (every line present on a
+  720 x 2160 canvas). **Not checked:** the lock-screen art (`paintLockArt`, still synchronous, label cut at 28 characters), the light theme,
+  and the posters at the plan's other sizes (there are none), or on a phone.
+- **Two things seen and left alone:** the poster PNG prints `moment.date` as stored (2026-09-28) while the screen formats it, and when a moment has no
+  `valueLabel` the PNG omits the value that the screen shows from `valueG`. Both predate this PR.
+- Merge note: none needed after `main` (Step 10c) was merged in; the branch merged cleanly.
+
 ### 2026-09-29 — Step 10c: Big Shoulders Display and Archivo replace Barlow
 
 - **Faces (plan D9 and the knurl port):** Big Shoulders Display 700 and 800 for headings and big numbers, and one variable Archivo file for
