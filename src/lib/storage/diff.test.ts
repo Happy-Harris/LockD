@@ -80,6 +80,7 @@ describe.each([
         removeItem: (k: string) => void data.delete(k),
       });
       const { useGym } = await import("@/lib/gym/store");
+      (await import("./backend")).setStorageMode("local"); // load the fixture through the old path
       await useGym.persist.rehydrate();
 
       const repo = make();

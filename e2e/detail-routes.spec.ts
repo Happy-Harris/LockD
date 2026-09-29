@@ -1,19 +1,17 @@
 import { expect, test, type Page } from "@playwright/test";
-import { goTo, openWithSampleLog, waitForApp } from "./helpers";
+import { goTo, openWithSampleLog, readLog, waitForApp } from "./helpers";
 
-/** Ids from the persisted sample log, so the test visits real records. */
+/** Ids from the saved sample log, so the test visits real records. */
 async function sampleIds(page: Page) {
-  return page.evaluate(() => {
-    const state = JSON.parse(localStorage.getItem("lockd-v1") || "{}").state;
-    const completed = state.workouts.filter((w: { status: string }) => w.status === "completed");
-    return {
-      workoutId: completed.at(-1).id as string,
-      workoutName: completed.at(-1).name as string,
-      programId: state.programs[0].id as string,
-      programName: state.programs[0].name as string,
-      routineId: state.templates[0].id as string,
-    };
-  });
+  const state = await readLog(page);
+  const completed = state.workouts.filter((w) => w.status === "completed");
+  return {
+    workoutId: completed.at(-1)!.id,
+    workoutName: completed.at(-1)!.name,
+    programId: state.programs[0]!.id,
+    programName: state.programs[0]!.name,
+    routineId: state.templates[0]!.id,
+  };
 }
 
 test.describe("detail screens render themselves, not their list", () => {

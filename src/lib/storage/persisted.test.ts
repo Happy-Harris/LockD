@@ -133,7 +133,10 @@ function fakeStorage(initial: Record<string, string> = {}) {
 async function freshStore(storage: ReturnType<typeof fakeStorage>) {
   vi.resetModules();
   vi.stubGlobal("localStorage", storage);
-  return (await import("@/lib/gym/store")).useGym;
+  const useGym = (await import("@/lib/gym/store")).useGym;
+  // These tests cover the `localStorage` format, which is the fallback backend now.
+  (await import("./backend")).setStorageMode("local");
+  return useGym;
 }
 
 describe("the real store still reads and writes the same format", () => {
@@ -194,20 +197,18 @@ describe("the real store still reads and writes the same format", () => {
     },
   );
 
-  it("BUG: a corrupt payload is not loaded, and the next write replaces it", async () => {
-    // Characterisation of today's behaviour (plan PR 5 fixes it): parsing fails, persist swallows
-    // the error, `hydrated` never turns true on its own, and the store carries on with fresh
-    // defaults. The raw string survives only until the first change is written, so a guest who
-    // taps "Start empty" destroys a payload that could have been recovered.
+  it("does not write over an unreadable payload while boot has frozen writes (fixes the 5a BUG)", async () => {
+    // Before plan PR 5d, an unreadable `lockd-v1` string was replaced by the next write, so a guest
+    // tapping "Start empty" destroyed a payload that could have been recovered. Boot now never
+    // selects the `localStorage` backend for a log it cannot parse (see boot.test.ts), and the
+    // frozen mode it uses instead writes nothing.
     const raw = read("persist-corrupt.txt");
     const storage = fakeStorage({ [PERSIST_KEY]: raw });
     const useGym = await freshStore(storage);
+    (await import("./backend")).setStorageMode("frozen");
     await useGym.persist.rehydrate();
-    const state = useGym.getState();
-    expect(state.hydrated).toBe(false);
-    expect(state.workouts).toEqual([]);
-    expect(storage.data.get(PERSIST_KEY)).toBe(raw);
     useGym.setState({});
-    expect(storage.data.get(PERSIST_KEY)).not.toBe(raw); // BUG: the only copy is gone.
+    useGym.getState().startEmptyWorkout("Nowhere to save");
+    expect(storage.data.get(PERSIST_KEY)).toBe(raw);
   });
 });
