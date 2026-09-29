@@ -9,6 +9,23 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9f-3: show the routine's effort target (small version)
+
+- **What:** when a routine sets an effort target, the exercise header shows it ("target RIR 2" or "target RPE 8", in the
+  lifter's current mode) and the RPE/RIR pick sheet marks that value. RPE and RIR targets never cross: a routine with only an
+  RPE target shows nothing in RIR mode. A routine with no target shows nothing (nothing is invented), and a target
+  of 0 is shown. An exercise with no reps row (a plank) shows none, because effort is logged beside reps.
+  Nothing is filled in for the lifter: the pick stays a tap.
+- **Scope, honestly:** this is NOT the donor's per-set targets (a different target for each set); that module is not
+  reachable here and would need a new stored structure and a migration. The existing routine fields `targetRpe` and
+  `targetRir` are only displayed. No screen edits them, so today this shows for imported routines (Knurl and RepForge
+  carry them) and not for workouts started from a program (those have no routine row).
+- **Checked in the running app (390 px):** imported the Knurl fixture's routine, switched Effort to RIR, started it:
+  the exercise with an RIR target shows "target RIR 2", the one with only an RPE target shows none. **Not checked
+  visually:** the ring on the pick sheet (the button that opens it is not shown for the fixture's timed exercise).
+- Tests: `intensity.test.ts` gained 2 (6 in all).
+- **Step 9 is not done yet:** the timed logging-speed e2e the plan asks for is still owed (next PR).
+
 ### 2026-09-29 — Step 9f-2c: log a unilateral exercise as left and right rows
 
 - **Per-exercise switch:** the exercise page has "Log each side separately" (`updateExercise({ unilateral })`), so existing
