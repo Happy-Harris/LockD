@@ -82,6 +82,8 @@ IndexedDB names `lockd-vault` (and `lockd` once storage lands), backup formats `
 ## Subagents
 
 `.claude/agents/`: `product-manager` (scope, Now/Next/Later/No), `domain-truth` (numbers),
-`session-logger` (the gym-floor loop), `data-portability` (storage, import, export, sync),
-`gym-ui` (layout, targets, identity), `verify-gate` (merge gate). Delegate by area; the merge gate
-runs last.
+`evidence-librarian` (citations checked against the source), `session-logger` (the gym-floor loop),
+`data-portability` (storage, import, export, sync), `share-privacy` (sign-in, shares, OG tags, private
+by default), `gym-ui` (layout, targets, identity), `e2e-qa` (real-app screenshots and Playwright),
+`scaffold-cleanup` (Steps 12 and 13 removals), `handover-scribe` (HANDOVER, STATUS, PR labels),
+`verify-gate` (merge gate). Delegate by area; `handover-scribe` then the merge gate run last.
