@@ -18,6 +18,59 @@ doc to rewrite.
   field is untouched on purpose: it is part of the public share payload.
 - `CODEX-HANDOFF.md` stays out of the repo (owner's call).
 
+### 2026-09-29 — Plan PR 4g: evidence catalog (closes plan PR 4)
+
+- `src/domain/evidence/` (types, catalog, index) is Strong-Pro's structure, but **only claims for
+  behaviour Lock'd has today**. Six sources, seven claims. Every DOI was resolved against Crossref
+  and both PMIDs against PubMed; ACSM's "≥10 sets/wk" and Pelland's fractional-set (0.5) result
+  were read from the abstracts. Epley 1985 has no DOI (pre-1990).
+- **Not carried across, on purpose** (Lock'd doesn't do these yet, so a claim would describe
+  something the app doesn't): the 10–20 weekly band, deload-shape and spike flags, the stall flag,
+  personal muscle targets, double progression, proximity-to-failure (Refalo 2023 is left out with
+  it). Each comes across with the feature that needs it (plan PR 8 for the flags and targets, PR 9
+  for RIR). Strong-Pro's copy also said secondary credit was user-editable; here no screen edits it.
+- **New Lock'd claims:** `weekly-volume-dose-response` (why weekly sets per muscle are shown; context
+  only), `volume-landmarks-defaults` and `weekly-verdict-direction`. **Finding:** the MEV/MAV/MRV
+  numbers on the home screen and the ±10% verdict band have no study behind them. They are now
+  labelled as product heuristics with no sources, which is what they are. Nothing on screen changes.
+- Tests (11): integrity, every source cited, DOI shape, heuristics never posing as research, no
+  former brand names, and three that fail if the code moves under a claim (rep cap, formulas,
+  default credit). Nothing in the UI reads the catalog yet; the "show the working" sheets are PR 8.
+- **All seven slices of plan PR 4 are written** (4a–4g; #9, #10, #11 and this one may still be open).
+
+### 2026-09-29 — Plan PR 4f: `types` union
+
+- `src/domain/types.ts` gains Strong-Pro's fields, **all optional**, so nothing stored changes shape:
+  `WorkoutSet.rir` / `side` / `pairId`, `WorkoutExercise.unilateralSnapshot`,
+  `TemplateExercise.targetRir`, `Workout.importFingerprint` / `importJobId`,
+  `AppSettings.personalMuscleTargets` / `restTimerVibrate` / `restTimerNotification`, and
+  `IntensityMode` gains `"rir"` (D17). Also `MuscleTargetBand`, `PersonalMuscleTargets`,
+  `ImportJob`, `ImportIssue`, `ImportJobStatus` and `ImportSource`.
+- **Deliberately not merged:** Strong-Pro's `GoalLens` (3 values; Lock'd keeps its 6),
+  `AccentTheme` `violet` and `AppIcon` (not decided), and its `id: "settings"` / `"rest-timer"` /
+  `"meta"` singleton rows (a Dexie concern; plan PR 5). Lock'd's `Workout.tzOffsetMinutes` keeps
+  its sign (see the comment on the field).
+- **Nothing reads the new fields yet.** RIR entry is plan PR 9, unilateral logging is PR 9, the
+  import fingerprint is PR 7, muscle targets are PR 8. `ImportSource` is provisional until PR 7.
+- Tests: `backup-fields.test.ts` loads a hand-written backup from before this change
+  (`src/test/fixtures/backup/lockd-backup-v3-before-type-union.json`) and checks it is unchanged,
+  and that every new field survives import and export. No stored-data migration is needed.
+
+### 2026-09-29 — Plan PR 4e: `exerciseTaxonomy`
+
+- `src/domain/exerciseTaxonomy.ts` is Strong-Pro's module, unchanged apart from formatting:
+  `suggestExerciseTaxonomy(name)` proposes a primary muscle, equipment and movement pattern from an
+  exercise's name, or returns `null`. Strong-Pro's 40 tests are ported; 4 new ones pin the Lock'd
+  contract (`exerciseTaxonomy.lockd.test.ts`).
+- **It only suggests.** Nothing calls it yet. The Strong and Hevy importers (plan PR 7) must show
+  the result for the lifter to confirm before saving; an unrecognised name stays `unmapped` (number
+  honesty: no silent muscle mapping).
+- Measured against the 66-exercise seed library: 49 names get a suggestion and 47 match the seed's
+  muscle. The two that differ are judgement calls (Sumo Deadlift: glutes in the seed, hamstrings
+  suggested; Close-Grip Bench Press: triceps in the seed, chest suggested), pinned in a test. With
+  no equipment word in the name (`Back Squat`) it says `other`, not a guess.
+- No behaviour change anywhere in the app; all characterisation snapshots unchanged.
+
 ### 2026-09-29 — Plan PR 4d: `records` (I-12, first-exposure PRs)
 
 - **Fixed I-12:** the first time a lift is on file is its baseline, never a PR. Before, the demo

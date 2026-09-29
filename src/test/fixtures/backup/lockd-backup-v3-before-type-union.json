@@ -1,0 +1,73 @@
+{
+  "format": "lockd-backup",
+  "version": 3,
+  "exportedAt": "2026-09-01T12:00:00.000Z",
+  "exercises": [],
+  "templates": [],
+  "templateExercises": [],
+  "workouts": [
+    {
+      "id": "w-old",
+      "name": "Old-format session",
+      "status": "completed",
+      "startedAt": "2026-08-30T18:00:00.000Z",
+      "endedAt": "2026-08-30T19:00:00.000Z",
+      "localDate": "2026-08-30",
+      "tzOffsetMinutes": 300,
+      "pausedSeconds": 0,
+      "createdAt": "2026-08-30T18:00:00.000Z",
+      "updatedAt": "2026-08-30T19:00:00.000Z"
+    }
+  ],
+  "workoutExercises": [
+    {
+      "id": "we-old",
+      "workoutId": "w-old",
+      "exerciseId": "seed-bench-press",
+      "order": 0,
+      "exerciseNameSnapshot": "Bench Press",
+      "primaryMuscleGroupSnapshot": "chest",
+      "secondaryMuscleGroupsSnapshot": ["triceps"],
+      "equipmentSnapshot": "barbell",
+      "trackingTypeSnapshot": "weight_reps",
+      "restSeconds": 120
+    }
+  ],
+  "workoutSets": [
+    {
+      "id": "s-old",
+      "workoutExerciseId": "we-old",
+      "workoutId": "w-old",
+      "order": 0,
+      "setType": "working",
+      "weightG": 100000,
+      "reps": 5,
+      "rpe": 8,
+      "isCompleted": true,
+      "completedAt": "2026-08-30T18:10:00.000Z"
+    }
+  ],
+  "measurements": [],
+  "plates": [],
+  "bars": [],
+  "settings": {
+    "unitSystem": "metric",
+    "oneRepMaxFormula": "epley",
+    "intensityMode": "rpe",
+    "weekStartDay": "monday",
+    "quickIncrementG": 2500,
+    "defaultRestSeconds": 120,
+    "restTimerAutoStart": true,
+    "restTimerSound": true,
+    "excludeWarmupsFromAnalytics": true,
+    "secondaryMuscleCredit": 0.5,
+    "goalLiftIds": [],
+    "defaultBarProfileId": "bar-olympic",
+    "defaultPlateInventoryId": "plates-metric",
+    "themeMode": "dark",
+    "accentTheme": "stamp",
+    "goalLens": "general",
+    "presentationMode": "loud",
+    "demoLoaded": false
+  }
+}
