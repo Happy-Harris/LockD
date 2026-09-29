@@ -10,8 +10,8 @@ export const RESEARCH_WEEKLY_SET_BAND: Readonly<MuscleTargetBand> = { min: 10, m
  * Sources with no DOI are pre-1990 practitioner material.
  *
  * Claims are only listed for behaviour Lock’d has today. Claims for behaviour that is not built
- * yet (a 10–20 weekly band, personal muscle targets, double progression) come across with the
- * feature that needs them, not before, so this layer never describes something the app does not do.
+ * yet (double progression) come across with the feature that needs them, not before, so this layer
+ * never describes something the app does not do.
  *
  * Last reviewed: 2026-09-29.
  */
@@ -103,17 +103,17 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
     lastReviewed: "2026-09-29",
   },
   {
-    id: "volume-landmarks-defaults",
+    id: "weekly-credited-sets-10-20",
     statement:
-      "The under-MEV, MEV, MAV and MRV bands on the home screen are product defaults for a typical intermediate lifter.",
+      "Muscle sets shows each muscle's credited sets for the week against a default band of 10 to 20 that the lifter can override per muscle.",
     kind: "implementation_heuristic",
-    behaviors: ["muscle_volume_landmarks"],
-    sourceIds: [],
-    support: "context",
+    behaviors: ["research_muscle_target", "personal_target_fallback"],
+    sourceIds: ["schoenfeld-2017-volume", "pelland-2026-dose-response"],
+    support: "partial",
     interpretation:
-      "The per-muscle set counts (for example chest 8 / 16 / 22) are round figures chosen for the product. They are not taken from a study and are not personalised.",
+      "More weekly set volume tends to build more muscle, with diminishing returns. Schoenfeld 2017 shows a graded dose-response, and Pelland 2026 models volume continuously rather than in fixed bands. The literature points to a lower region near 10 sets a week.",
     limitations:
-      "Treat them as a rough guide to where a week sits, not as a prescription. Nothing here says a given lifter should train inside a band.",
+      "The literature supports a positive dose-response and a lower region near 10 sets. It does not fix an upper limit of 20 for everyone. 10 to 20 is a stable product default so a lifter's existing training is not silently re-judged. A personal target overrides it, and a muscle with no mapped exercise is shown as unmapped rather than as low.",
     lastReviewed: "2026-09-29",
   },
   {
@@ -127,6 +127,19 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
       "Pelland 2026 finds fractional counting of indirect sets (0.5) fits dose-response data better than counting every indirect set as a full set. Lock’d’s default of 0.5 matches that spirit for credited-set accounting.",
     limitations:
       "Fractional credit is a product heuristic for attributed volume, not a claim that every secondary muscle receives half the stimulus of the primary. The value is stored in settings; no screen edits it yet.",
+    lastReviewed: "2026-09-29",
+  },
+  {
+    id: "personal-muscle-targets",
+    statement: "A lifter can save a target band for any muscle, and it replaces the default band for that muscle.",
+    kind: "user_editable_personal",
+    behaviors: ["personal_muscle_targets", "backup_restore_targets"],
+    sourceIds: [],
+    support: "context",
+    interpretation:
+      "Your own range, saved on this device, in backups and in the locker when you are signed in. It is your program, not a citation.",
+    limitations:
+      "Nothing checks a personal target against research: it is whatever you set, from 0 to 100 sets.",
     lastReviewed: "2026-09-29",
   },
   {

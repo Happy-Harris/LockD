@@ -4,6 +4,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { WeeklyVerdict } from "@/domain/analytics/weeklyVerdict";
+import type { MuscleBandBalance } from "@/domain/analytics/muscleSets";
 import { stampWord } from "@/lib/gym/verdict-stamp";
 import { WeeklyVerdictCard } from "./weekly-verdict-card";
 
@@ -64,7 +65,11 @@ const verdict: WeeklyVerdict = {
 
 const card = (
   over: Partial<WeeklyVerdict> = {},
-  props: { lens?: "build" | "strength" | "maintain"; stamp?: boolean } = {},
+  props: {
+    lens?: "build" | "strength" | "maintain";
+    stamp?: boolean;
+    muscleBalance?: MuscleBandBalance | null;
+  } = {},
 ) =>
   render(
     <WeeklyVerdictCard
@@ -73,6 +78,7 @@ const card = (
       lens={props.lens ?? "build"}
       lensLabel="Powerbuilding"
       stamp={props.stamp}
+      muscleBalance={props.muscleBalance}
     />,
   );
 
@@ -159,5 +165,44 @@ describe("the stamp", () => {
   it("is not drawn while there is not enough history", () => {
     card({ state: "not_enough_history", direction: null }, { stamp: true });
     expect(screen.queryByTestId("verdict-stamp")).not.toBeInTheDocument();
+  });
+});
+
+describe("the muscle balance line", () => {
+  const chest = {
+    muscle: "chest" as const,
+    sets: 5,
+    state: "below" as const,
+    target: { min: 10, max: 20 },
+    targetSource: "research" as const,
+    evidence: [],
+  };
+  const balance: MuscleBandBalance = {
+    weekStartDate: "2026-09-07",
+    weekEndDate: "2026-09-13",
+    insights: [chest],
+    judged: [chest],
+    below: [chest],
+    inRange: [],
+    above: [],
+    insufficientMapping: false,
+  };
+
+  it("is a labelled region with a stable id, only when there is a balance to show", () => {
+    card({}, { muscleBalance: balance });
+    const region = screen.getByRole("region", { name: "Muscle balance" });
+    expect(region).toHaveAttribute("data-balance-id", "balance_judged");
+    expect(region).toHaveTextContent("Balance: Chest below.");
+    cleanup();
+    card();
+    expect(screen.queryByRole("region", { name: "Muscle balance" })).not.toBeInTheDocument();
+  });
+
+  it("opens its evidence, with a way into the default range's claim", async () => {
+    card({}, { muscleBalance: balance });
+    await userEvent.click(screen.getByRole("button", { name: /Balance: Chest below/ }));
+    expect(screen.getByRole("dialog", { name: /Muscle balance evidence/i })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /About the default range/i }));
+    expect(screen.getByRole("dialog", { name: "Why 10–20 credited sets" })).toBeInTheDocument();
   });
 });

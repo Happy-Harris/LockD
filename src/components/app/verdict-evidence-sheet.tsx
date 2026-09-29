@@ -1,4 +1,9 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import type { MuscleBandBalance } from "@/domain/analytics/muscleSets";
+import { researchMuscleTargetClaim } from "@/domain/evidence";
+import { ClaimEvidenceSheet } from "./claim-evidence-sheet";
 import { Sheet } from "@/components/ui/sheet";
 import type { WeightUnit } from "@/domain/units";
 import {
@@ -18,14 +23,17 @@ export function VerdictEvidenceSheet({
   verdict,
   weightUnit,
   focusKey,
+  muscleBalance = null,
 }: {
   open: boolean;
   onClose: () => void;
   verdict: WeeklyVerdict;
   weightUnit: WeightUnit;
   focusKey?: VerdictEvidenceKey;
+  muscleBalance?: MuscleBandBalance | null;
 }) {
-  const focused = focusKey ? metricEvidenceFor(verdict, focusKey, weightUnit, null) : null;
+  const [showResearchClaim, setShowResearchClaim] = useState(false);
+  const focused = focusKey ? metricEvidenceFor(verdict, focusKey, weightUnit, muscleBalance) : null;
   return (
     <Sheet
       open={open}
@@ -36,22 +44,42 @@ export function VerdictEvidenceSheet({
     >
       <div className="space-y-4 text-sm" data-testid="verdict-evidence">
         {focused ? (
-          <FocusedMetricEvidence evidence={focused} />
+          <FocusedMetricEvidence
+            evidence={focused}
+            onOpenResearchClaim={focusKey === "muscle_balance" ? () => setShowResearchClaim(true) : undefined}
+          />
         ) : (
           <OverviewEvidence verdict={verdict} weightUnit={weightUnit} />
         )}
       </div>
+      <ClaimEvidenceSheet
+        open={showResearchClaim}
+        onClose={() => setShowResearchClaim(false)}
+        claim={researchMuscleTargetClaim()}
+        title="Why 10–20 credited sets"
+      />
     </Sheet>
   );
 }
 
-function FocusedMetricEvidence({ evidence }: { evidence: MetricEvidence }) {
+function FocusedMetricEvidence({
+  evidence,
+  onOpenResearchClaim,
+}: {
+  evidence: MetricEvidence;
+  onOpenResearchClaim?: () => void;
+}) {
   return (
     <>
       <Card className="p-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-subtle">Formula</p>
         <p className="mt-1 font-medium text-ink">{evidence.label}</p>
         <p className="mt-1 text-muted">{evidence.formula}</p>
+        {onOpenResearchClaim ? (
+          <Button size="sm" variant="ghost" className="mt-2 min-h-11" onClick={onOpenResearchClaim}>
+            About the default range
+          </Button>
+        ) : null}
       </Card>
 
       <section aria-labelledby="subject-metric-evidence">

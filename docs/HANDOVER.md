@@ -6,6 +6,38 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 8c-1: muscle sets and personal targets replace the MEV/MAV/MRV bands
+
+Plan PR 8c is split. **8c-1 (this):** muscle sets, personal targets, the verdict's balance line, and
+removing the landmark bands (plan D5, I-10). **8c-2:** recovery copy (I-9) and strength standards
+(D4, I-11).
+
+- **Removed:** `src/lib/gym/landmarks.ts` (MEV/MAV/MRV per muscle, unsourced), its characterisation
+  test, and the `volume-landmarks-defaults` evidence claim. The old code also said "MEV" for a muscle
+  with no band at all (forearms); that defect went with it.
+- **Muscle sets card (Data Lab):** this training week's credited sets per muscle against a target.
+  Completed working sets only; a secondary muscle gets the fractional credit from settings (0.5).
+  The target is the default 10–20 band, or a **personal target** the lifter saves per muscle (0 to
+  100 sets, validated; a nonsensical range cannot be saved). "Show me why" lists every set that
+  counted, under each muscle it credits. A muscle with no mapped exercise reads **Unmapped** with a
+  link to Library (where Bulk Classify lives), never "low"; full-body and cardio show a total with no
+  range. Personal targets were already in settings and in backups; now a screen edits them.
+- **Today's volume block** (lenses that show it) now reads the same numbers: sets, "of 10–20", and
+  the state, instead of an MEV/MAV/MRV word. Note the numbers differ from before: it now counts
+  working sets only with fractional secondary credit, where the old block counted differently
+  (I-22, one meaning of "hard set").
+- **Verdict balance line:** the weekly verdict gets one sentence on last week's muscle balance
+  ("Balance: Chest below."), from the same insight rows, with an evidence sheet and a way into the
+  claim behind the default band.
+- **Evidence:** `weekly-credited-sets-10-20` (a product default, labelled as such, sources: Schoenfeld
+  2017 and Pelland 2026, limits stated: the literature supports a lower region near 10 sets, not an
+  upper limit of 20) and `personal-muscle-targets` (a user's own range, no citation). The donor's
+  wording that leaned on a position stand's "≥10 sets" was not carried over because I did not
+  re-verify it against the source.
+- **Tests:** the donor's card tests as React Testing Library tests, plus one for refusing a bad
+  range and the balance region; e2e for saving a personal target and the Today block.
+- **Not done:** the goal-lift and lens pickers (8d); `secondaryMuscleCredit` still has no screen.
+
 ### 2026-09-29 — Plan PR 8b: the weekly verdict and change flags on screen
 
 - **Replaced:** Lock'd's old verdict (`buildWeeklyVerdict`, a ±10% call on hard sets) is gone.

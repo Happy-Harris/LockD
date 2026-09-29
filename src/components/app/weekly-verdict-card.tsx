@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import type { VerdictLens } from "@/domain/analytics/lens";
+import type { MuscleBandBalance } from "@/domain/analytics/muscleSets";
 import {
   weeklyVerdictCopy,
   type SentencePart,
@@ -24,6 +25,7 @@ export function WeeklyVerdictCard({
   lens,
   lensLabel,
   stamp = false,
+  muscleBalance = null,
 }: {
   verdict: WeeklyVerdict;
   weightUnit: WeightUnit;
@@ -31,10 +33,12 @@ export function WeeklyVerdictCard({
   lensLabel: string;
   /** Show the direction stamp beside the title (the home screen does). */
   stamp?: boolean;
+  /** Last completed week's muscle-band balance (`muscleBandBalance`), when the screen has it. */
+  muscleBalance?: MuscleBandBalance | null;
 }) {
   const word = stamp ? stampWord(verdict) : null;
   const [evidenceKey, setEvidenceKey] = useState<VerdictEvidenceKey | null>(null);
-  const copy = weeklyVerdictCopy(verdict, weightUnit, null, lens);
+  const copy = weeklyVerdictCopy(verdict, weightUnit, muscleBalance, lens);
   const liftNames = verdict.goalLifts.map((lift) => lift.name).join(", ");
 
   return (
@@ -75,6 +79,17 @@ export function WeeklyVerdictCard({
           ))}
         </div>
 
+        {copy.balance ? (
+          <div
+            className="mt-2 flex min-h-11 flex-wrap items-center px-1 py-1 text-sm text-muted"
+            role="region"
+            aria-label="Muscle balance"
+            data-balance-id={copy.balanceId}
+          >
+            <SentenceParts parts={copy.balance.parts} onOpen={setEvidenceKey} />
+          </div>
+        ) : null}
+
         {copy.pulse ? (
           <div className="mt-3 flex min-h-11 flex-wrap items-center border-t border-line px-1 pt-3 text-xs text-subtle">
             <SentenceParts parts={copy.pulse.parts} onOpen={setEvidenceKey} />
@@ -107,6 +122,7 @@ export function WeeklyVerdictCard({
         verdict={verdict}
         weightUnit={weightUnit}
         focusKey={evidenceKey ?? undefined}
+        muscleBalance={muscleBalance}
       />
     </section>
   );
