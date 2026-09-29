@@ -4,6 +4,8 @@ import type { PersonalRecord, SessionSlice } from "@/lib/gym/analytics";
 import { hardSetCount } from "@/domain/volume";
 import { LockdMark } from "./mark";
 import { BRAND, FONTS } from "@/lib/brand";
+import { canvasFontsLoaded, loadCanvasFonts } from "@/lib/fonts";
+import { fitReceiptLines, receiptHeight, wrapLines } from "@/lib/poster-layout";
 
 export function SessionReceipt({
   slice,
@@ -104,14 +106,38 @@ export function SessionReceipt({
   );
 }
 
-export function downloadReceiptPng(node: HTMLElement, filename: string) {
-  const width = 720;
-  const height = Math.max(1080, node.scrollHeight + 80);
+/**
+ * Downloads the receipt as a PNG. Waits for a still-loading font first; when the fonts are ready it draws
+ * inside the tap. The canvas is as tall as its lines need, so a long session is not cut off.
+ */
+export function downloadReceiptPng(node: HTMLElement, filename: string): void | Promise<void> {
+  if (!canvasFontsLoaded()) return loadCanvasFonts().then(() => drawReceipt(node, filename));
+  drawReceipt(node, filename);
+}
+
+const RECEIPT = {
+  width: 720,
+  top: 180,
+  lineHeight: 30,
+  bottom: 60,
+  minHeight: 1080,
+  maxHeight: 16000,
+};
+
+function drawReceipt(node: HTMLElement, filename: string) {
+  const { width } = RECEIPT;
   const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
+  const bodyFont = `400 22px ${FONTS.sans}, sans-serif`;
+  ctx.font = bodyFont;
+  const wrapped = wrapLines(node.innerText, width - 96, (text) => ctx.measureText(text).width);
+  // Browsers cap canvas size; past the cap the last line says how many lines were left out.
+  const { lines } = fitReceiptLines(wrapped, RECEIPT);
+  const height = receiptHeight(lines.length, RECEIPT);
+  // Resizing a canvas resets its state, so size it first and set everything after.
+  canvas.width = width;
+  canvas.height = height;
   ctx.fillStyle = BRAND.chalk;
   ctx.fillRect(0, 0, width, height);
   ctx.fillStyle = BRAND.oxide;
@@ -122,41 +148,15 @@ export function downloadReceiptPng(node: HTMLElement, filename: string) {
   ctx.font = `500 16px ${FONTS.sans}, sans-serif`;
   ctx.fillStyle = "#5c564c";
   ctx.fillText("KEEP THE RECEIPT.", 48, 124);
-  const text = node.innerText;
   ctx.fillStyle = BRAND.ink;
-  ctx.font = `400 22px ${FONTS.sans}, sans-serif`;
-  const lines = wrapCanvasText(ctx, text, width - 96);
-  let y = 180;
+  ctx.font = bodyFont;
+  let y = RECEIPT.top;
   for (const line of lines) {
-    if (y > height - 60) break;
     ctx.fillText(line, 48, y);
-    y += 30;
+    y += RECEIPT.lineHeight;
   }
   const link = document.createElement("a");
   link.download = filename;
   link.href = canvas.toDataURL("image/png");
   link.click();
-}
-
-function wrapCanvasText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
-  const lines: string[] = [];
-  for (const paragraph of text.split("\n")) {
-    const words = paragraph.split(/\s+/).filter(Boolean);
-    if (words.length === 0) {
-      lines.push("");
-      continue;
-    }
-    let current = words[0]!;
-    for (let i = 1; i < words.length; i += 1) {
-      const next = `${current} ${words[i]}`;
-      if (ctx.measureText(next).width > maxWidth) {
-        lines.push(current);
-        current = words[i]!;
-      } else {
-        current = next;
-      }
-    }
-    lines.push(current);
-  }
-  return lines;
 }
