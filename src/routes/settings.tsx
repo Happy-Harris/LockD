@@ -3,7 +3,11 @@ import { useState } from "react";
 import { Page } from "@/components/app/shell";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { BACKUP_FORMAT, type AccentTheme, type AppSettings, type LockdBackup, type ThemeMode, type UnitSystem, type WeekStartDay } from "@/domain/types";
+import { toast } from "sonner";
+import { type AccentTheme, type AppSettings, type ThemeMode, type UnitSystem, type WeekStartDay } from "@/domain/types";
+import { applyBackup, restoreMessage, type RestoreMode } from "@/lib/backup/apply";
+import { parseBackup } from "@/lib/backup/schema";
+import { takeSafetyBackup } from "@/lib/storage/safety";
 import { defaultQuickIncrementG } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
@@ -23,6 +27,9 @@ function SettingsPage() {
   const loadDemo = useGym((s) => s.loadDemo);
   const exercises = useGym((s) => s.exercises);
   const [csvNote, setCsvNote] = useState<string | null>(null);
+  const [backupProblems, setBackupProblems] = useState<string[] | null>(null);
+  // Bumped after a restore so the Safety copies list shows the copy that was just taken.
+  const [copiesShown, setCopiesShown] = useState(0);
 
   const download = () => {
     const backup = exportBackup();
@@ -45,14 +52,34 @@ function SettingsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const onImport = async (file: File, mode: "replace" | "merge") => {
-    const text = await file.text();
-    const parsed = JSON.parse(text) as LockdBackup;
-    if (parsed.format !== BACKUP_FORMAT) {
-      window.alert("That file is not a Lock’d backup.");
+  const onImport = async (file: File, mode: RestoreMode) => {
+    setBackupProblems(null);
+    const parsed = parseBackup(await file.text());
+    if (!parsed.ok) {
+      setBackupProblems(parsed.errors);
       return;
     }
-    importBackup(parsed, mode);
+    const { summary, warnings } = parsed;
+    const what = `${summary.sessions} session${summary.sessions === 1 ? "" : "s"}, ${summary.sets} sets, saved ${summary.exportedAt.slice(0, 10)}`;
+    const question =
+      mode === "replace"
+        ? `Replace your whole log with this backup (${what})? Your current log is copied to Safety copies first.`
+        : `Add this backup (${what}) to your log? Sessions already here are kept as they are. Your current log is copied to Safety copies first.`;
+    if (!window.confirm(question)) return;
+    const result = await applyBackup(parsed.backup, mode, {
+      current: exportBackup,
+      apply: importBackup,
+      safetyCopy: (backup) => takeSafetyBackup("before-restore", backup),
+      sessions: () =>
+        useGym.getState().workouts.filter((w) => w.status === "completed" || w.status === "active").length,
+    });
+    if (!result.ok) {
+      setBackupProblems([result.error]);
+      return;
+    }
+    setCopiesShown((n) => n + 1);
+    toast.success(restoreMessage(result));
+    if (warnings.length) setBackupProblems(warnings);
   };
 
   const onCsv = async (file: File) => {
@@ -242,17 +269,42 @@ function SettingsPage() {
             Download sets CSV
           </Button>
           <label className="block">
-            <span className="mb-1 block text-xs text-subtle">Restore Lock’d JSON</span>
+            <span className="mb-1 block text-xs text-subtle">Add a Lock’d backup to this log</span>
             <input
               type="file"
               accept="application/json,.json"
+              data-testid="backup-merge-input"
               className="block w-full text-sm text-muted file:mr-3 file:h-11 file:rounded-xl file:border-0 file:bg-raised file:px-4 file:text-sm file:text-ink"
               onChange={(event) => {
                 const file = event.target.files?.[0];
                 if (file) void onImport(file, "merge");
+                event.target.value = "";
               }}
             />
           </label>
+          <label className="block">
+            <span className="mb-1 block text-xs text-subtle">Replace this log with a Lock’d backup</span>
+            <input
+              type="file"
+              accept="application/json,.json"
+              data-testid="backup-replace-input"
+              className="block w-full text-sm text-muted file:mr-3 file:h-11 file:rounded-xl file:border-0 file:bg-raised file:px-4 file:text-sm file:text-ink"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void onImport(file, "replace");
+                event.target.value = "";
+              }}
+            />
+          </label>
+          {backupProblems ? (
+            <div role="alert" data-testid="backup-problems" className="rounded-xl bg-raised p-3 text-xs text-muted">
+              <ul className="list-disc space-y-1 pl-4">
+                {backupProblems.map((problem) => (
+                  <li key={problem}>{problem}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           <label className="block">
             <span className="mb-1 block text-xs text-subtle">Import Strong CSV</span>
             <input
@@ -266,7 +318,7 @@ function SettingsPage() {
             />
           </label>
           {csvNote ? <p className="text-xs text-muted">{csvNote}</p> : null}
-          <SafetyBackups />
+          <SafetyBackups key={copiesShown} />
           <Button className="w-full" variant="secondary" onClick={loadDemo}>
             Load sample log
           </Button>
