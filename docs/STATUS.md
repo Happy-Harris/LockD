@@ -5,7 +5,7 @@ this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HAND
 last PRs did and did not verify). Keep this file current: update the tables in the same PR that
 changes a status.
 
-_Last updated: 2026-09-29, after `LockD#34` merged. In flight: Step 8d-2 (PR pending); next Step 8d-3._
+_Last updated: 2026-09-29, after `LockD#35` merged. In flight: run-lockd skill (`LockD#36`); next Step 8d-3._
 
 ## 1. How to read the labels
 
