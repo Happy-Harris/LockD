@@ -9,6 +9,14 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Docs: run-lockd skill
+
+- Added `.claude/skills/run-lockd/` (`SKILL.md` + `driver.mjs`): how to start the app headlessly and
+  screenshot routes at phone and desktop width. Every command in it was run in a fresh container.
+- Seen while screenshotting, not changed: Today's "Within reach" card still shows unrounded estimates
+  (132.71 → 136.5; the I-13 rounding covers the goal-lift card only), and the app icon/wordmark still
+  shows an "R" tile.
+
 ### 2026-09-29 — Docs: STATUS.md, one label scheme for handing the project on
 
 - Added `docs/STATUS.md`: what "Step 7b", "Opp 4", "LockD#23", "I-20", "D5" and "O2" each mean, every
