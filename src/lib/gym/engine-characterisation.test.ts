@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { SessionSlice } from "./analytics";
 import { sliceSessions } from "./analytics";
-import { autopsyLift } from "./autopsy";
+import { autopsyLift, loadsSimilar } from "./autopsy";
 import { buildChronicle, eraForDate } from "./chronicle";
 import { buildDemoLog } from "./demo";
 import { buildLiftDna } from "./dna";
@@ -158,5 +158,37 @@ describe("engine characterisation — current behaviour, not desired correctness
       loadSteps: buildLiftDna(bench, exposures([6, 6, 6, 6, 6, 6], [100000, 100000, 102500, 102500, 105000, 105000]), "epley", true),
       repSteps: buildLiftDna(bench, exposures([4, 5, 6, 7, 8, 9]), "epley", true),
     }).toMatchSnapshot();
+  });
+});
+
+describe("autopsy copy only claims what the load supports (plan I-16)", () => {
+  const stalled = (recentWeight: number) => {
+    const slices = exposures([8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4]);
+    for (const slice of slices.slice(6)) {
+      slice.sets = slice.sets.slice(0, 2);
+      for (const set of slice.sets) set.weightG = recentWeight;
+    }
+    return autopsyLift(progress(slices), slices, "epley", true);
+  };
+  const text = (result: ReturnType<typeof stalled>) =>
+    result.findings.map((finding) => `${finding.detail} ${finding.evidence}`).join(" | ");
+
+  it("keeps the clauses when the load held", () => {
+    expect(text(stalled(100_000))).toContain("at similar loads");
+    expect(text(stalled(100_000))).toContain("while the load stayed put");
+    expect(text(stalled(104_000))).toContain("at similar loads"); // +4%, inside the 5% band
+  });
+
+  it("drops both clauses when the load moved", () => {
+    const moved = text(stalled(120_000));
+    expect(moved).toContain("RPE 7.0 → 9.0.");
+    expect(moved).toContain("Fewer credited sets.");
+    expect(moved).not.toContain("similar loads");
+    expect(moved).not.toContain("stayed put");
+  });
+
+  it("does not claim similar loads when no load was logged", () => {
+    expect(loadsSimilar([{ bestWeightG: 0 }], [{ bestWeightG: 0 }])).toBe(false);
+    expect(loadsSimilar([], [{ bestWeightG: 100_000 }])).toBe(false);
   });
 });
