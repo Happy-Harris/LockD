@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { validateQuestionInput } from "@/lib/cloud/validate";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import { uuid } from "@/domain/ids";
@@ -38,7 +39,7 @@ async function completeNote(brief: string): Promise<{ ok: true; text: string } |
 
 export const consultLab = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { question?: string }) => input)
+  .validator(validateQuestionInput)
   .handler(async ({ context, data }) => {
     // Server-only module: import inside the handler so it never reaches the client bundle.
     const { DEV_USER_ID } = await import("@/lib/auth/verify.server");
