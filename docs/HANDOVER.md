@@ -6,6 +6,26 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 4g: evidence catalog (closes plan PR 4)
+
+- `src/domain/evidence/` (types, catalog, index) is Strong-Pro's structure, but **only claims for
+  behaviour Lock'd has today**. Six sources, seven claims. Every DOI was resolved against Crossref
+  and both PMIDs against PubMed; ACSM's "≥10 sets/wk" and Pelland's fractional-set (0.5) result
+  were read from the abstracts. Epley 1985 has no DOI (pre-1990).
+- **Not carried across, on purpose** (Lock'd doesn't do these yet, so a claim would describe
+  something the app doesn't): the 10–20 weekly band, deload-shape and spike flags, the stall flag,
+  personal muscle targets, double progression, proximity-to-failure (Refalo 2023 is left out with
+  it). Each comes across with the feature that needs it (plan PR 8 for the flags and targets, PR 9
+  for RIR). Strong-Pro's copy also said secondary credit was user-editable; here no screen edits it.
+- **New Lock'd claims:** `weekly-volume-dose-response` (why weekly sets per muscle are shown; context
+  only), `volume-landmarks-defaults` and `weekly-verdict-direction`. **Finding:** the MEV/MAV/MRV
+  numbers on the home screen and the ±10% verdict band have no study behind them. They are now
+  labelled as product heuristics with no sources, which is what they are. Nothing on screen changes.
+- Tests (11): integrity, every source cited, DOI shape, heuristics never posing as research, no
+  former brand names, and three that fail if the code moves under a claim (rep cap, formulas,
+  default credit). Nothing in the UI reads the catalog yet; the "show the working" sheets are PR 8.
+- **All seven slices of plan PR 4 are written** (4a–4g; #9, #10, #11 and this one may still be open).
+
 ### 2026-09-29 — Plan PR 4f: `types` union
 
 - `src/domain/types.ts` gains Strong-Pro's fields, **all optional**, so nothing stored changes shape:
