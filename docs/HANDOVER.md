@@ -9,6 +9,25 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 10e: Oxide marks live and actionable things only (O3)
+
+- **Rule (recorded in STATUS):** the accent marks something live, selected or actionable. I classified all 82 uses of the accent across 33 files. Kept: selected
+  chips and units, the active nav item, the primary button and its icons, links, the accent badge, focus rings, the rest-timer bar, the workout page's link,
+  effort-target, grind and clip markers, "PR" stamps, the signed-in handle, data bars. Changed, because clearly decorative and against the app's own neutral
+  precedent (the exercise page's section labels are `text-subtle`): the blurred accent glow and the accent tagline on login and onboarding, and the accent
+  border tint and accent section label on the weekly verdict, muscle sets and change flags cards.
+- **Not changed, on purpose:** links stay Oxide because they are actionable. A stricter reading of "live/active only" would neutralise them and the chart bars; that is
+  the owner's call.
+- **Checked (before and after, real app):** onboarding at 390 px (glow gone, tagline neutral, selected unit and primary button still Oxide), Today at 1024 px
+  (unchanged above the fold), and the weekly verdict card (border and label neutral, badge and links still Oxide). The muscle sets and change flags cards were
+  captured but not opened. No test depended on those classes.
+- **Sweep for Step 10 as a whole:** 24 routes at 390 and 1024 px (48 views): no horizontal overflow and no page errors. Every view logs one console error, the
+  certificate failure of the app-builder script (`grok.com/.../extensions.js`), which the offline e2e already exempts and Step 12 removes. Also looked at the plates tool
+  and the library at 390 px: fine.
+- **Seen, not fixed:** the weekly verdict sentences have a stray space before commas around the inline evidence links; the poster PNG prints the date unformatted.
+- **Step 10 is done with carried items:** Graphite (no value in the plan), the Chalk light theme, the receipt perforation motif, IBM Plex Mono, the lock-screen art.
+  See STATUS, "Open items carried by Step 10".
+
 ### 2026-09-29 — Step 10d: poster and receipt layout that cannot overlap or cut (I-32)
 
 - **Poster:** `src/lib/poster-layout.ts` (pure, 15 tests with a fake measure) decides the lines and y positions. One- and two-line titles land exactly where

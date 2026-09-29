@@ -67,8 +67,8 @@ export function MuscleSetsCard({
     parsedMin <= parsedMax;
 
   return (
-    <Card className="border border-accent/30" data-testid="muscle-sets">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-accent">
+    <Card data-testid="muscle-sets">
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
         Am I training enough?
       </p>
       <h2 className="mt-1 font-display text-xl font-semibold tracking-tight text-ink">

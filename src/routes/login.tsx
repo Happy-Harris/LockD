@@ -20,14 +20,15 @@ function Login() {
 
   return (
     <main className="relative mx-auto flex min-h-dvh max-w-md flex-col justify-between overflow-hidden bg-canvas px-6 py-10 text-ink">
-      <div className="pointer-events-none absolute -right-10 top-16 size-56 rounded-full bg-accent/15 blur-3xl" />
       <div>
         <LockdMark className="size-14" />
         <p className="mt-10 stamp text-7xl leading-[0.85] tracking-tight">LOCKD</p>
-        <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.28em] text-accent">The log lives with you.</p>
+        <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.28em] text-subtle">
+          The log lives with you.
+        </p>
         <p className="mt-6 max-w-sm text-base leading-relaxed text-muted">
-          Sign in and the lifting life is on the locker — phone, laptop, a link you can actually send. Same receipt.
-          Not a browser souvenir.
+          Sign in and the lifting life is on the locker — phone, laptop, a link you can actually
+          send. Same receipt. Not a browser souvenir.
         </p>
       </div>
       <div className="space-y-3">
