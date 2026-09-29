@@ -9,6 +9,18 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9f-1: supersets
+
+- **Link two exercises:** each exercise header has a link button that supersets it with the next exercise (press again to
+  unlink). Members show a badge, A1/A2, B1/B2, in workout order. A superset always has two or more members: unlinking
+  never leaves one. Starting from a routine now carries the routine's `supersetGroup` onto the workout (it was
+  imported and exported already but dropped here); repeating a workout already kept it.
+- **Rest:** completing a set on a superset member other than the last starts no timer; the last member's set starts the
+  exercise's own rest. Everything else about one-tap completion is unchanged.
+- Tests: `superset.test.ts` (6: labels, where rest lands, link/unlink/split, the store starting no timer between partners).
+- **Not done:** reordering exercises to sit together, editing supersets in the routine editor, alternating focus to the
+  partner after a set. **Not covered:** no component or e2e test and no screenshots of the workout page with a superset.
+
 ### 2026-09-29 — Step 9e: equipment editor for bars, collars and plates (I-35)
 
 - **Settings > Equipment** (`equipment-editor.tsx`): pick the default bar, edit its name, weight and collar weight (in

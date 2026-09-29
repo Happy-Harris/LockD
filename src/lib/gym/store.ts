@@ -63,6 +63,7 @@ import { seedBarProfiles, seedExercises, seedPlateInventories } from "./seed";
 import { generateWarmup } from "@/domain/warmup";
 import { learnedRestSeconds } from "./dna";
 import { withPlateCount } from "./equipment";
+import { endsSuperset, relinkSuperset } from "./superset";
 import { restSecondsAfter, restSuggestion } from "./rest";
 import { deleteClipBlob } from "./vault";
 import { defaultSettings } from "./settings";
@@ -167,6 +168,8 @@ interface GymActions {
   deleteSet: (setId: string) => void;
   /** Undo for deleteSet: puts the row back unchanged, unless its exercise was removed meanwhile. */
   restoreSet: (set: WorkoutSet) => void;
+  /** Links (or unlinks) an exercise with the next one in the workout as a superset. */
+  setSuperset: (workoutExerciseId: string, linkedWithNext: boolean) => void;
   finishWorkout: (workoutId: string, notes?: string) => PersonalRecord[];
   discardWorkout: (workoutId: string) => void;
   updateWorkout: (workoutId: string, patch: Partial<Workout>) => void;
@@ -258,6 +261,7 @@ function snapshotExercise(
   workoutId: string,
   order: number,
   restSeconds: number,
+  supersetGroup?: string,
 ): WorkoutExercise {
   return {
     id: uuid(),
@@ -270,6 +274,7 @@ function snapshotExercise(
     equipmentSnapshot: exercise.equipment,
     trackingTypeSnapshot: exercise.trackingType,
     restSeconds,
+    ...(supersetGroup ? { supersetGroup } : {}),
   };
 }
 
@@ -535,7 +540,13 @@ export const useGym = create<GymState>()(
         tEx.forEach((row) => {
           const exercise = state.exercises.find((item) => item.id === row.exerciseId);
           if (!exercise) return;
-          const we = snapshotExercise(exercise, workout.id, row.order, row.restSeconds);
+          const we = snapshotExercise(
+            exercise,
+            workout.id,
+            row.order,
+            row.restSeconds,
+            row.supersetGroup,
+          );
           workoutExercises.push(we);
           const previous = previousSetsForExercise(exercise.id, slices);
           const call = progressExercise({
@@ -820,6 +831,25 @@ export const useGym = create<GymState>()(
           }),
         })),
 
+      setSuperset: (workoutExerciseId, linkedWithNext) =>
+        set((state) => {
+          const block = state.workoutExercises.find((row) => row.id === workoutExerciseId);
+          if (!block) return {};
+          const blocks = state.workoutExercises.filter((row) => row.workoutId === block.workoutId);
+          const changes = relinkSuperset(
+            blocks,
+            workoutExerciseId,
+            linkedWithNext,
+            () => `ss-${uuid().slice(0, 8)}`,
+          );
+          if (changes.size === 0) return {};
+          return {
+            workoutExercises: state.workoutExercises.map((row) =>
+              changes.has(row.id) ? { ...row, supersetGroup: changes.get(row.id) } : row,
+            ),
+          };
+        }),
+
       completeSet: (setId) => {
         const stamp = new Date().toISOString();
         set((state) => ({
@@ -832,7 +862,14 @@ export const useGym = create<GymState>()(
         if (!setRow) return [];
         const we = state.workoutExercises.find((row) => row.id === setRow.workoutExerciseId);
         const slices = sliceSessions(state.workouts, state.workoutExercises, state.workoutSets);
-        if (state.settings.restTimerAutoStart && we) {
+        // In a superset the rest comes after the last exercise of the group, not between partners.
+        const restsNow =
+          we != null &&
+          endsSuperset(
+            we,
+            state.workoutExercises.filter((row) => row.workoutId === we.workoutId),
+          );
+        if (state.settings.restTimerAutoStart && we && restsNow) {
           const seconds = restSecondsAfter(setRow.setType, we.restSeconds, state.settings);
           if (seconds != null) {
             const learned = learnedRestSeconds(we.exerciseId, slices);
