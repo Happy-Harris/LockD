@@ -2,14 +2,15 @@ import { describe, expect, it } from "vitest";
 import { attributeVolumeByMuscle, completedSetCount, hardSetCount } from "@/domain/volume";
 import { toGrams } from "@/domain/units";
 import type { Workout, WorkoutExercise, WorkoutSet } from "@/domain/types";
+import { metricsFor } from "@/domain/analytics/weeklyVerdict.metrics";
+import { muscleSetInsight } from "@/domain/analytics/muscleSets";
 import { computeRecords, sliceSessions, workoutTonnageG } from "./analytics";
+import { loggedEntriesOf } from "./entries";
 
 /**
- * Pins how the engines treat left/right rows TODAY, before Step 9f-2 changes any counting.
- * Importers already write `side` (and `pairId`), so a lifter can have these rows in their log.
- * Current rule: a row is a set. A left row and a right row are two sets, two hard sets, and add
- * their tonnage together; the e1RM record is the best single row, never a sum of the two limbs.
- * When the counting rule changes, this file is the reviewable diff.
+ * How the engines treat left/right rows. Step 9f-2a (`unilateral-characterisation`) pinned the old rule (a row is a set); 9f-2b changed
+ * it so a left+right pair counts as ONE set. What did not change, and is still pinned here: tonnage adds
+ * both sides, and the e1RM record is the best single row, never a sum of the two limbs.
  */
 const kg = (n: number) => toGrams(n, "kg");
 
@@ -78,13 +79,20 @@ const sets = [
 ];
 const [slice] = sliceSessions([workout], exercises, sets);
 
-describe("left/right rows in the engines (current behaviour)", () => {
+describe("left/right rows in the engines", () => {
   const rowSets = sets.filter((row) => row.workoutExerciseId === "row");
 
-  it("counts every side row as its own set", () => {
-    expect(hardSetCount(rowSets)).toBe(6);
-    expect(completedSetCount(rowSets)).toBe(6);
-    expect(hardSetCount(sets)).toBe(8);
+  it("counts a left+right pair as one set", () => {
+    expect(hardSetCount(rowSets)).toBe(3);
+    expect(completedSetCount(rowSets)).toBe(3);
+    expect(hardSetCount(sets)).toBe(5);
+  });
+
+  it("counts a pair with only one side done once, and ignores a pairId with no side", () => {
+    const oneSided = rowSets.map((row) => (row.id === "r1" ? { ...row, isCompleted: false } : row));
+    expect(hardSetCount(oneSided)).toBe(3);
+    const noSide = rowSets.map(({ side: _side, ...rest }) => rest);
+    expect(hardSetCount(noSide)).toBe(6);
   });
 
   it("adds tonnage across both sides", () => {
@@ -92,13 +100,13 @@ describe("left/right rows in the engines (current behaviour)", () => {
     expect(workoutTonnageG(slice!, false)).toBe(kg(1740 + 600));
   });
 
-  it("credits the muscle with one set per row", () => {
+  it("credits the muscle with one set per pair", () => {
     const groups = slice!.exercises.map((exercise) => ({
       exercise,
       sets: slice!.sets.filter((row) => row.workoutExerciseId === exercise.id),
     }));
     const lats = attributeVolumeByMuscle(groups).find((row) => row.muscle === "lats");
-    expect(lats?.attributedSets).toBe(6);
+    expect(lats?.attributedSets).toBe(3);
   });
 
   it("takes the e1RM record from the best single row, never a sum of limbs", () => {
@@ -109,10 +117,22 @@ describe("left/right rows in the engines (current behaviour)", () => {
     expect(record?.reps).toBe(10);
   });
 
-  it("does not tell the pair rows apart from bilateral sets anywhere in the totals", () => {
+  it("keeps tonnage the same whether or not the rows are paired, and halves only the set count", () => {
     const bilateral = sets.map(({ side: _side, pairId: _pairId, ...rest }) => rest);
     const [plain] = sliceSessions([workout], exercises, bilateral);
     expect(workoutTonnageG(plain!, false)).toBe(workoutTonnageG(slice!, false));
-    expect(hardSetCount(plain!.sets)).toBe(hardSetCount(slice!.sets));
+    expect(hardSetCount(plain!.sets)).toBe(8);
+    expect(hardSetCount(slice!.sets)).toBe(5);
+  });
+
+  it("counts the pair once in the weekly verdict's hard sets and the muscle-set insight", () => {
+    const entries = loggedEntriesOf([slice!]);
+    expect(metricsFor(entries).hardSets).toBe(5);
+    const lats = muscleSetInsight(entries, {
+      referenceLocalDate: "2026-03-01",
+      weekStart: "monday",
+      secondaryCredit: 0.5,
+    }).find((row) => row.muscle === "lats");
+    expect(lats?.sets).toBe(3);
   });
 });

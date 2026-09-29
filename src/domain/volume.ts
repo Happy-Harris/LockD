@@ -29,7 +29,22 @@ import type { MuscleGroup, SetType, TrackingType, WorkoutExercise, WorkoutSet } 
  * Decided: history's plain "Sets" counts everything a lifter did after warming up
  * (`completedSetCount`), while the verdict, eras and the receipt's "Hard sets" stay working-only.
  * A count is never shown under a label that promises more than it counts.
+ *
+ * **Left/right pairs (`side` + `pairId`) count as one set.** Doing a set on each side is one set of the
+ * exercise, so a one-arm row is not counted as double the volume of a barbell row. Only the set
+ * *counts* change: tonnage still adds both sides, and e1RM and PRs are read per row (per limb),
+ * never summed. A pair with only one side done counts once. See `setCountKey`.
  */
+
+/**
+ * The key a set counts under. Left and right rows of one pair share it, so they count once; every
+ * other set counts under its own id. A `pairId` without a `side` is ignored.
+ */
+export function setCountKey(
+  set: Pick<WorkoutSet, "id" | "side" | "pairId" | "workoutExerciseId">,
+): string {
+  return set.side && set.pairId ? `${set.workoutExerciseId}|${set.pairId}` : set.id;
+}
 
 export const DEFAULT_SECONDARY_CREDIT = 0.5;
 
@@ -86,21 +101,23 @@ export function accumulate(
   set: WorkoutSet,
   trackingType: TrackingType,
   options: VolumeOptions = {},
+  /** False for the second side of a left/right pair: its reps and load still add, its set does not. */
+  countsAsSet = true,
 ): VolumeTotals {
   if (!set.isCompleted) return totals;
   if (!options.includeWarmups && set.setType === "warmup") return totals;
 
-  totals.completedSets += 1;
+  if (countsAsSet) totals.completedSets += 1;
   totals.totalReps += set.reps ?? 0;
   totals.durationSeconds += set.durationSeconds ?? 0;
   totals.distanceM += set.distanceM ?? 0;
 
   if (trackingType === "assisted_weight") {
-    totals.assistedSets += 1;
+    if (countsAsSet) totals.assistedSets += 1;
     return totals;
   }
   if (trackingType === "reps_only") {
-    totals.repsOnlySets += 1;
+    if (countsAsSet) totals.repsOnlySets += 1;
     return totals;
   }
   totals.volumeG += setVolumeG(set, trackingType, options);
@@ -126,11 +143,15 @@ export function totalsForGroups(
 ): VolumeTotals {
   const totals = emptyTotals();
   const seen = new Set<string>();
+  const counted = new Set<string>();
   for (const group of groups) {
     for (const set of group.sets) {
       if (seen.has(set.id)) continue;
       seen.add(set.id);
-      accumulate(totals, set, group.exercise.trackingTypeSnapshot, options);
+      const key = setCountKey(set);
+      const countsAsSet = !counted.has(key);
+      if (set.isCompleted && (options.includeWarmups || set.setType !== "warmup")) counted.add(key);
+      accumulate(totals, set, group.exercise.trackingTypeSnapshot, options, countsAsSet);
     }
   }
   return totals;
@@ -158,6 +179,7 @@ export function attributeVolumeByMuscle(
   };
 
   const seen = new Set<string>();
+  const counted = new Set<string>();
   for (const group of groups) {
     const { primaryMuscleGroupSnapshot, secondaryMuscleGroupsSnapshot, trackingTypeSnapshot } =
       group.exercise;
@@ -167,11 +189,14 @@ export function attributeVolumeByMuscle(
       if (!set.isCompleted) continue;
       if (!options.includeWarmups && set.setType === "warmup") continue;
       const volume = setVolumeG(set, trackingTypeSnapshot, options);
-      add(primaryMuscleGroupSnapshot, volume, 1);
+      const key = setCountKey(set);
+      const sets = counted.has(key) ? 0 : 1;
+      counted.add(key);
+      add(primaryMuscleGroupSnapshot, volume, sets);
       const secondaries = new Set(
         secondaryMuscleGroupsSnapshot.filter((m) => m !== primaryMuscleGroupSnapshot),
       );
-      for (const muscle of secondaries) add(muscle, volume * credit, credit);
+      for (const muscle of secondaries) add(muscle, volume * credit, credit * sets);
     }
   }
 
@@ -202,12 +227,15 @@ export function monthKey(date: Date): string {
 
 /** Completed `working` sets. Drop and failure sets are deliberately not "hard sets" here. */
 export function hardSetCount(sets: readonly WorkoutSet[]): number {
-  return sets.filter((set) => set.isCompleted && set.setType === "working").length;
+  return new Set(
+    sets.filter((set) => set.isCompleted && set.setType === "working").map(setCountKey),
+  ).size;
 }
 
 /** Every completed set except warm-ups, of any tracking type: the "sets" a lifter would count. */
 export function completedSetCount(sets: readonly WorkoutSet[]): number {
-  return sets.filter((set) => set.isCompleted && set.setType !== "warmup").length;
+  return new Set(sets.filter((set) => set.isCompleted && set.setType !== "warmup").map(setCountKey))
+    .size;
 }
 
 /** Set types that add to per-muscle volume and count as training a muscle (never warm-ups). */
@@ -229,13 +257,14 @@ export function attributeMuscleVolume(
 ): Record<string, number> {
   const credit = clampCredit(secondaryCredit);
   const result: Record<string, number> = {};
-  let workingSets = 0;
+  const counted = new Set<string>();
   for (const set of sets) {
     if (!set.isCompleted) continue;
     if (excludeWarmups && set.setType === "warmup") continue;
     if (!countsForVolume(set.setType)) continue;
-    workingSets += 1;
+    counted.add(setCountKey(set));
   }
+  const workingSets = counted.size;
   if (workingSets === 0) return result;
   result[primary] = (result[primary] ?? 0) + workingSets;
   for (const muscle of secondary) {

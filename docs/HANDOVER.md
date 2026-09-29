@@ -9,6 +9,21 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9f-2b: a left/right pair counts as one set
+
+- **Rule (a default the owner can reverse; the donor's rule was not reachable):** rows with a `side` and a shared
+  `pairId` count as ONE set, so a one-arm row is not double the sets of a barbell row. `setCountKey` (in `volume.ts`)
+  is the single definition; a `pairId` without a `side` is ignored, and a pair with only one side done counts once.
+- **Changed:** `hardSetCount`, `completedSetCount`, set counts in `totalsForGroups`, `attributeVolumeByMuscle` and
+  `attributeMuscleVolume`, the weekly verdict's hard sets, and the muscle-set insight (the pair's first row carries
+  the credit and the evidence row; the second side has no evidence row of its own).
+- **Not changed:** tonnage still adds both sides, and e1RM and PRs are read per row (per limb), never summed.
+- **Test diff:** only `unilateral-counting.test.ts` (renamed from the 9f-2a file) changed values: 6 to 3 sets, 8 to 5
+  hard sets. The other 830 tests, including every engine snapshot, pass unmodified, so nothing shown for a
+  bilateral log moved.
+- **Not done:** the receipt copy "pairs counted as one set" (the receipts don't yet distinguish pairs); Lab and history
+  screens that count `sets.length` directly were not audited; nothing creates left/right rows when logging yet (9f-2c).
+
 ### 2026-09-29 — Step 9f-2a: pin how left/right rows are counted today (characterisation only)
 
 - **No behaviour change.** `unilateral-characterisation.test.ts` (5) pins what the engines do with `side` rows, which

@@ -5,7 +5,7 @@ import type {
   WeekStartDay,
 } from "@/domain/types";
 import { RESEARCH_WEEKLY_SET_BAND } from "@/domain/evidence";
-import { clampCredit } from "@/domain/volume";
+import { clampCredit, setCountKey } from "@/domain/volume";
 import type { LoggedEntry } from "./compute";
 import { shiftLocalDate, startOfTrainingWeekDate } from "./trainingWeeks";
 
@@ -57,6 +57,7 @@ export function muscleSetInsight(
   const secondaryCredit = clampCredit(options.secondaryCredit);
   const rows = new Map<MuscleGroup, { sets: number; evidence: MuscleSetEvidence[] }>();
   const seen = new Set<string>();
+  const counted = new Set<string>();
 
   const add = (
     muscle: MuscleGroup,
@@ -93,6 +94,10 @@ export function muscleSetInsight(
       if (seen.has(set.id)) continue;
       seen.add(set.id);
       if (!set.isCompleted || set.setType !== "working") continue;
+      // A left/right pair is one set: its first row carries the credit and the evidence.
+      const key = setCountKey(set);
+      if (counted.has(key)) continue;
+      counted.add(key);
 
       add(primary, entry, set, "primary", 1);
       for (const secondary of secondaries) {
