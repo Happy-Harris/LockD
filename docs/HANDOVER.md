@@ -9,6 +9,43 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 10c: Big Shoulders Display and Archivo replace Barlow
+
+- **Faces (plan D9 and the knurl port):** Big Shoulders Display 700 and 800 for headings and big numbers, and one variable Archivo file for
+  body text, both OFL-1.1, self-hosted through `@fontsource` packages. Barlow and Barlow Condensed and their packages are gone.
+  **IBM Plex Mono stays** for numbers: the plan names no mono face, and aligned digits matter for reading a record. That is
+  the owner's call to revisit.
+- **One definition:** `FONTS` in `src/lib/brand.ts`; `styles.css` sets the same families as `--font-*`, and the posters,
+  receipts and lock-screen art read the names from it. `brand.test.ts` (now 16) checks they match, every declared file exists,
+  no Barlow remains in the styles, canvas code or dependencies, and that the licence text is present.
+- **Licence:** OFL asks that the notice travel with the font, so `public/font-licences.txt` (served at `/font-licences.txt`, checked 200
+  in the running app) holds the texts copied from the three packages; `docs/FONTS.md` says how to regenerate it.
+- **Layout check (the real risk):** Archivo is wider than Barlow. A scan of 15 routes at 390 and 1024 px found one real regression, the
+  "Add reps" pill on Today wrapping onto two lines; `Badge` now never wraps or shrinks (checked on screen afterwards). The other
+  flagged items are rows designed to have two lines. I also looked at Today and the workout page at 390 px. **Not checked:**
+  every screen by eye, light theme, and long exercise names in the big display face.
+- **Not verified:** the poster, receipt and lock-screen canvases with the new faces. They draw with the family names, but a canvas can draw before
+  its font loads (already true with Barlow); the fix is 10d.
+- Merge note: this branch conflicted with 10b in `receipt.tsx` (import lines) and `brand.test.ts` (two new test groups); both kept.
+
+### 2026-09-29 — Step 10b: the mark draws an L, and the icons are redrawn (I-38)
+
+- **Mark:** `StampMark` (which drew an R) is now `LockdMark`, an L on an Oxide tile in the theme's accent and accent ink, at
+  all 9 places it is used. It is the same shape as the favicon and app icons on three grids (32, 16, 512);
+  `brand.test.ts` checks all three carry the same path and that the R path and the old name are gone.
+- **Icons:** `scripts/make-icons.mjs` redraws `icon-192`, `icon-512`, `icon-maskable-512` and `apple-touch-icon` from the
+  palette module (read from `src/lib/brand.ts`, so they cannot drift), through the preinstalled Chromium:
+  `CHROMIUM_PATH=/opt/pw-browsers/chromium node scripts/make-icons.mjs`. The maskable one keeps its art inside the
+  central 80%. The favicon's L is now Mill ink like the mark. Tests check the four sizes and that every icon the manifest names exists.
+- **Corrections to the plan's I-38 line:** the fonts were already self-hosted (`@fontsource`, an earlier PR), and the manifest
+  already pointed at real icons, so neither needed work. `npm run check:brand` reports 0 findings. The `public/__grok/`
+  assets are scaffolding and go with Step 12.
+- **Looked at:** the regenerated icons (512 and maskable) and the sidebar mark in the running app at 1024 px. **Not done:** the
+  mark at 390 px, on the light theme, or in the posters and receipt (they draw with the same component but were not opened).
+- **Not done (next slices):** the typefaces (Big Shoulders Display and Archivo, 10c), poster layout (10d), receipt motifs (10e).
+- Merge note: this branch conflicted with 10a in `receipt.tsx` and `moment-poster.tsx` (import lines and one paragraph); both were
+  resolved by keeping the rename and the palette import.
+
 ### 2026-09-29 — Step 10a: Oxide replaces vermillion, accent themes retired (D9, O3)
 
 - **Palette:** one module, `src/lib/brand.ts` (Mill `#0E0E0C`, Oxide `#C45C32`, Chalk `#E8E2D4`, Steel `#9A9588`, Verdigris

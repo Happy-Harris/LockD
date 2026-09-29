@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { MomentPoster } from "@/components/app/moment-poster";
 import { PaperShell } from "@/components/app/paper-shell";
-import { StampMark } from "@/components/app/mark";
+import { LockdMark } from "@/components/app/mark";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatDuration, formatWeightWithUnit } from "@/domain/units";
@@ -82,7 +82,7 @@ function ShareBody({ share }: { share: PublicShare }) {
               <p className="stamp text-3xl leading-none">LOCKD</p>
               <p className="mt-1 text-[10px] uppercase tracking-[0.22em] opacity-60">Session receipt</p>
             </div>
-            <StampMark className="size-9" />
+            <LockdMark className="size-9" />
           </header>
           <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight">{payload.workoutName}</h1>
           <p className="mt-1 text-sm opacity-70">{payload.date}</p>

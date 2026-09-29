@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { GROK_PROVIDERS, authEnabled, signIn } from "@/lib/auth/client";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { StampMark } from "@/components/app/mark";
+import { LockdMark } from "@/components/app/mark";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/login")({ component: Login });
@@ -22,7 +22,7 @@ function Login() {
     <main className="relative mx-auto flex min-h-dvh max-w-md flex-col justify-between overflow-hidden bg-canvas px-6 py-10 text-ink">
       <div className="pointer-events-none absolute -right-10 top-16 size-56 rounded-full bg-accent/15 blur-3xl" />
       <div>
-        <StampMark className="size-14" />
+        <LockdMark className="size-14" />
         <p className="mt-10 stamp text-7xl leading-[0.85] tracking-tight">LOCKD</p>
         <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.28em] text-accent">The log lives with you.</p>
         <p className="mt-6 max-w-sm text-base leading-relaxed text-muted">

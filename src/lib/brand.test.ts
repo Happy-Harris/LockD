@@ -175,3 +175,38 @@ describe("the typefaces", () => {
     expect(licences.match(/SIL OPEN FONT LICENSE Version 1\.1/g)?.length).toBeGreaterThanOrEqual(3);
   });
 });
+
+describe("the mark and the icons", () => {
+  const png = (file: string) => {
+    const bytes = readFileSync(new URL(`../../public/${file}`, import.meta.url));
+    expect(bytes.subarray(1, 4).toString("ascii"), `${file} is a PNG`).toBe("PNG");
+    return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+  };
+
+  it("the app icons exist at the sizes the manifest and head declare", () => {
+    expect(png("icon-192.png")).toEqual({ width: 192, height: 192 });
+    expect(png("icon-512.png")).toEqual({ width: 512, height: 512 });
+    expect(png("icon-maskable-512.png")).toEqual({ width: 512, height: 512 });
+    expect(png("apple-touch-icon.png")).toEqual({ width: 180, height: 180 });
+    const manifest = JSON.parse(read("public/manifest.webmanifest"));
+    // Every icon the manifest names is a real file in public/.
+    for (const icon of manifest.icons) {
+      expect(existsSync(new URL(`../../public${icon.src}`, import.meta.url)), icon.src).toBe(true);
+    }
+  });
+
+  it("the mark, the favicon and the icon script draw the same L in Mill ink on Oxide", () => {
+    const mark = read("src/components/app/mark.tsx");
+    const favicon = read("public/favicon.svg");
+    const script = read("scripts/make-icons.mjs");
+    // The same shape on three grids: 32 (mark), 16 (favicon), 512 (icons).
+    expect(mark).toContain("M8 6h8v14h10v6H8Z");
+    expect(favicon).toContain("M4 3h4v7h5v3H4z");
+    expect(script).toContain("M128 96h128v224h160v96H128z");
+    expect(favicon).toContain(`fill="${BRAND.mill}"/>`);
+    expect(favicon.match(/fill="#0E0E0C"/gi)?.length).toBe(2);
+    // The old mark drew an R; make sure that path is gone.
+    expect(mark).not.toContain("StampMark");
+    expect(mark).not.toContain("M9 7.5h6.2c3.7");
+  });
+});
