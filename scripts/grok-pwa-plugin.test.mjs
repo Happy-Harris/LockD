@@ -504,3 +504,12 @@ test("vite plugin bakes og identity as a virtual module", () => {
   assert.match(plugin, /snapshotOgIdentity/);
 });
 
+
+test("does not add a second manifest or touch icon when the page already links its own", () => {
+  const html =
+    '<!doctype html><html><head><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><title>x</title></head><body></body></html>';
+  const out = injectGrokPwaHead(html, { host: "wild-race.grok.me" });
+  assert.equal((out.match(/rel="manifest"/g) ?? []).length, 1);
+  assert.equal((out.match(/rel="apple-touch-icon"/g) ?? []).length, 1);
+  assert.match(out, /href="\/manifest\.webmanifest"/);
+});
