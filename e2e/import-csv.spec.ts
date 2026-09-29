@@ -62,7 +62,7 @@ test.describe("importing a Hevy CSV", () => {
 
     await page.getByTestId("hevy-csv-input").setInputFiles(file);
     await expect(page.getByTestId("csv-note")).toContainText("Imported 0 sessions");
-    await expect(page.getByTestId("csv-note")).toContainText("5 sessions were already here");
+    await expect(page.getByTestId("csv-note")).toContainText("5 sessions already here");
     expect((await readLog(page)).workouts).toHaveLength(before + 5);
   });
 });
@@ -89,18 +89,18 @@ test.describe("importing a backup from another app", () => {
     const after = await readLog(page);
     // The sample log already has a routine called Push Day, so the backup's is left out, not doubled.
     await expect(page.getByTestId("csv-note")).toContainText(
-      "1 routines with the same name were already here",
+      "1 routine with the same name already here",
     );
     expect(after.templates).toHaveLength(before.templates.length);
     expect(after.measurements).toHaveLength(before.measurements.length + 2);
     // The other app's time-zone sign is flipped: +60 there is -60 here.
     expect(
-      after.workouts.find((w) => w.name === "Push A" && w.importFingerprint)?.tzOffsetMinutes,
+      after.workouts.find((w) => w.startedAt === "2026-01-05T17:30:00.000Z")?.tzOffsetMinutes,
     ).toBe(-60);
 
     await page.getByTestId("other-backup-input").setInputFiles(file);
     await expect(page.getByTestId("csv-note")).toContainText("Imported 0 sessions");
-    await expect(page.getByTestId("csv-note")).toContainText("2 sessions were already here");
+    await expect(page.getByTestId("csv-note")).toContainText("2 sessions already here");
     expect((await readLog(page)).workouts).toHaveLength(before.workouts.length + 2);
     expect((await readLog(page)).templates).toHaveLength(after.templates.length);
 
@@ -113,5 +113,40 @@ test.describe("importing a backup from another app", () => {
     });
     await expect(page.getByTestId("backup-problems")).toContainText("data.workouts[0].startedAt");
     expect((await readLog(page)).workouts).toHaveLength(before.workouts.length + 2);
+  });
+});
+
+test.describe("importing a vault from another app", () => {
+  test("adds sessions once, keeps unsided girths unsided, and shows them on the Body screen", async ({
+    page,
+  }) => {
+    await openWithSampleLog(page);
+    await goTo(page, "/settings");
+    const before = await readLog(page);
+    const vault = readFileSync(
+      fileURLToPath(new URL("../src/test/fixtures/knurl/knurl-vault-v1.json", import.meta.url)),
+    );
+    const file = { name: "vault.json", mimeType: "application/json", buffer: vault };
+
+    await page.getByTestId("other-backup-input").setInputFiles(file);
+    await expect(page.getByTestId("csv-note")).toContainText(
+      "Imported 2 sessions, 9 sets, 1 routine, 4 measurements",
+    );
+    await waitForSessions(page, before.workouts.length + 2);
+    const after = await readLog(page);
+    const arms = after.measurements.find((m) => m.metric === "arms");
+    expect(arms).toMatchObject({ value: 348, displayUnit: "cm" });
+    expect(after.measurements.some((m) => m.metric === "arm_left" && m.value === 348)).toBe(false);
+    // Raw sign kept: -60 there is -60 here.
+    expect(
+      after.workouts.find((w) => w.startedAt === "2026-02-03T17:30:00.000Z")?.tzOffsetMinutes,
+    ).toBe(-60);
+
+    await page.getByTestId("other-backup-input").setInputFiles(file);
+    await expect(page.getByTestId("csv-note")).toContainText("Imported 0 sessions");
+    expect((await readLog(page)).workouts).toHaveLength(before.workouts.length + 2);
+
+    await goTo(page, "/body");
+    await expect(page.getByText("Arms (side not recorded)").first()).toBeAttached();
   });
 });

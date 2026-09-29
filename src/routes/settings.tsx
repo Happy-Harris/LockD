@@ -84,28 +84,34 @@ function SettingsPage() {
     if (warnings.length) setBackupProblems(warnings);
   };
 
-  const importNote = (preview: ImportSummary) =>
-    `Imported ${preview.workouts} sessions, ${preview.sets} sets${
-      preview.routines ? `, ${preview.routines} routines` : ""
-    }${preview.measurements ? `, ${preview.measurements} measurements` : ""}. Skipped ${preview.skipped} rows.${
-      preview.duplicates ? ` ${preview.duplicates} sessions were already here and were left out.` : ""
-    }${
-      preview.unmatched.length
-        ? ` New exercises to classify: ${preview.unmatched.slice(0, 8).join(", ")}.`
-        : ""
-    }${
+  const importNote = (preview: ImportSummary) => {
+    const count = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+    const parts = [
+      count(preview.workouts, "session"),
+      count(preview.sets, "set"),
+      ...(preview.routines ? [count(preview.routines, "routine")] : []),
+      ...(preview.measurements ? [count(preview.measurements, "measurement")] : []),
+    ];
+    const lines = [
+      `Imported ${parts.join(", ")}. Skipped ${count(preview.skipped, "row")}.`,
+      preview.duplicates
+        ? `${count(preview.duplicates, "session")} already here and left out.`
+        : "",
       preview.routinesSkipped
-        ? ` ${preview.routinesSkipped} routines with the same name were already here.`
-        : ""
-    }${
+        ? `${count(preview.routinesSkipped, "routine")} with the same name already here and left out.`
+        : "",
       preview.measurementsSkipped
-        ? ` ${preview.measurementsSkipped} measurements were already recorded.`
-        : ""
-    }${preview.notes.length ? ` ${preview.notes.join(" ")}` : ""}${
-      preview.issues.length
-        ? ` ${preview.issues.slice(0, 3).join(" ")}${preview.issues.length > 3 ? ` (and ${preview.issues.length - 3} more.)` : ""}`
-        : ""
-    }`;
+        ? `${count(preview.measurementsSkipped, "measurement")} already recorded and left out.`
+        : "",
+      preview.unmatched.length
+        ? `New exercises to classify: ${preview.unmatched.slice(0, 8).join(", ")}.`
+        : "",
+      ...preview.notes,
+      ...preview.issues.slice(0, 3),
+      preview.issues.length > 3 ? `(and ${preview.issues.length - 3} more.)` : "",
+    ];
+    return lines.filter(Boolean).join(" ");
+  };
 
   const onCsv = async (file: File, source: "strong" | "hevy") => {
     const text = await file.text();

@@ -36,6 +36,8 @@ import { exportSetsCsv } from "./csv";
 import { applyImportBatch, buildImportBatch, storedFingerprints } from "@/lib/import/batch";
 import type { ImportAnalysis, SourceProfile } from "@/lib/import/engine";
 import { analyseHevyCsv, HEVY_PROFILE } from "@/lib/import/hevy";
+import { parseJsonInput } from "@/lib/import/foreign";
+import { isKnurlVault, KNURL_SOURCE, readKnurlVault } from "@/lib/import/knurl";
 import { readRepforgeBackup, REPFORGE_SOURCE } from "@/lib/import/repforge";
 import { analyseStrongCsv, STRONG_PROFILE } from "@/lib/import/strong";
 import { buildDemoLog, emptyStarterPack } from "./demo";
@@ -104,7 +106,7 @@ export interface ImportSummary {
   /** Sessions already in the log, left out. */
   duplicates: number;
   issues: string[];
-  /** Exercises created because no exercise here had that name. */
+  /** Exercises created with no muscle group: the lifter still has to classify these. */
   unmatched: string[];
   /** Backups only. */
   routines: number;
@@ -323,7 +325,10 @@ function runImport(
     skipped: args.analysis.skippedRows,
     duplicates: batch.duplicatesSkipped,
     issues: batch.issues.slice(0, 40).map((issue) => issue.message),
-    unmatched: batch.newExercises.map((exercise) => exercise.name),
+    // Only exercises with no muscle group need the lifter to classify them.
+    unmatched: batch.newExercises
+      .filter((exercise) => exercise.primaryMuscleGroup === "unmapped")
+      .map((exercise) => exercise.name),
     routines: batch.templates.length,
     routinesSkipped: batch.templatesSkipped,
     measurements: batch.measurements.length,
@@ -1247,14 +1252,16 @@ export const useGym = create<GymState>()(
       },
 
       importOtherAppBackup: (text, fileName = "backup.json") => {
-        const result = readRepforgeBackup(text);
+        const json = parseJsonInput(text);
+        if (!json.ok) return json;
+        const knurl = isKnurlVault(json.value);
+        const result = knurl ? readKnurlVault(json.value) : readRepforgeBackup(json.value);
         if (!result.ok) return result;
-        const state = get();
         return {
           ok: true,
-          summary: runImport(state, set, {
+          summary: runImport(get(), set, {
             analysis: result.analysis,
-            source: REPFORGE_SOURCE,
+            source: knurl ? KNURL_SOURCE : REPFORGE_SOURCE,
             fileName,
             notes: result.notes,
           }),

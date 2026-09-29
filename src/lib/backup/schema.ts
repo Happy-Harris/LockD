@@ -86,6 +86,9 @@ export const METRICS = [
   "thigh_right",
   "calf_left",
   "calf_right",
+  "arms",
+  "thighs",
+  "calves",
 ] as const satisfies readonly MeasurementMetric[];
 
 type _Covers<T extends never> = T;

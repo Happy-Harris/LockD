@@ -102,6 +102,9 @@ export const MEASUREMENT_METRICS: Array<{
   { value: "thigh_right", label: "Right thigh", kind: "length" },
   { value: "calf_left", label: "Left calf", kind: "length" },
   { value: "calf_right", label: "Right calf", kind: "length" },
+  { value: "arms", label: "Arms (side not recorded)", kind: "length" },
+  { value: "thighs", label: "Thighs (side not recorded)", kind: "length" },
+  { value: "calves", label: "Calves (side not recorded)", kind: "length" },
 ];
 
 export function metricLabel(metric: MeasurementMetric): string {
