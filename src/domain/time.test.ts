@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { WeekStartDay } from "./types";
-import { localDateOf, previousRange, resolveRange, startOfTrainingWeek } from "./time";
+import {
+  formatWeekday,
+  localDateOf,
+  previousRange,
+  resolveRange,
+  startOfTrainingWeek,
+  todayHeader,
+} from "./time";
 
 describe("analytics ranges", () => {
   const reference = new Date(2026, 8, 17, 12, 30, 0);
@@ -56,5 +63,45 @@ describe("analytics ranges", () => {
 
   it("has no prior window for All", () => {
     expect(previousRange("all", reference)).toBeNull();
+  });
+});
+
+describe("today is the lifter's own date, not UTC's (plan I-24)", () => {
+  const inZone = <T>(zone: string, run: () => T): T => {
+    const original = process.env.TZ;
+    process.env.TZ = zone;
+    try {
+      return run();
+    } finally {
+      process.env.TZ = original;
+    }
+  };
+
+  it("west of UTC in the evening it is still today, where UTC has already moved on", () => {
+    // 20:00 on Tuesday 29 Sep in Los Angeles (UTC-7) is 03:00 on Wednesday 30 Sep UTC.
+    const instant = new Date("2026-09-30T03:00:00.000Z");
+    inZone("America/Los_Angeles", () => {
+      expect(instant.toISOString().slice(0, 10)).toBe("2026-09-30"); // the old code: tomorrow
+      expect(localDateOf(instant)).toBe("2026-09-29");
+      expect(todayHeader(instant)).toBe(formatWeekday("2026-09-29"));
+      expect(todayHeader(instant)).not.toBe(formatWeekday("2026-09-30"));
+    });
+  });
+
+  it("far east in the early morning it is already today, where UTC is still yesterday", () => {
+    // 01:00 on Wednesday 30 Sep in Auckland (UTC+13 in daylight time) is 12:00 on Tuesday 29 Sep UTC.
+    const instant = new Date("2026-09-29T12:00:00.000Z");
+    inZone("Pacific/Auckland", () => {
+      expect(instant.toISOString().slice(0, 10)).toBe("2026-09-29"); // the old code: yesterday
+      expect(localDateOf(instant)).toBe("2026-09-30");
+      expect(todayHeader(instant)).toBe(formatWeekday("2026-09-30"));
+    });
+  });
+
+  it("in UTC it agrees with the old answer", () => {
+    inZone("UTC", () => {
+      const instant = new Date("2026-09-29T12:00:00.000Z");
+      expect(localDateOf(instant)).toBe(instant.toISOString().slice(0, 10));
+    });
   });
 });
