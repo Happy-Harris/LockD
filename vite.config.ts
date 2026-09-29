@@ -162,9 +162,7 @@ function authPopupPlugin(): Plugin {
   };
 }
 
-// `0.0.0.0:8080` is the live-preview contract — don't change host/port.
-// The dev server starts once `src/router.tsx` and `src/routes/` exist — see
-// AGENTS.md § "First scaffold".
+// `0.0.0.0:8080` is the dev-server host and port the e2e config expects; keep them in step.
 export default defineConfig(({ command, isPreview }) => ({
   server: {
     host: "0.0.0.0",
