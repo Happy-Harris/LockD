@@ -181,6 +181,7 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
     lastReviewed: "2026-09-29",
   },
   {
+<<<<<<< HEAD
     id: "era-detection-rules",
     statement:
       "Chronicle eras start at the first logged session and after each layoff of 14 days or more, and a stretch is split again when its weekly hard sets change by 25% or more, or its PR stamps per four weeks change by 3 or more, between two halves of at least six weeks. An era's tone is read against the lifter's own hard sets per trained week over the 26 weeks before it.",
@@ -192,6 +193,19 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
       "A product rule so the Chronicle follows the lifter's own regimes: a lifter doing 20 sets a week is not read against one doing 40. Names are labels the lifter can replace; they never move a boundary.",
     limitations:
       "The 14-day layoff, 25%, 3 stamps per four weeks, six-week minimum, 26-week baseline and the 1.2, 1.1 and 0.8 tone ratios are product choices, not sports-science criteria. An era name describes the log, not a training phase the lifter chose.",
+=======
+    id: "thin-evidence-insight-gate",
+    statement:
+      "The Lab's volume-response, rest and recovery-gap notes appear only with at least 8 observations, at least 3 in each group compared, and a difference of at least 3%, and always show how many observations they rest on.",
+    kind: "implementation_heuristic",
+    behaviors: ["volume_response_insight", "rest_note", "recovery_gap_note"],
+    sourceIds: [],
+    support: "context",
+    interpretation:
+      "A product rule so a handful of weeks cannot produce a headline. Below the gate the volume note says there is no clear link, and the rest and recovery-gap notes say nothing.",
+    limitations:
+      "8, 3 and 3% are product choices, not statistical or sports-science criteria. Passing the gate does not make a pattern causal; the note is a description of this lifter's own log.",
+>>>>>>> origin/main
     lastReviewed: "2026-09-29",
   },
   {
