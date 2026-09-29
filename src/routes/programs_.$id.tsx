@@ -21,6 +21,7 @@ function ProgramDetailPage() {
   const { programs, programWeeks, programSessions, programExercises, exercises } = useGymDerived();
   const startFromProgramSession = useStartProgramSession();
   const setActiveProgram = useGym((s) => s.setActiveProgram);
+  const restartProgram = useGym((s) => s.restartProgram);
   const duplicateProgram = useGym((s) => s.duplicateProgram);
   const deleteProgram = useGym((s) => s.deleteProgram);
   const exportProgram = useGym((s) => s.exportProgram);
@@ -62,7 +63,9 @@ function ProgramDetailPage() {
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">{program.name}</h1>
       <p className="mt-2 text-sm text-muted">{program.notes}</p>
       <p className="mt-2 text-sm text-muted">
-        Week {program.currentWeek} of {program.weekCount}
+        {program.completedAt
+          ? `Program complete · all ${program.weekCount} weeks finished on ${program.completedAt.slice(0, 10)}`
+          : `Week ${program.currentWeek} of ${program.weekCount}`}
         {program.isActive ? " · active" : ""}
       </p>
 
@@ -74,6 +77,12 @@ function ProgramDetailPage() {
             skipped when you start a session. Add an exercise with the same name, or swap it below.
           </p>
         </Card>
+      ) : null}
+
+      {program.completedAt ? (
+        <Button className="mt-4 w-full" data-testid="restart-program" onClick={() => restartProgram(id)}>
+          Restart from week 1
+        </Button>
       ) : null}
 
       <div className="mt-5 grid grid-cols-2 gap-2">
