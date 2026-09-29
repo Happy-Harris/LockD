@@ -61,8 +61,10 @@ import { barbellSnap } from "./loads";
 import { progressExercise } from "./progression";
 import { seedBarProfiles, seedExercises, seedPlateInventories } from "./seed";
 import { generateWarmup } from "@/domain/warmup";
+import { setCountKey } from "@/domain/volume";
 import { learnedRestSeconds } from "./dna";
 import { withPlateCount } from "./equipment";
+import { buildSlots, pairIsDone, priorForSlot } from "./pairs";
 import { endsSuperset, relinkSuperset } from "./superset";
 import { restSecondsAfter, restSuggestion } from "./rest";
 import { deleteClipBlob } from "./vault";
@@ -275,6 +277,7 @@ function snapshotExercise(
     trackingTypeSnapshot: exercise.trackingType,
     restSeconds,
     ...(supersetGroup ? { supersetGroup } : {}),
+    ...(exercise.unilateral ? { unilateralSnapshot: true } : {}),
   };
 }
 
@@ -563,22 +566,22 @@ export const useGym = create<GymState>()(
             snap: barbellSnap(exercise, state.bars, state.plates, state.settings),
           });
           const count = Math.max(row.targetSets, 1);
-          for (let i = 0; i < count; i += 1) {
-            const prior = previous[i] ?? previous[previous.length - 1];
-            const isWarmup = i === 0 && row.includeWarmup;
+          buildSlots(count, !!row.includeWarmup, !!exercise.unilateral).forEach((slot, order) => {
+            const prior = priorForSlot(previous, slot, order);
             workoutSets.push({
               id: uuid(),
               workoutExerciseId: we.id,
               workoutId: workout.id,
-              order: i,
-              setType: isWarmup ? "warmup" : row.defaultSetType,
+              order,
+              setType: slot.isWarmup ? "warmup" : row.defaultSetType,
               // A warm-up row is not a working set: it gets no working weight (ensureWarmups builds the ramp).
-              weightG: isWarmup ? undefined : (call.suggestedWeightG ?? prior?.weightG),
+              weightG: slot.isWarmup ? undefined : (call.suggestedWeightG ?? prior?.weightG),
               reps: call.suggestedReps ?? prior?.reps,
               rpe: prior?.rpe,
+              ...(slot.side ? { side: slot.side, pairId: slot.pairId } : {}),
               isCompleted: false,
             });
-          }
+          });
         });
         set({
           workouts: [...state.workouts, workout],
@@ -654,20 +657,21 @@ export const useGym = create<GymState>()(
             snap: barbellSnap(exercise, state.bars, state.plates, state.settings),
           });
           const count = Math.max(applied.sets, 1);
-          for (let i = 0; i < count; i += 1) {
-            const prior = previous[i] ?? previous[previous.length - 1];
+          buildSlots(count, !!row.includeWarmup, !!exercise.unilateral).forEach((slot, order) => {
+            const prior = priorForSlot(previous, slot, order);
             workoutSets.push({
               id: uuid(),
               workoutExerciseId: we.id,
               workoutId: workout.id,
-              order: i,
-              setType: i === 0 && row.includeWarmup ? "warmup" : "working",
+              order,
+              setType: slot.isWarmup ? "warmup" : "working",
               weightG: applied.weightG ?? prior?.weightG,
               reps: applied.reps ?? prior?.reps,
               rpe: prior?.rpe,
+              ...(slot.side ? { side: slot.side, pairId: slot.pairId } : {}),
               isCompleted: false,
             });
-          }
+          });
         });
         set({
           workouts: [...state.workouts, workout],
@@ -724,17 +728,26 @@ export const useGym = create<GymState>()(
           exercise.id,
           sliceSessions(state.workouts, state.workoutExercises, state.workoutSets),
         );
-        const sets: WorkoutSet[] = [0, 1, 2].map((order) => ({
-          id: uuid(),
-          workoutExerciseId: we.id,
-          workoutId,
-          order,
-          setType: "working" as const,
-          weightG: previous[order]?.weightG ?? previous[0]?.weightG,
-          reps: previous[order]?.reps ?? previous[0]?.reps,
-          rpe: previous[order]?.rpe,
-          isCompleted: false,
-        }));
+        // Three sets to start; a unilateral exercise gets a left and a right row for each.
+        const sets: WorkoutSet[] = buildSlots(3, false, !!exercise.unilateral).map(
+          (slot, order) => {
+            const prior = slot.side
+              ? priorForSlot(previous, slot, order)
+              : (previous[order] ?? previous[0]);
+            return {
+              id: uuid(),
+              workoutExerciseId: we.id,
+              workoutId,
+              order,
+              setType: "working" as const,
+              weightG: prior?.weightG,
+              reps: prior?.reps,
+              rpe: prior?.rpe,
+              ...(slot.side ? { side: slot.side, pairId: slot.pairId } : {}),
+              isCompleted: false,
+            };
+          },
+        );
         set({
           workoutExercises: [...state.workoutExercises, we],
           workoutSets: [...state.workoutSets, ...sets],
@@ -789,21 +802,41 @@ export const useGym = create<GymState>()(
         const existing = state.workoutSets.filter(
           (row) => row.workoutExerciseId === workoutExerciseId,
         );
-        const last = existing[existing.length - 1];
         const we = state.workoutExercises.find((row) => row.id === workoutExerciseId);
         if (!we) return;
-        const next: WorkoutSet = {
+        const make = (
+          order: number,
+          from: WorkoutSet | undefined,
+          side?: "left" | "right",
+          pairId?: string,
+        ): WorkoutSet => ({
           id: uuid(),
           workoutExerciseId,
           workoutId: we.workoutId,
-          order: existing.length,
+          order,
           setType,
-          weightG: last?.weightG,
-          reps: last?.reps,
-          rpe: last?.rpe,
+          weightG: from?.weightG,
+          reps: from?.reps,
+          rpe: from?.rpe,
+          ...(side ? { side, pairId } : {}),
           isCompleted: false,
-        };
-        set({ workoutSets: [...state.workoutSets, next] });
+        });
+        const last = existing[existing.length - 1];
+        // A unilateral exercise adds a left and a right row together (a warm-up stays one row).
+        if (we.unilateralSnapshot && setType !== "warmup") {
+          const lastOn = (side: "left" | "right") =>
+            [...existing].reverse().find((row) => row.side === side) ?? last;
+          const pairId = uuid();
+          set({
+            workoutSets: [
+              ...state.workoutSets,
+              make(existing.length, lastOn("left"), "left", pairId),
+              make(existing.length + 1, lastOn("right"), "right", pairId),
+            ],
+          });
+          return;
+        }
+        set({ workoutSets: [...state.workoutSets, make(existing.length, last)] });
       },
 
       updateSet: (setId, patch) =>
@@ -868,7 +901,8 @@ export const useGym = create<GymState>()(
           endsSuperset(
             we,
             state.workoutExercises.filter((row) => row.workoutId === we.workoutId),
-          );
+          ) &&
+          pairIsDone(setRow, state.workoutSets);
         if (state.settings.restTimerAutoStart && we && restsNow) {
           const seconds = restSecondsAfter(setRow.setType, we.restSeconds, state.settings);
           if (seconds != null) {
@@ -977,7 +1011,11 @@ export const useGym = create<GymState>()(
             templateId,
             exerciseId: row.exerciseId,
             order: index,
-            targetSets: Math.max(sets.filter((set) => set.setType !== "warmup").length, 3),
+            // A left/right pair is one set, so a unilateral exercise saves its set count, not its row count.
+            targetSets: Math.max(
+              new Set(sets.filter((set) => set.setType !== "warmup").map(setCountKey)).size,
+              3,
+            ),
             restSeconds: row.restSeconds,
             defaultSetType: "working",
             includeWarmup: sets.some((set) => set.setType === "warmup"),

@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet } from "@/components/ui/sheet";
 import { SET_TYPES, titleCase, usesReps, usesWeight } from "@/domain/taxonomy";
 import { elapsedSeconds } from "@/domain/time";
+import { setCountKey } from "@/domain/volume";
 import type { GrindFeel, IntensityMode, SetType, WorkoutSet } from "@/domain/types";
 import {
   formatDuration,
@@ -45,6 +46,7 @@ import {
   intensityValue,
 } from "@/lib/gym/intensity";
 import { useSlices } from "@/lib/gym/hooks";
+import { priorForSlot, slotOf } from "@/lib/gym/pairs";
 import { supersetLabels } from "@/lib/gym/superset";
 import { barbellSnap } from "@/lib/gym/loads";
 import { useGym } from "@/lib/gym/store";
@@ -169,14 +171,18 @@ function ActiveWorkoutPage() {
   if (!workout) return null;
   const labels = supersetLabels(blocks.map((block) => block.exercise));
 
-  const completed = workoutSets.filter(
-    (set) => set.workoutId === workout.id && set.isCompleted,
-  ).length;
-  const total = workoutSets.filter((set) => set.workoutId === workout.id).length;
+  // Sets, not rows: a left/right pair is one set, and counts as done once a side is done.
+  const thisWorkout = workoutSets.filter((set) => set.workoutId === workout.id);
+  const completed = new Set(thisWorkout.filter((set) => set.isCompleted).map(setCountKey)).size;
+  const total = new Set(thisWorkout.map(setCountKey)).size;
   const workingDone = blocks.flatMap((block) =>
     block.sets
-      .filter((set) => set.isCompleted && set.setType !== "warmup")
-      .map((set, index) => ({ set, ghost: block.ghost[index] })),
+      .map((set, i) => ({ set, i }))
+      .filter(({ set }) => set.isCompleted && set.setType !== "warmup")
+      .map(({ set, i }, k) => ({
+        set,
+        ghost: set.side ? ghostForRow(block.sets, block.ghost, i) : block.ghost[k],
+      })),
   );
   const beats = workingDone.filter(
     ({ set, ghost }) => compareSet(set, ghost).verdict === "beat",
@@ -332,16 +338,13 @@ function ActiveWorkoutPage() {
 
               <div className="space-y-2">
                 {block.sets.map((set, index) => {
-                  const ghostIndex =
-                    block.sets.slice(0, index + 1).filter((row) => row.setType !== "warmup")
-                      .length - 1;
-                  const ghost =
-                    set.setType === "warmup" ? undefined : block.ghost[Math.max(0, ghostIndex)];
+                  const ghost = ghostForRow(block.sets, block.ghost, index);
+                  const number = set.side ? slotOf(block.sets, index).pairIndex + 1 : index + 1;
                   return (
                     <SetRow
                       key={set.id}
                       set={set}
-                      index={index}
+                      number={number}
                       unit={unit}
                       incrementG={blockIncrement}
                       showWeight={usesWeight(tracking)}
@@ -366,7 +369,7 @@ function ActiveWorkoutPage() {
                       }}
                       onDelete={() => {
                         deleteSet(set.id);
-                        toast(`Set ${index + 1} deleted`, {
+                        toast(`Set ${number}${set.side ? ` ${set.side}` : ""} deleted`, {
                           action: { label: "Undo", onClick: () => restoreSet(set) },
                         });
                       }}
@@ -449,6 +452,20 @@ function ActiveWorkoutPage() {
   );
 }
 
+/** The previous-session set a row races. A sided row matches the same set number on the same side. */
+function ghostForRow(
+  sets: WorkoutSet[],
+  ghosts: ReturnType<typeof ghostSetsForExercise>,
+  index: number,
+) {
+  const row = sets[index]!;
+  if (row.setType === "warmup") return undefined;
+  if (row.side) return priorForSlot(ghosts, slotOf(sets, index), index);
+  const ghostIndex =
+    sets.slice(0, index + 1).filter((other) => other.setType !== "warmup").length - 1;
+  return ghosts[Math.max(0, ghostIndex)];
+}
+
 /** The only part of the page that ticks, so the set rows do not re-render every second. */
 function ElapsedClock({ startedAt, pausedSeconds }: { startedAt: string; pausedSeconds?: number }) {
   const [, setNow] = useState(0);
@@ -461,7 +478,7 @@ function ElapsedClock({ startedAt, pausedSeconds }: { startedAt: string; pausedS
 
 function SetRow({
   set,
-  index,
+  number,
   unit,
   incrementG,
   ghost,
@@ -478,7 +495,8 @@ function SetRow({
   onClip,
 }: {
   set: WorkoutSet;
-  index: number;
+  /** The set number shown. Both sides of a left/right pair share one. */
+  number: number;
   unit: "kg" | "lb";
   incrementG: number;
   ghost?: { weightG?: number; reps?: number; rpe?: number };
@@ -524,12 +542,20 @@ function SetRow({
   return (
     <div className={cn("rounded-2xl bg-raised/70 p-2", set.isCompleted && "opacity-90")}>
       <div className="flex items-center gap-2">
-        <span className="w-6 text-center font-mono text-sm tabular text-muted">{index + 1}</span>
+        <span
+          className={cn(
+            "w-6 text-center font-mono tabular text-muted",
+            set.side ? "text-xs" : "text-sm",
+          )}
+        >
+          {number}
+          {set.side ? (set.side === "left" ? "L" : "R") : ""}
+        </span>
         {showWeight ? (
           <Stepper
             value={weight}
             placeholder={ghost?.weightG != null ? formatWeightInput(ghost.weightG, unit) : "0"}
-            ariaLabel={`Set ${index + 1} weight`}
+            ariaLabel={`Set ${number}${set.side ? ` ${set.side}` : ""} weight`}
             onMinus={() => onNudgeWeight(-incrementG)}
             onPlus={() => onNudgeWeight(incrementG)}
             onChange={(value) => {
@@ -573,7 +599,7 @@ function SetRow({
           <Stepper
             value={reps}
             placeholder={ghost?.reps != null ? String(ghost.reps) : "0"}
-            ariaLabel={`Set ${index + 1} reps`}
+            ariaLabel={`Set ${number}${set.side ? ` ${set.side}` : ""} reps`}
             inputMode="numeric"
             onMinus={() => onNudgeReps(-1)}
             onPlus={() => onNudgeReps(1)}
@@ -587,7 +613,7 @@ function SetRow({
             <button
               type="button"
               className="h-11 shrink-0 rounded-xl bg-surface px-3 text-xs text-muted hairline"
-              aria-label={`Set ${index + 1} ${intensityMode === "rir" ? "reps in reserve" : "RPE"}`}
+              aria-label={`Set ${number}${set.side ? ` ${set.side}` : ""} ${intensityMode === "rir" ? "reps in reserve" : "RPE"}`}
               onClick={() => setPickingIntensity(true)}
             >
               {intensityLabel(intensityMode, set)}

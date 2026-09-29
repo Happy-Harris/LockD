@@ -29,6 +29,7 @@ function ExerciseDetailPage() {
   const lessons = useGym((s) => s.lessons);
   const upsertMachineSetup = useGym((s) => s.upsertMachineSetup);
   const pinLesson = useGym((s) => s.pinLesson);
+  const updateExercise = useGym((s) => s.updateExercise);
   const deleteLesson = useGym((s) => s.deleteLesson);
   const slices = useSlices();
   const { board } = useGymDerived();
@@ -83,7 +84,12 @@ function ExerciseDetailPage() {
     formula: settings.oneRepMaxFormula,
     excludeWarmups: settings.excludeWarmupsFromAnalytics,
   });
-  const dna = buildLiftDna(exercise, slices, settings.oneRepMaxFormula, settings.excludeWarmupsFromAnalytics);
+  const dna = buildLiftDna(
+    exercise,
+    slices,
+    settings.oneRepMaxFormula,
+    settings.excludeWarmupsFromAnalytics,
+  );
   const autopsy = autopsyLift(
     board.find((row) => row.exerciseId === id) ?? call,
     slices,
@@ -100,19 +106,50 @@ function ExerciseDetailPage() {
       </p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">{exercise.name}</h1>
       <Card className="mt-5">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Progression</p>
+        <button
+          type="button"
+          className="flex min-h-11 w-full items-center justify-between text-left"
+          aria-pressed={!!exercise.unilateral}
+          onClick={() => updateExercise(exercise.id, { unilateral: !exercise.unilateral })}
+        >
+          <span>
+            <span className="block text-sm">Log each side separately</span>
+            <span className="block text-xs text-subtle">
+              Adds a left and a right row per set. A pair counts as one set. Applies to workouts you
+              start from now on.
+            </span>
+          </span>
+          <span
+            className={
+              exercise.unilateral ? "text-sm font-medium text-accent" : "text-sm text-subtle"
+            }
+          >
+            {exercise.unilateral ? "On" : "Off"}
+          </span>
+        </button>
+      </Card>
+      <Card className="mt-3">
+        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+          Progression
+        </p>
         <p className="mt-1 font-display text-2xl font-semibold">{actionLabel(call.action)}</p>
         <p className="mt-2 text-sm leading-relaxed text-muted">{call.why}</p>
         <p className="mt-2 font-mono text-xs text-subtle">
           Hit rate {Math.round(call.hitRate * 100)}% · miss streak {call.missStreak}
-          {call.typicalExposuresToProgress ? ` · usually ${call.typicalExposuresToProgress} exposures` : ""}
+          {call.typicalExposuresToProgress
+            ? ` · usually ${call.typicalExposuresToProgress} exposures`
+            : ""}
         </p>
       </Card>
 
       <Card className="mt-3">
         <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Lift DNA</p>
         <p className="mt-1 font-display text-2xl font-semibold tracking-tight">
-          {dna.personality === "reps" ? "Reps first" : dna.personality === "load" ? "Load jumper" : "Mixed"}
+          {dna.personality === "reps"
+            ? "Reps first"
+            : dna.personality === "load"
+              ? "Load jumper"
+              : "Mixed"}
         </p>
         <p className="mt-2 text-sm leading-relaxed text-muted">{dna.personalityWhy}</p>
         <div className="mt-4 grid grid-cols-2 gap-3">
@@ -138,8 +175,12 @@ function ExerciseDetailPage() {
 
       {autopsy.stalled || autopsy.findings.length > 0 ? (
         <Card className="mt-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-warning">Plateau autopsy</p>
-          <p className="mt-2 font-display text-2xl font-semibold tracking-tight">{autopsy.headline}</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-warning">
+            Plateau autopsy
+          </p>
+          <p className="mt-2 font-display text-2xl font-semibold tracking-tight">
+            {autopsy.headline}
+          </p>
           <div className="mt-3 space-y-3">
             {autopsy.findings.map((finding) => (
               <div key={finding.code}>
@@ -170,11 +211,15 @@ function ExerciseDetailPage() {
           </p>
           {relative ? (
             <>
-              <p className="mt-1 font-display text-2xl font-semibold tabular">{formatRatio(relative.ratio)}</p>
+              <p className="mt-1 font-display text-2xl font-semibold tabular">
+                {formatRatio(relative.ratio)}
+              </p>
               <p className="mt-2 text-xs text-muted">
-                Est. 1RM {formatWeightWithUnit(relative.e1rmG, unit)} on {formatLocalDate(relative.e1rmDate)}, body
-                weight {formatWeightWithUnit(relative.bodyweightG, unit)} on{" "}
-                {formatLocalDate(relative.bodyweightDate)}. Just the ratio: there is no scale to place it on.
+                Est. 1RM {formatWeightWithUnit(relative.e1rmG, unit)} on{" "}
+                {formatLocalDate(relative.e1rmDate)}, body weight{" "}
+                {formatWeightWithUnit(relative.bodyweightG, unit)} on{" "}
+                {formatLocalDate(relative.bodyweightDate)}. Just the ratio: there is no scale to
+                place it on.
               </p>
             </>
           ) : (
@@ -191,7 +236,9 @@ function ExerciseDetailPage() {
 
       {table.length > 0 ? (
         <Card className="mt-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Rep maxes</p>
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+            Rep maxes
+          </p>
           <div className="mt-3 grid grid-cols-4 gap-2">
             {table.map((mark) => (
               <div key={mark.reps}>
@@ -207,21 +254,51 @@ function ExerciseDetailPage() {
         <Card className="mt-4 h-40 p-2">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={series}>
-              <Area type="monotone" dataKey="e1rm" stroke="var(--rf-accent)" fill="var(--rf-accent)" fillOpacity={0.16} />
+              <Area
+                type="monotone"
+                dataKey="e1rm"
+                stroke="var(--rf-accent)"
+                fill="var(--rf-accent)"
+                fillOpacity={0.16}
+              />
             </AreaChart>
           </ResponsiveContainer>
         </Card>
       ) : null}
 
       <Card className="mt-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Machine memory</p>
-        <p className="mt-1 text-sm text-muted">Seat, handles, pin quirks. Surfaces the next time this movement is logged.</p>
+        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+          Machine memory
+        </p>
+        <p className="mt-1 text-sm text-muted">
+          Seat, handles, pin quirks. Surfaces the next time this movement is logged.
+        </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
-          <Input placeholder="Gym" value={machine.gymName} onChange={(event) => setMachine({ ...machine, gymName: event.target.value })} />
-          <Input placeholder="Seat" value={machine.seat} onChange={(event) => setMachine({ ...machine, seat: event.target.value })} />
-          <Input placeholder="Handle" value={machine.handle} onChange={(event) => setMachine({ ...machine, handle: event.target.value })} />
-          <Input placeholder="Lever" value={machine.lever} onChange={(event) => setMachine({ ...machine, lever: event.target.value })} />
-          <Input placeholder="Pin" value={machine.pin} onChange={(event) => setMachine({ ...machine, pin: event.target.value })} />
+          <Input
+            placeholder="Gym"
+            value={machine.gymName}
+            onChange={(event) => setMachine({ ...machine, gymName: event.target.value })}
+          />
+          <Input
+            placeholder="Seat"
+            value={machine.seat}
+            onChange={(event) => setMachine({ ...machine, seat: event.target.value })}
+          />
+          <Input
+            placeholder="Handle"
+            value={machine.handle}
+            onChange={(event) => setMachine({ ...machine, handle: event.target.value })}
+          />
+          <Input
+            placeholder="Lever"
+            value={machine.lever}
+            onChange={(event) => setMachine({ ...machine, lever: event.target.value })}
+          />
+          <Input
+            placeholder="Pin"
+            value={machine.pin}
+            onChange={(event) => setMachine({ ...machine, pin: event.target.value })}
+          />
           <Input
             placeholder="Stack lies?"
             value={machine.stackNote}
@@ -246,7 +323,11 @@ function ExerciseDetailPage() {
       <Card className="mt-3">
         <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Lessons</p>
         <div className="mt-3 flex gap-2">
-          <Input value={note} onChange={(event) => setNote(event.target.value)} placeholder="Seat 4, handles neutral" />
+          <Input
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            placeholder="Seat 4, handles neutral"
+          />
           <Button
             variant="secondary"
             onClick={() => {
@@ -261,7 +342,11 @@ function ExerciseDetailPage() {
           {pinned.map((row) => (
             <li key={row.id} className="flex items-start justify-between gap-3 text-sm">
               <span>{row.text}</span>
-              <button type="button" className="text-xs text-subtle" onClick={() => deleteLesson(row.id)}>
+              <button
+                type="button"
+                className="text-xs text-subtle"
+                onClick={() => deleteLesson(row.id)}
+              >
                 Remove
               </button>
             </li>
@@ -277,12 +362,16 @@ function ExerciseDetailPage() {
               <p className="mt-1 text-sm text-muted">
                 {sets
                   .map((set) =>
-                    set.weightG ? `${formatWeight(set.weightG, unit)} × ${set.reps ?? "—"}` : `${set.reps ?? "—"} reps`,
+                    set.weightG
+                      ? `${formatWeight(set.weightG, unit)} × ${set.reps ?? "—"}`
+                      : `${set.reps ?? "—"} reps`,
                   )
                   .join("  ·  ")}
               </p>
               {best ? (
-                <p className="mt-1 text-xs text-subtle">e1RM {formatWeightWithUnit(best.value, unit)}</p>
+                <p className="mt-1 text-xs text-subtle">
+                  e1RM {formatWeightWithUnit(best.value, unit)}
+                </p>
               ) : null}
             </Card>
           </Link>

@@ -3,6 +3,7 @@
 //   CHROMIUM_PATH=/opt/pw-browsers/chromium node .claude/skills/run-lockd/driver.mjs [outDir] [route ...]
 // No routes given → onboards with the sample log, then shoots the main screens at phone and desktop widths.
 // FULL=1 saves the whole scrolled page instead of the first viewport.
+// WORKOUT=bilateral|unilateral starts a workout first (the /workout route redirects to Today without one).
 import { chromium } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 
@@ -31,8 +32,21 @@ for (const [name, opts] of Object.entries(sizes)) {
     const { DexieRepository } = await import("/src/lib/storage/dexie-repository.ts");
     return (await new DexieRepository().load()).workouts.length > 0;
   }, undefined, { timeout: 30_000 });
+  if (process.env.WORKOUT) {
+    // /workout only renders with an active workout, so start one the way a lifter does: "Repeat last"
+    // on Today. WORKOUT=unilateral then adds a one-arm exercise through the picker, which logs left and right rows.
+    await page.getByRole("button", { name: /Repeat last/i }).click();
+    await page.getByRole("button", { name: "Complete set" }).first().waitFor();
+    if (process.env.WORKOUT === "unilateral") {
+      await page.getByRole("button", { name: "Add exercise" }).click();
+      await page.getByPlaceholder("Search the library").fill("One-Arm Dumbbell Row");
+      await page.getByRole("button", { name: /One-Arm Dumbbell Row/i }).first().click();
+      await page.getByText("1L").first().waitFor();
+    }
+  }
   for (const route of screens) {
-    await page.goto(base + route);
+    // With a workout running, stay in the app: a full reload would only prove persistence, not the screen.
+    if (!process.env.WORKOUT || route !== "/workout") await page.goto(base + route);
     await ready();
     const file = `${out}/${name}${route === "/" ? "-today" : route.replace(/\//g, "-")}.png`;
     await page.screenshot({ path: file, fullPage: process.env.FULL === "1" });

@@ -22,6 +22,7 @@ for i in $(seq 1 60); do curl -sf http://127.0.0.1:8080/ >/dev/null && break; sl
 node .claude/skills/run-lockd/driver.mjs /tmp/lockd-shots                   # 5 screens × phone (390) + desktop (1024)
 node .claude/skills/run-lockd/driver.mjs /tmp/lockd-shots /import /library  # or pick routes
 FULL=1 node .claude/skills/run-lockd/driver.mjs /tmp/lockd-full /settings   # whole scrolled page, not just the first screen
+WORKOUT=unilateral node .claude/skills/run-lockd/driver.mjs /tmp/lockd-w /workout  # start a workout first (or WORKOUT=bilateral)
 pkill -f "[v]ite dev"                                                        # bracket trick: a plain pattern also matches (and kills) this shell
 ```
 
@@ -42,6 +43,8 @@ npx playwright test       # e2e at 390 and 1024 px; starts `npm run dev` itself,
 - Navigating right after onboarding shows onboarding again: the log is written to IndexedDB
   asynchronously. Wait for sessions in the DB (the driver does) before `goto`.
 - Screenshots are the first viewport only unless `FULL=1`; long pages (Settings) hide everything below the fold.
+- `/workout` redirects to Today unless a workout is active. `WORKOUT=bilateral|unilateral` starts one through the UI (Repeat last, then Add exercise for the one-arm row) and screenshots it without a reload.
+- Do not seed a workout with `page.evaluate(() => import("/src/lib/gym/store.ts"))`: Vite serves that as a second store instance, not the app's, so the app never sees the workout and `/workout` redirects. Drive the UI instead. Reading Dexie through `import("/src/lib/storage/dexie-repository.ts")` is fine.
 - `page.goto` is a full reload; the app is ready only when `html[data-gym-ready='true']` exists.
 - First `npm run dev` request compiles on demand and can take several seconds.
 - `npm run verify` ends with `db:migrate`, which skips itself without `DATABASE_URL` (expected).
