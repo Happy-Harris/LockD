@@ -138,13 +138,13 @@ describe("engine characterisation — current behaviour, not desired correctness
     }).toMatchSnapshot("easier-week thresholds");
   });
 
-  it("pins autopsy evidence for misses, plateau, rising effort and falling volume", () => {
+  it("pins autopsy evidence for misses, rising effort and falling volume (a plateau needs an earlier window to compare with)", () => {
     const slices = exposures([8, 8, 8, 8, 8, 8, 4, 4, 4, 4, 4, 4]);
     for (const slice of slices.slice(6)) slice.sets = slice.sets.slice(0, 2);
     const call = progress(slices);
     const result = autopsyLift(call, slices, "epley", true);
     expect(result.findings.map((finding) => finding.code))
-      .toEqual(["missed_reps", "flat_e1rm", "falling_volume", "rising_rpe"]);
+      .toEqual(["missed_reps", "falling_volume", "rising_rpe"]);
     expect(result).toMatchSnapshot();
     expect(autopsyLift(progress([]), [], "epley", true)).toMatchSnapshot("no history");
   });

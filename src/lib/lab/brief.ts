@@ -4,6 +4,7 @@ import { autopsyBoard } from "@/lib/gym/autopsy";
 import { buildChronicle } from "@/lib/gym/chronicle";
 import { buildLiftDna } from "@/lib/gym/dna";
 import { buildIntelligence } from "@/lib/gym/intelligence";
+import { barbellSnap } from "@/lib/gym/loads";
 import { easierWeekCall, progressBoard } from "@/lib/gym/progression";
 import { milestoneQueue } from "@/lib/gym/queue";
 import { defaultSettings } from "@/lib/gym/store";
@@ -45,6 +46,7 @@ export function buildLabBrief(
         targetRepMin: templateRow?.targetRepMin,
         targetRepMax: templateRow?.targetRepMax,
         targetSets: templateRow?.targetSets,
+        snap: barbellSnap(exercise, data.bars ?? [], data.plates ?? [], settings),
       };
     }),
     slices,

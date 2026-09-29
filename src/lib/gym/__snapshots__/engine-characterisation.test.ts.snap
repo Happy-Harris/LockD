@@ -110,7 +110,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
 ]
 `;
 
-exports[`engine characterisation — current behaviour, not desired correctness > pins autopsy evidence for misses, plateau, rising effort and falling volume > no history 1`] = `
+exports[`engine characterisation — current behaviour, not desired correctness > pins autopsy evidence for misses, rising effort and falling volume (a plateau needs an earlier window to compare with) > no history 1`] = `
 {
   "exerciseId": "seed-bench-press",
   "findings": [],
@@ -121,7 +121,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
 }
 `;
 
-exports[`engine characterisation — current behaviour, not desired correctness > pins autopsy evidence for misses, plateau, rising effort and falling volume 1`] = `
+exports[`engine characterisation — current behaviour, not desired correctness > pins autopsy evidence for misses, rising effort and falling volume (a plateau needs an earlier window to compare with) 1`] = `
 {
   "exerciseId": "seed-bench-press",
   "findings": [
@@ -130,12 +130,6 @@ exports[`engine characterisation — current behaviour, not desired correctness 
       "detail": "Target missed on the last 6 exposures.",
       "evidence": "Mon, Sep 7 · Tue, Sep 8 · Wed, Sep 9 · Thu, Sep 10 · Fri, Sep 11 · Sat, Sep 12",
       "title": "Missed reps",
-    },
-    {
-      "code": "flat_e1rm",
-      "detail": "No new peak across 6 sessions.",
-      "evidence": "Mon, Sep 7 → Sat, Sep 12 held around the same estimate.",
-      "title": "Flat estimated 1RM",
     },
     {
       "code": "falling_volume",
@@ -150,9 +144,9 @@ exports[`engine characterisation — current behaviour, not desired correctness 
       "title": "Rising RPE",
     },
   ],
-  "headline": "Bench Press: missed reps, flat estimated 1rm, falling volume, rising rpe.",
+  "headline": "Bench Press: missed reps, falling volume, rising rpe.",
   "name": "Bench Press",
-  "stallSessions": 6,
+  "stallSessions": 0,
   "stalled": true,
 }
 `;
@@ -839,6 +833,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
     "exposuresAtLoad": 2,
     "hitRate": 1,
     "lastDate": "2026-09-02",
+    "lastWeightG": 100000,
     "missStreak": 0,
     "stallSessions": 0,
     "suggestedReps": 6,
@@ -855,6 +850,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
     "exposuresAtLoad": 1,
     "hitRate": 1,
     "lastDate": "2026-09-01",
+    "lastWeightG": 100000,
     "missStreak": 0,
     "stallSessions": 0,
     "suggestedReps": 7,
@@ -871,6 +867,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
     "exposuresAtLoad": 0,
     "hitRate": 0,
     "lastDate": undefined,
+    "lastWeightG": undefined,
     "missStreak": 0,
     "stallSessions": 0,
     "suggestedSets": 3,
@@ -885,6 +882,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
     "exposuresAtLoad": 1,
     "hitRate": 0,
     "lastDate": "2026-09-01",
+    "lastWeightG": 100000,
     "missStreak": 1,
     "stallSessions": 0,
     "suggestedReps": 4,
@@ -901,6 +899,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
     "exposuresAtLoad": 3,
     "hitRate": 0,
     "lastDate": "2026-09-03",
+    "lastWeightG": 100000,
     "missStreak": 3,
     "stallSessions": 0,
     "suggestedReps": 4,
@@ -917,6 +916,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
     "exposuresAtLoad": 1,
     "hitRate": 1,
     "lastDate": "2026-09-01",
+    "lastWeightG": 100000,
     "missStreak": 0,
     "stallSessions": 0,
     "suggestedReps": 8,
@@ -933,6 +933,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
     "exposuresAtLoad": 2,
     "hitRate": 0,
     "lastDate": "2026-09-02",
+    "lastWeightG": 100000,
     "missStreak": 2,
     "stallSessions": 0,
     "suggestedReps": 6,
