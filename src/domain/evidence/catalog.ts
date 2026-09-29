@@ -181,6 +181,20 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
     lastReviewed: "2026-09-29",
   },
   {
+    id: "thin-evidence-insight-gate",
+    statement:
+      "The Lab's volume-response, rest and recovery-gap notes appear only with at least 8 observations, at least 3 in each group compared, and a difference of at least 3%, and always show how many observations they rest on.",
+    kind: "implementation_heuristic",
+    behaviors: ["volume_response_insight", "rest_note", "recovery_gap_note"],
+    sourceIds: [],
+    support: "context",
+    interpretation:
+      "A product rule so a handful of weeks cannot produce a headline. Below the gate the volume note says there is no clear link, and the rest and recovery-gap notes say nothing.",
+    limitations:
+      "8, 3 and 3% are product choices, not statistical or sports-science criteria. Passing the gate does not make a pattern causal; the note is a description of this lifter's own log.",
+    lastReviewed: "2026-09-29",
+  },
+  {
     id: "weekly-verdict-direction",
     statement:
       "The weekly verdict compares last week's hard sets with the mean of the three to four training weeks before it: up from +10%, a big jump above +50%, down from −10%, well down at −30% or worse, steady in between.",

@@ -23,6 +23,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
   (moment, receipt, wrapped, program) passes; a payload whose kind disagrees, an unknown kind, an over-long title, an oversize share and a non-Lock'd program file are refused; ids must be UUIDs.
 - **Checked:** `npm run verify`. **Not checked:** a real sign-in, push and share round trip against a database (this environment has no Supabase); the validators run before the handlers, and the handlers are unchanged.
 
+### 2026-09-29 — Step 11 (I-15, correction): the thin-evidence gate follows D6
+
+- **What I got wrong:** the I-15 slice (`LockD#60`) gated the volume note at 6 week pairs and a 2.5 kg gap, "my choice". The plan already settles this in **D6**, which the owner confirmed on 2026-09-29: at least 8
+  observations and at least a 3% difference, always show n, and list the thresholds in the evidence catalog as an `implementation_heuristic`. I had read the I-15 row and not the decision table.
+- **The fix:** the gate is now `THIN_EVIDENCE_MIN_N = 8`, `THIN_EVIDENCE_MIN_GROUP = 3` and `THIN_EVIDENCE_MIN_DIFFERENCE = 0.03`, applied to all three notes D6 names. Volume response: the gap between high- and low-volume weeks is
+  judged against the lift's own e1RM (so 3% means the same for a 40 kg and a 300 kg lift). Recovery gap: 8 exposures in total, 3 in each group, 3% (it was 6 and 3%). Rest note: 8 exercises in total, 3 in each group, and the
+  existing 15 s floor plus 3%. Catalog claim `thin-evidence-insight-gate` records the thresholds as a product choice with no research behind it.
+- **Characterisation diff:** none. The dated demo still reads "No clear link … (from 44 weeks)" under the stricter gate.
+- **Tests:** `intelligence-small-samples.test.ts` rewritten for the D6 numbers: under 8 pairs, the 1 g case, a group under 3, both directions, the exact 3000 g / 2999 g edge on a 100 kg lift, and the same 3000 g gap counting on a 40 kg lift but not a 300 kg one.
+- **Two things I still judge on my own:** measuring the 3% against the lift's e1RM (D6 says only "3 % difference"), and keeping the 3-per-group floor. Both are one line each.
+- **Checked:** `npm run verify`.
 ### 2026-09-29 — Step 11 (I-41): a program can be complete, and `hold` holds
 
 - **The bug (plan I-41):** after the last session of the last week the pointer stayed on the last week for ever, so Today kept offering that week's first session and nothing ever said the block was over.
