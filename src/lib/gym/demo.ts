@@ -356,7 +356,9 @@ function measurement(
   return {
     id: uuid(),
     metric,
-    value,
+    // Canonical units are whole numbers (grams, millimetres). The demo's drifts (870 - week * 1.2) were not,
+    // and stored fractional millimetres (plan I-23).
+    value: Math.round(value),
     displayUnit,
     recordedAt: iso,
     localDate: localDateOf(day),
