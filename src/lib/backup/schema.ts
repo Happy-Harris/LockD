@@ -299,6 +299,7 @@ const program = z.object({
   isArchived: z.boolean(),
   origin: z.enum(["pack", "custom", "duplicated"]),
   packId: z.string().max(200).optional(),
+  completedAt: isoDateTime.optional(),
   createdAt: isoDateTime,
   updatedAt: isoDateTime,
 });

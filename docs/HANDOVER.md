@@ -9,6 +9,19 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 11 (I-41): a program can be complete, and `hold` holds
+
+- **The bug (plan I-41):** after the last session of the last week the pointer stayed on the last week for ever, so Today kept offering that week's first session and nothing ever said the block was over.
+  Separately, a `hold` rule did nothing: it fell through to the engine's suggestion, which could add load.
+- **Program complete:** `Program.completedAt` (optional, so old backups load unchanged; in the backup schema and round-trip tested) is set when finishing the last session of the last week (`finishesProgram`).
+  It is stamped once; a session run again afterwards does not restamp it. The Programs page, the program page and Today say "Program complete" (with the date) instead of a week number, and Today stops offering the next session.
+  `restartProgram` (a button on the program page) goes back to week 1, session 1 and clears the mark. History is untouched.
+- **`hold`:** keeps the last load on ordinary weeks. The engine's lighter call after a miss still stands, and a deload week still deloads. No shipped pack changes in practice (its only `hold` lift is bodyweight).
+- **`percent_deload` left as it is, for the owner:** the rule kind is declared and accepted in files but nothing branches on it, and every rule already deloads by `deloadPercent`. Removing the kind would reject program files that carry it;
+  making it do something different would be an invented rule. **Decision needed:** keep as an alias of the default, or drop it from the type and accept-and-ignore it in files.
+- **Characterisation diff:** the first commit pins the old behaviour (parks on the last week, no completed mark). The second changes it. No snapshot changed.
+- **Tests:** `program-complete.test.ts` (8): parks (old), not complete before the last session and complete after it, no restamp, restart, backup round trip with and without the field, hold keeps the load / still takes a miss / still deloads.
+- **Checked:** `npm run verify`. **Not checked** on screen: the three "Program complete" places and the restart button; no e2e drives a full block.
 ### 2026-09-29 — Step 11 (I-16): the autopsy says "at similar loads" only when the load was similar
 
 - **The bug (plan I-16):** the autopsy wrote "RPE 7.0 → 9.0 at similar loads" and "Fewer credited sets while the load stayed put" without looking at the load. A lifter who added 20 kg

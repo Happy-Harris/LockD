@@ -424,6 +424,11 @@ export function applyProgramLoad(opts: {
   if (rule.kind === "linear" && !isDeload && lastLoadG && wentToPlan) {
     weightG = stepUpG(lastLoadG, increment, snap);
   }
+  // A `hold` rule keeps the last load on ordinary weeks even when the engine would add load. The engine's lighter call after
+  // a miss still stands, and a deload week still deloads.
+  if (rule.kind === "hold" && !isDeload && lastLoadG && wentToPlan) {
+    weightG = lastLoadG;
+  }
   if (isDeload && weightG) {
     const pct = rule.deloadPercent ?? 0.85;
     weightG = stepDownG(weightG, pct, increment, snap);
@@ -438,6 +443,11 @@ export function nextProgramSession(
   const ordered = sessions.filter((row) => row.programId === program.id).sort((a, b) => a.order - b.order);
   if (ordered.length === 0) return undefined;
   return ordered[program.currentSessionOrder % ordered.length];
+}
+
+/** True when finishing the next session ends the block: the last session of the last week. */
+export function finishesProgram(program: Program, sessionCount: number): boolean {
+  return sessionCount > 0 && program.currentWeek >= program.weekCount && program.currentSessionOrder + 1 >= sessionCount;
 }
 
 export function advanceProgramPointer(program: Program, sessionCount: number): Pick<Program, "currentWeek" | "currentSessionOrder"> {
