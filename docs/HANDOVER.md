@@ -9,6 +9,22 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 11 (I-17, I-18, O2): eras follow the lifter's own log, and a name only labels
+
+Two commits in one PR: read them separately. Commit 1 is I-17, commit 2 is I-18 / O2. (D8, the owner's approval of O2 and of the demo no longer seeding era names, is the authority for commit 2.)
+
+- **I-17, the bug:** as soon as any era had a name, the Chronicle took its boundaries from the *named dates only* and dropped the detector: rename the last era and 36 of the demo's 137 sessions belonged to no era. **The fix:** boundaries come from the log alone
+  (the start, and the first session after each layoff); `eraNames` is a label lookup by an era's start date. No stored data changes, so no migration. A name whose date is not an era start is kept in the data and labels nothing (it comes back if that boundary returns).
+- **I-18 / O2, the bug:** the detector split a stretch once, at its midpoint, and only when the stretch was over 70 days; tones came from absolute 42 / 38 / 28 sets a week, so a 20-set lifter was "The Grind" for ever. **The fix:** `splitRegimes` splits at the strongest lasting change,
+  recursively: weekly hard sets moving by 25% or more between two sides of at least six weeks each, else PR stamps per four weeks differing by 3 or more. Tone is read against the lifter's own hard sets per trained week over the 26 weeks before the era (`baselineWeeklySets`); the old 42 / 38 / 28 become
+  ratios 1.2 / 1.1 / 0.8 of a 35-set week. Two eras that would share a name get "· 2". The demo no longer seeds era names.
+- **All the numbers are mine, not research.** They are named constants at the top of `chronicle.ts` and one catalog claim, `era-detection-rules`, states them as an implementation heuristic: 25%, 3 stamps per four weeks, six weeks, 26 weeks, 1.2 / 1.1 / 0.8, and the 14-day layoff that was already there. **Owner decision:** approve them or give other values.
+- **Characterisation diff (the reviewable change):** the demo year goes from 5 hand-typed eras to 6 detected ones (Foundation, The Return, PR Run, Volume Spring, Summer 2026, Summer 2026 · 2); the "named" snapshot is now the same as "detected". PRs, moments and the year receipt that cite an era name move with it.
+  The last two eras are the second half of a summer split on a PR-rate change; the name is a season, not a claim about the training.
+- **Tests:** `chronicle-detection.test.ts` (10, synthetic logs): a steady 20-set lifter is one era; volume doubling splits and reads as Volume, at 20→40 and at 10→20; halving reads as a rebuild; no split for a 15% change or a stretch under six weeks; several regimes in a long history; a layoff still starts "The Return";
+  distinct names; a name never moves a boundary; a PR-rate change splits with flat volume. `engine-characterisation.test.ts`: the pinned bug test became the fix (all sessions in an era, other eras untouched), plus "every session is in exactly one era whatever the names" and the stray-name case.
+- **Not done (recorded):** the plan's `eraSplits` (a lifter splitting an era by hand) has no UI and no data, so it is not built; the Chronicle screen only renames. Prettier reformatted `chronicle.ts` where it was not already clean, so the diff there is larger than the logic change.
+- **Checked:** `npm run verify`; the Chronicle screen at 390 px on the sample log (six eras, names read sensibly). **Not checked** at 1024 px, or on a real multi-year import.
 ### 2026-09-29 — Step 11 (I-37): the cloud server functions check what they are sent
 
 - **The bug (plan I-37):** every cloud server function declared its input type and returned the input as it came (`.validator((input: T) => input)`), so the server trusted whatever a client sent: a vault of any size or shape,
