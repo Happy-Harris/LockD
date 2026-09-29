@@ -47,6 +47,7 @@ import {
   intensityTargetLabel,
   intensityValue,
 } from "@/lib/gym/intensity";
+import { UNDO_WINDOW_MS } from "@/lib/gym/clips";
 import { useSlices } from "@/lib/gym/hooks";
 import { priorForSlot, slotOf } from "@/lib/gym/pairs";
 import { supersetLabels } from "@/lib/gym/superset";
@@ -378,6 +379,8 @@ function ActiveWorkoutPage() {
                         deleteSet(set.id);
                         toast(`Set ${number}${set.side ? ` ${set.side}` : ""} deleted`, {
                           action: { label: "Undo", onClick: () => restoreSet(set) },
+                          // Its clip is kept for this long, so Undo always finds it.
+                          duration: UNDO_WINDOW_MS,
                         });
                       }}
                       onClip={async (file) => {
