@@ -9,7 +9,8 @@ import { applyBackup, restoreMessage, type RestoreMode } from "@/lib/backup/appl
 import { parseBackup } from "@/lib/backup/schema";
 import { takeSafetyBackup } from "@/lib/storage/safety";
 import { defaultQuickIncrementG } from "@/domain/units";
-import { useGym, type ImportSummary } from "@/lib/gym/store";
+import { useGym } from "@/lib/gym/store";
+import { describeImport } from "@/lib/import/summary";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
 import { SafetyBackups } from "@/components/app/safety-backups";
 import { eraseAllOnDevice } from "@/lib/storage/boot";
@@ -84,39 +85,10 @@ function SettingsPage() {
     if (warnings.length) setBackupProblems(warnings);
   };
 
-  const importNote = (preview: ImportSummary) => {
-    const count = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
-    const parts = [
-      count(preview.workouts, "session"),
-      count(preview.sets, "set"),
-      ...(preview.routines ? [count(preview.routines, "routine")] : []),
-      ...(preview.measurements ? [count(preview.measurements, "measurement")] : []),
-    ];
-    const lines = [
-      `Imported ${parts.join(", ")}. Skipped ${count(preview.skipped, "row")}.`,
-      preview.duplicates
-        ? `${count(preview.duplicates, "session")} already here and left out.`
-        : "",
-      preview.routinesSkipped
-        ? `${count(preview.routinesSkipped, "routine")} with the same name already here and left out.`
-        : "",
-      preview.measurementsSkipped
-        ? `${count(preview.measurementsSkipped, "measurement")} already recorded and left out.`
-        : "",
-      preview.unmatched.length
-        ? `New exercises to classify: ${preview.unmatched.slice(0, 8).join(", ")}.`
-        : "",
-      ...preview.notes,
-      ...preview.issues.slice(0, 3),
-      preview.issues.length > 3 ? `(and ${preview.issues.length - 3} more.)` : "",
-    ];
-    return lines.filter(Boolean).join(" ");
-  };
-
   const onCsv = async (file: File, source: "strong" | "hevy") => {
     const text = await file.text();
     setBackupProblems(null);
-    setCsvNote(importNote((source === "hevy" ? importHevyCsv : importStrongCsv)(text, file.name)));
+    setCsvNote(describeImport((source === "hevy" ? importHevyCsv : importStrongCsv)(text, file.name)));
   };
 
   const onOtherAppBackup = async (file: File) => {
@@ -128,7 +100,7 @@ function SettingsPage() {
       setBackupProblems(outcome.errors);
       return;
     }
-    setCsvNote(importNote(outcome.summary));
+    setCsvNote(describeImport(outcome.summary));
   };
 
   const toggleGoal = (id: string) => {
@@ -344,6 +316,9 @@ function SettingsPage() {
               </ul>
             </div>
           ) : null}
+          <Link to="/import" className="block text-sm text-accent underline-offset-2 hover:underline">
+            Import wizard: choose columns, review sessions, match exercises
+          </Link>
           <label className="block">
             <span className="mb-1 block text-xs text-subtle">Import Strong CSV</span>
             <input

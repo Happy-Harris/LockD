@@ -192,6 +192,7 @@ export interface ImportAnalysis {
   totalRows: number;
   skippedRows: number;
   detectedUnit?: WeightUnit;
+  detectedDistanceUnit?: "m" | "km" | "mi";
 }
 
 export interface AnalyseOptions {
@@ -200,6 +201,9 @@ export interface AnalyseOptions {
   /** Weight unit to use when the header does not say. */
   unit?: WeightUnit;
   distanceUnit?: "m" | "km" | "mi";
+  /** A person's own unit choice in the wizard. It wins over what the header says. */
+  chosenUnit?: WeightUnit;
+  chosenDistanceUnit?: "m" | "km" | "mi";
 }
 
 const MAX_ROWS = 250_000;
@@ -295,8 +299,9 @@ export function analyseCsv(
   const { header, rows } = parseCsv(text);
   const detectedUnit = detectWeightUnit(header);
   // What the file says wins over the lifter's own unit setting, which is only a fallback.
-  const unit: WeightUnit = detectedUnit ?? options.unit ?? "kg";
-  const distanceUnit = detectDistanceUnit(header) ?? options.distanceUnit ?? "m";
+  const unit: WeightUnit = options.chosenUnit ?? detectedUnit ?? options.unit ?? "kg";
+  const distanceUnit =
+    options.chosenDistanceUnit ?? detectDistanceUnit(header) ?? options.distanceUnit ?? "m";
   const mapping: ColumnMapping = { ...autoMap(header, profile), ...(options.mapping ?? {}) };
 
   const issues: IssueDraft[] = [];
@@ -448,5 +453,6 @@ export function analyseCsv(
     totalRows: rows.length,
     skippedRows,
     detectedUnit,
+    detectedDistanceUnit: detectDistanceUnit(header),
   };
 }
