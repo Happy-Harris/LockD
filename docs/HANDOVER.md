@@ -20,6 +20,18 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 - **Tests:** `intelligence-small-samples.test.ts` rewritten for the D6 numbers: under 8 pairs, the 1 g case, a group under 3, both directions, the exact 3000 g / 2999 g edge on a 100 kg lift, and the same 3000 g gap counting on a 40 kg lift but not a 300 kg one.
 - **Two things I still judge on my own:** measuring the 3% against the lift's e1RM (D6 says only "3 % difference"), and keeping the 3-per-group floor. Both are one line each.
 - **Checked:** `npm run verify`.
+### 2026-09-29 — Step 11 (I-14): ghost deltas, search, replay and milestones follow the lifter's unit
+
+- **The bug (plan I-14):** a pounds lifter saw "+2.5 kg" style ghost deltas, "above 225" searched for 225 kg, the session replay printed weights as kilograms with no unit, and the milestone ladder
+  (100 kg bench, 140 kg squat, 180 kg deadlift) never fired at 225, 315 or 405 lb. Today picked its featured milestones by matching the *title text* against a kg regex, so any other ladder would have shown nothing special.
+- **The fix:** `compareSet`, `searchSessions`, `sessionReplay`, `detectMilestones`, `buildMoments`, `momentsForWorkout` and `buildYearReceipt` take the display unit (default `"kg"`, so existing callers and tests read the same).
+  Search: "above 100" is read in the display unit; "above 225 lb" or "above 100 kg" names its own and wins. Milestones: a ladder per unit (`LADDERS` in `moments.ts`), each rung a round number of that unit, not one ladder converted.
+  Today's featured firsts are a `featured` flag on the moment, not a regex on the title.
+- **The lb ladder is my choice, not from the evidence catalog:** bench 135 / 185 / 225 / 275, squat 225 / 315, deadlift 315 / 405, press 135; featured 225 / 315 / 405 as the kg ones are 100 / 140 / 180. It is one table; the owner can edit the rungs.
+- **Characterisation diff (the reviewable change):** on the dated demo, milestone value labels were rounded to a whole kilogram ("102 kg × 8" for a 101.5 kg set, "60 kg" for 60.25). They now show the real weight ("101.5 kg × 8", "60.25 kg × 7"), and the three featured milestones carry `featured: true`. Nothing else in the snapshot moves.
+- **Tests:** `unit-aware.test.ts` (7): ghost delta in lb and kg, search in both units and the explicit unit winning, both ladders, a 225 lb bench being a lb milestone but not a kg one, replay detail in lb and kg.
+- **Not done:** the Lab brief (`brief.ts`) still writes its numbers in kilograms; Lab answers cite the log and that is a separate change. Milestone ids include the threshold in grams, so a lifter who switches unit gets the other ladder's moments as different ones.
+- **Checked:** `npm run verify`. **Not checked** on screen: Today's featured milestones in lb, the ghost delta chip in lb.
 
 ### 2026-09-29 — Step 11 (I-15): the intelligence insights stay silent on tiny samples and show n
 

@@ -63,7 +63,7 @@ function SummaryPage() {
   const prs = detectPrsForWorkout(id, slices, settings.oneRepMaxFormula);
   const duration = elapsedSeconds(slice.workout.startedAt, slice.workout.endedAt, slice.workout.pausedSeconds);
   const tonnage = workoutTonnageG(slice, true);
-  const sessionMoments = momentsForWorkout(id, slices, records, chronicle.eras);
+  const sessionMoments = momentsForWorkout(id, slices, records, chronicle.eras, unit);
   const firstExercise = slice.exercises[0];
 
   return (

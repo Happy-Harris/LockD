@@ -1,6 +1,6 @@
 import { localDateToOrdinal } from "@/domain/time";
 import type { BodyMeasurement } from "@/domain/types";
-import { toGrams } from "@/domain/units";
+import { formatWeight, toGrams, type WeightUnit } from "@/domain/units";
 import type { PersonalRecord, SessionSlice } from "./analytics";
 import { e1rmSeries } from "./analytics";
 import type { TrainingEra } from "./chronicle";
@@ -20,6 +20,8 @@ export interface TrainingMoment {
   valueLabel?: string;
   workoutId?: string;
   eraName?: string;
+  /** The Today card prefers these first-time milestones (the big three round numbers). */
+  featured?: boolean;
 }
 
 interface Milestone {
@@ -28,24 +30,45 @@ interface Milestone {
   kind: "weight" | "reps";
   threshold: number;
   label: string;
+  featured?: boolean;
 }
 
-const MILESTONES: Milestone[] = [
-  { exerciseName: "Bench Press", exerciseId: "seed-bench-press", kind: "weight", threshold: toGrams(60, "kg"), label: "60 kg bench" },
-  { exerciseName: "Bench Press", exerciseId: "seed-bench-press", kind: "weight", threshold: toGrams(80, "kg"), label: "80 kg bench" },
-  { exerciseName: "Bench Press", exerciseId: "seed-bench-press", kind: "weight", threshold: toGrams(100, "kg"), label: "100 kg bench" },
-  { exerciseName: "Bench Press", exerciseId: "seed-bench-press", kind: "weight", threshold: toGrams(120, "kg"), label: "120 kg bench" },
-  { exerciseName: "Back Squat", exerciseId: "seed-back-squat", kind: "weight", threshold: toGrams(100, "kg"), label: "100 kg squat" },
-  { exerciseName: "Back Squat", exerciseId: "seed-back-squat", kind: "weight", threshold: toGrams(140, "kg"), label: "140 kg squat" },
-  { exerciseName: "Conventional Deadlift", exerciseId: "seed-conventional-deadlift", kind: "weight", threshold: toGrams(140, "kg"), label: "140 kg deadlift" },
-  { exerciseName: "Conventional Deadlift", exerciseId: "seed-conventional-deadlift", kind: "weight", threshold: toGrams(180, "kg"), label: "180 kg deadlift" },
-  { exerciseName: "Overhead Press", exerciseId: "seed-overhead-press", kind: "weight", threshold: toGrams(60, "kg"), label: "60 kg press" },
-  { exerciseName: "Pull-Up", exerciseId: "seed-pull-up", kind: "reps", threshold: 10, label: "10 pull-ups" },
-];
+/**
+ * Round-number ladders in the lifter's own unit, not one ladder converted: 100 kg and 225 lb are milestones, 220.5 lb
+ * is not. Each rung is a whole number of the unit, so the threshold in grams is what a set logged in that unit stores.
+ */
+const LADDERS: Record<WeightUnit, Array<{ name: string; id: string; word: string; rungs: number[]; featured: number }>> = {
+  kg: [
+    { name: "Bench Press", id: "seed-bench-press", word: "bench", rungs: [60, 80, 100, 120], featured: 100 },
+    { name: "Back Squat", id: "seed-back-squat", word: "squat", rungs: [100, 140], featured: 140 },
+    { name: "Conventional Deadlift", id: "seed-conventional-deadlift", word: "deadlift", rungs: [140, 180], featured: 180 },
+    { name: "Overhead Press", id: "seed-overhead-press", word: "press", rungs: [60], featured: -1 },
+  ],
+  lb: [
+    { name: "Bench Press", id: "seed-bench-press", word: "bench", rungs: [135, 185, 225, 275], featured: 225 },
+    { name: "Back Squat", id: "seed-back-squat", word: "squat", rungs: [225, 315], featured: 315 },
+    { name: "Conventional Deadlift", id: "seed-conventional-deadlift", word: "deadlift", rungs: [315, 405], featured: 405 },
+    { name: "Overhead Press", id: "seed-overhead-press", word: "press", rungs: [135], featured: -1 },
+  ],
+};
 
-export function detectMilestones(slices: SessionSlice[]): TrainingMoment[] {
+export function milestonesFor(unit: WeightUnit): Milestone[] {
+  const weights = LADDERS[unit].flatMap((lift) =>
+    lift.rungs.map<Milestone>((rung) => ({
+      exerciseName: lift.name,
+      exerciseId: lift.id,
+      kind: "weight",
+      threshold: toGrams(rung, unit),
+      label: `${rung} ${unit} ${lift.word}`,
+      featured: rung === lift.featured,
+    })),
+  );
+  return [...weights, { exerciseName: "Pull-Up", exerciseId: "seed-pull-up", kind: "reps", threshold: 10, label: "10 pull-ups" }];
+}
+
+export function detectMilestones(slices: SessionSlice[], unit: WeightUnit = "kg"): TrainingMoment[] {
   const hits: TrainingMoment[] = [];
-  for (const milestone of MILESTONES) {
+  for (const milestone of milestonesFor(unit)) {
     for (const slice of slices) {
       const row = slice.exercises.find((exercise) => exercise.exerciseId === milestone.exerciseId);
       if (!row) continue;
@@ -69,9 +92,10 @@ export function detectMilestones(slices: SessionSlice[]): TrainingMoment[] {
         exerciseId: milestone.exerciseId,
         valueLabel:
           milestone.kind === "weight"
-            ? `${Math.round((set?.weightG ?? milestone.threshold) / 1000)} kg × ${set?.reps ?? "—"}`
+            ? `${formatWeight(set?.weightG ?? milestone.threshold, unit)} ${unit} × ${set?.reps ?? "—"}`
             : `${set?.reps ?? milestone.threshold} reps`,
         workoutId: slice.workout.id,
+        ...(milestone.featured ? { featured: true } : {}),
       });
       break;
     }
@@ -101,9 +125,10 @@ export function buildMoments(
   records: PersonalRecord[],
   eras: TrainingEra[],
   _measurements: BodyMeasurement[],
+  unit: WeightUnit = "kg",
 ): TrainingMoment[] {
   const moments: TrainingMoment[] = [];
-  const milestones = detectMilestones(slices);
+  const milestones = detectMilestones(slices, unit);
   moments.push(...milestones);
 
   for (const pr of records.filter((row) => row.kind === "e1rm").slice(0, 8)) {
@@ -156,10 +181,11 @@ export function momentsForWorkout(
   slices: SessionSlice[],
   records: PersonalRecord[],
   eras: TrainingEra[],
+  unit: WeightUnit = "kg",
 ): TrainingMoment[] {
   const slice = slices.find((row) => row.workout.id === workoutId);
   if (!slice) return [];
-  const all = buildMoments(slices, records, eras, []);
+  const all = buildMoments(slices, records, eras, [], unit);
   const workoutPrs = records.filter((row) => row.workoutId === workoutId);
   const fromPrs: TrainingMoment[] = workoutPrs.map((pr) => ({
     id: `pr-${pr.workoutId}-${pr.exerciseId}`,

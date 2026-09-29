@@ -1,3 +1,4 @@
+import { formatWeight, type WeightUnit } from "@/domain/units";
 import type { SessionSlice } from "./analytics";
 
 export interface ReplayEvent {
@@ -11,6 +12,7 @@ export interface ReplayEvent {
 export function sessionReplay(
   slice: SessionSlice,
   prExerciseIds: string[] = [],
+  unit: WeightUnit = "kg",
 ): ReplayEvent[] {
   const start = Date.parse(slice.workout.startedAt);
   const events: ReplayEvent[] = [
@@ -45,7 +47,7 @@ export function sessionReplay(
       kind: pr ? "pr" : "set",
       label: exercise?.exerciseNameSnapshot ?? "Set",
       detail: set.weightG
-        ? `${Math.round(set.weightG / 100) / 10} × ${set.reps ?? "—"}`
+        ? `${formatWeight(set.weightG, unit)} × ${set.reps ?? "—"}`
         : `${set.reps ?? "—"} reps`,
     });
     lastAt = at;

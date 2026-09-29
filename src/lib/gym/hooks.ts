@@ -157,7 +157,7 @@ export function useGymDerived() {
       settings.goalLiftIds,
       eraNames,
     );
-    const moments = buildMoments(slices, records, chronicle.eras, measurements);
+    const moments = buildMoments(slices, records, chronicle.eras, measurements, weightUnitFor(settings.unitSystem));
     const intelligence = buildIntelligence({
       slices,
       formula: settings.oneRepMaxFormula,
