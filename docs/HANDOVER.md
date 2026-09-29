@@ -6,6 +6,33 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 4c: `volume`
+
+- `src/domain/volume.ts` is Strong-Pro's module (tracking-aware tonnage, `totalsForGroups`,
+  `attributeVolumeByMuscle`, `clampCredit`, `isoWeekKey`, `monthKey`) plus Lockd's
+  `hardSetCount`, `countsForVolume` and `attributeMuscleVolume`. Strong-Pro's 15 volume tests
+  are ported; 13 new tests (`volume.lockd.test.ts`, `src/lib/gym/tonnage.test.ts`).
+- **Fixed, with fixtures that fail against the old code:** (1) tonnage counted assisted-weight sets
+  (the *assistance*, not the load lifted: 40 kg assist × 8 = 320 kg of "tonnage"); (2) reps-only,
+  duration and distance sets counted if a weight was recorded; (3) the "include warm-ups" option
+  never worked (`setTonnageG` returned 0 for a warm-up regardless; every caller passes `true`, so
+  it was latent); (4) a NaN secondary credit turned every attributed number into NaN.
+  `workoutTonnageG` (analytics.ts) is the single tonnage entry point and is now tracking-aware. A
+  set whose exercise row is missing is no longer counted (no tracking type to judge it by).
+- **No number changes for the demo log** (no assisted sets there), so every characterisation
+  snapshot, including the verdict's tonnage, is unchanged. Real logs with assisted or
+  recorded-weight bodyweight sets will see lower tonnage; that is the fix.
+- The three set measures are documented in a table at the top of `volume.ts`: `hardSetCount`
+  (working only), `countsForVolume` (working + drop + failure), tonnage (every non-warm-up
+  `weight_reps` set). Strong-Pro splits them the same way in code; its docs/analytics.md line 14
+  contradicts its own code and line 102.
+- **Open decision, not changed:** should a receipt's / history's "Sets" include drop and failure
+  sets? Today it shows `hardSetCount` (working only). Recommendation: keep `hardSetCount` for the
+  verdict and eras, and add a separate all-completed-non-warm-up count for display. Waiting on the
+  owner.
+- Known limit, unchanged: a weighted bodyweight movement logged as `reps_only` counts no load
+  (Strong-Pro's rule: no fake bodyweight tonnage). Log added load on a `weight_reps` exercise.
+
 ### 2026-09-29 — Plan PR 4b: `time`
 
 - `src/domain/time.ts` is now Strong-Pro's module plus Lockd's helpers: date ranges
