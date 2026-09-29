@@ -12,7 +12,7 @@ doc to rewrite.
   (`resolveRange`, `previousRange`, `isWithin`, `RANGE_*`), `parseIso`, `nowIso`, `formatDate`,
   `formatDateTime`, `relativeDay`, and Strong-Pro's `elapsedSeconds` (it clamps a negative pause
   so it can't add time). Kept from Lockd: `nowParts`, `addDays`, the calendar ordinals,
-  `formatLocalDate`, `formatWeekday`. Strong-Pro's 8 date-range tests are ported; 22 new tests
+  `formatLocalDate`, `formatWeekday`. Strong-Pro's 11 date-range tests are ported; 19 new tests
   cover the stored sign, ordinals and DST, `addDays`, `elapsedSeconds` and `relativeDay`.
 - **Timezone sign, on purpose:** `Workout.tzOffsetMinutes` keeps Lockd's raw
   `getTimezoneOffset()` (positive WEST: UTC+1 = -60). Strong-Pro's function of that name returns
