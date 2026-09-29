@@ -70,6 +70,16 @@ describe("header mapping", () => {
     expect(mapping).toMatchObject({ date: 0, exerciseName: 1, setOrder: 2, weight: 3 });
   });
 
+  it("lets the file's own unit win over the lifter's setting, which is only a fallback", () => {
+    const pounds = "Date,Exercise Name,Weight (lb),Reps\n2026-01-01,Bench Press,100,5\n";
+    const unlabelled = "Date,Exercise Name,Weight,Reps\n2026-01-01,Bench Press,100,5\n";
+    const weight = (text: string, unit: "kg" | "lb") =>
+      analyseStrongCsv(text, { unit }).workouts[0]?.exercises[0]?.sets[0]?.weightG;
+    expect(weight(pounds, "kg")).toBe(toGrams(100, "lb"));
+    expect(weight(unlabelled, "lb")).toBe(toGrams(100, "lb"));
+    expect(weight(unlabelled, "kg")).toBe(100_000);
+  });
+
   it("reports missing required columns instead of importing garbage", () => {
     const analysis = analyseStrongCsv("foo,bar\n1,2\n");
     expect(analysis.missingRequired).toEqual(["date", "exerciseName"]);

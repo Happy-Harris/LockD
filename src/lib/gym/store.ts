@@ -34,6 +34,8 @@ import { defaultQuickIncrementG, formatWeight, weightUnitFor } from "@/domain/un
 import { detectPrsForWorkout, previousSetsForExercise, sliceSessions, type PersonalRecord } from "./analytics";
 import { exportSetsCsv } from "./csv";
 import { applyImportBatch, buildImportBatch, storedFingerprints } from "@/lib/import/batch";
+import type { ImportAnalysis, SourceProfile } from "@/lib/import/engine";
+import { analyseHevyCsv, HEVY_PROFILE } from "@/lib/import/hevy";
 import { analyseStrongCsv, STRONG_PROFILE } from "@/lib/import/strong";
 import { buildDemoLog, emptyStarterPack } from "./demo";
 import {
@@ -93,6 +95,7 @@ export interface GymData {
   clips: ClipMeta[];
 }
 
+/** What a CSV import did. Named for the first importer; every CSV source returns it. */
 export interface StrongImportSummary {
   workouts: number;
   sets: number;
@@ -159,6 +162,7 @@ interface GymActions {
   exportBackup: () => LockdBackup;
   importBackup: (backup: LockdBackup, mode: "replace" | "merge") => void;
   importStrongCsv: (csv: string, fileName?: string) => StrongImportSummary;
+  importHevyCsv: (csv: string, fileName?: string) => StrongImportSummary;
   exportSetsCsvText: () => string;
   setLabLast: (text: string) => void;
   resetAll: () => void;
@@ -270,6 +274,29 @@ function applyInstalled(state: GymData, installed: InstalledProgram, activate: b
     programSessions: [...state.programSessions, ...installed.sessions],
     programExercises: [...state.programExercises, ...installed.exercises],
     settings: activate ? { ...state.settings, activeProgramId: installed.program.id } : state.settings,
+  };
+}
+
+/** Reads a CSV with the common pipeline and adds what is new. Sessions already in the log are left out. */
+function runCsvImport(
+  state: GymState,
+  set: (partial: Partial<GymState>) => void,
+  args: { analysis: ImportAnalysis; source: SourceProfile; fileName: string },
+): StrongImportSummary {
+  const batch = buildImportBatch(args.analysis, {
+    source: args.source,
+    fileName: args.fileName,
+    existingExercises: state.exercises,
+    existingFingerprints: storedFingerprints(state),
+  });
+  if (batch.workouts.length > 0) set(applyImportBatch(state, batch));
+  return {
+    workouts: batch.workouts.length,
+    sets: batch.job.setsImported,
+    skipped: args.analysis.skippedRows,
+    duplicates: batch.duplicatesSkipped,
+    issues: batch.issues.slice(0, 40).map((issue) => issue.message),
+    unmatched: batch.newExercises.map((exercise) => exercise.name),
   };
 }
 
@@ -1171,22 +1198,20 @@ export const useGym = create<GymState>()(
 
       importStrongCsv: (csv, fileName = "strong.csv") => {
         const state = get();
-        const analysis = analyseStrongCsv(csv, { unit: weightUnitFor(state.settings.unitSystem) });
-        const batch = buildImportBatch(analysis, {
+        return runCsvImport(state, set, {
+          analysis: analyseStrongCsv(csv, { unit: weightUnitFor(state.settings.unitSystem) }),
           source: STRONG_PROFILE,
           fileName,
-          existingExercises: state.exercises,
-          existingFingerprints: storedFingerprints(state),
         });
-        if (batch.workouts.length > 0) set(applyImportBatch(state, batch));
-        return {
-          workouts: batch.workouts.length,
-          sets: batch.job.setsImported,
-          skipped: analysis.skippedRows,
-          duplicates: batch.duplicatesSkipped,
-          issues: batch.issues.slice(0, 40).map((issue) => issue.message),
-          unmatched: batch.newExercises.map((exercise) => exercise.name),
-        };
+      },
+
+      importHevyCsv: (csv, fileName = "hevy.csv") => {
+        const state = get();
+        return runCsvImport(state, set, {
+          analysis: analyseHevyCsv(csv, { unit: weightUnitFor(state.settings.unitSystem) }),
+          source: HEVY_PROFILE,
+          fileName,
+        });
       },
 
       exportSetsCsvText: () => {

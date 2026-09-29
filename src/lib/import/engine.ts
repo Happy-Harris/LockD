@@ -1,9 +1,5 @@
 import { fingerprint } from "@/domain/ids";
-import type {
-  ImportIssue,
-  ImportSource,
-  SetType,
-} from "@/domain/types";
+import type { ImportIssue, ImportSource, SetType } from "@/domain/types";
 import { toGrams, type WeightUnit } from "@/domain/units";
 import { normaliseHeader, parseCsv } from "./csv";
 import { parseDuration, parseLocalMoment, parseNumber } from "./parse";
@@ -72,6 +68,11 @@ export interface SourceProfile {
   /** Known header spellings per field, as `normaliseHeader` writes them. */
   aliases: Record<ImportField, string[]>;
   required: ImportField[];
+  /**
+   * A zero in the weight column means "no external load" (a pull-up), not a recorded 0 kg. When set,
+   * a zero weight is read as missing, so it can never look like a logged load.
+   */
+  zeroWeightIsMissing?: boolean;
   /** Reads the set-number and set-type cells. */
   interpretSet: (setOrder: string, setType: string) => SetInterpretation;
 }
@@ -223,8 +224,9 @@ export function analyseCsv(
 ): ImportAnalysis {
   const { header, rows } = parseCsv(text);
   const detectedUnit = detectWeightUnit(header);
-  const unit: WeightUnit = options.unit ?? detectedUnit ?? "kg";
-  const distanceUnit = options.distanceUnit ?? detectDistanceUnit(header) ?? "m";
+  // What the file says wins over the lifter's own unit setting, which is only a fallback.
+  const unit: WeightUnit = detectedUnit ?? options.unit ?? "kg";
+  const distanceUnit = detectDistanceUnit(header) ?? options.distanceUnit ?? "m";
   const mapping: ColumnMapping = { ...autoMap(header, profile), ...(options.mapping ?? {}) };
 
   const issues: IssueDraft[] = [];
@@ -332,7 +334,10 @@ export function analyseCsv(
         rowNumber,
         type: interpreted.type,
         // A blank stays missing. It is never turned into a zero load.
-        weightG: weight === undefined ? undefined : toGrams(Math.max(0, weight), unit),
+        weightG:
+          weight === undefined || (profile.zeroWeightIsMissing && weight === 0)
+            ? undefined
+            : toGrams(Math.max(0, weight), unit),
         reps: reps === undefined ? undefined : Math.max(0, Math.round(reps)),
         distanceM:
           distance === undefined ? undefined : toMetres(Math.max(0, distance), distanceUnit),

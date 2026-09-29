@@ -32,3 +32,29 @@ test.describe("importing a Strong CSV", () => {
     expect((await readLog(page)).workouts).toHaveLength(before + added.length);
   });
 });
+
+test.describe("importing a Hevy CSV", () => {
+  test("adds the sessions once, in the units the file says, and again adds nothing", async ({ page }) => {
+    await openWithSampleLog(page);
+    await goTo(page, "/settings");
+    const before = (await readLog(page)).workouts.length;
+    const hevy = readFileSync(
+      fileURLToPath(new URL("../src/test/fixtures/hevy/hevy-synthetic-lb-miles.csv", import.meta.url)),
+    );
+    const file = { name: "hevy.csv", mimeType: "text/csv", buffer: hevy };
+
+    await page.getByTestId("hevy-csv-input").setInputFiles(file);
+    await expect(page.getByTestId("csv-note")).toContainText("Imported 5 sessions, 71 sets");
+    await waitForSessions(page, before + 5);
+    const log = await readLog(page);
+    // A pounds file read by a kilogram user: the file's own unit is used (110.2 lb, not 110.2 kg).
+    const first = log.workoutSets.find((s) => s.weightG === 49_986);
+    expect(first).toBeTruthy();
+    expect(log.workouts.filter((w) => w.importFingerprint)).toHaveLength(5);
+
+    await page.getByTestId("hevy-csv-input").setInputFiles(file);
+    await expect(page.getByTestId("csv-note")).toContainText("Imported 0 sessions");
+    await expect(page.getByTestId("csv-note")).toContainText("5 sessions were already here");
+    expect((await readLog(page)).workouts).toHaveLength(before + 5);
+  });
+});
