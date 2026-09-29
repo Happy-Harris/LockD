@@ -153,14 +153,12 @@ export function buildChronicle(
     }
   }
 
-  const named = [...eraNames].sort((a, b) => a.startDate.localeCompare(b.startDate));
   const firstDate = slices[0]!.workout.localDate;
   const lastDate = slices[slices.length - 1]!.workout.localDate;
 
-  const splitStarts = named.length
-    ? named.map((row) => row.startDate).filter((date) => date >= firstDate && date <= lastDate)
-    : [firstDate, ...gaps.map((gap) => gap.before)];
-  const uniqueStarts = [...new Set(splitStarts.length ? splitStarts : [firstDate])].sort();
+  // Boundaries come from the log alone: the start, and the first session after each layoff. A name is a label for an
+  // era that starts on its date; it never decides where eras begin (naming one era used to delete all the others).
+  const uniqueStarts = [...new Set([firstDate, ...gaps.map((gap) => gap.before)])].sort();
 
   const rawEras: Array<{ startDate: string; endDate: string; afterLayoff: boolean }> = [];
   for (let i = 0; i < uniqueStarts.length; i += 1) {
@@ -175,11 +173,8 @@ export function buildChronicle(
     rawEras.push({ startDate: start, endDate: end, afterLayoff });
   }
 
-  // Split long eras on volume regime change (8+ weeks) when names aren't supplied.
+  // Split long eras on volume regime change (8+ weeks).
   const expanded: typeof rawEras = [];
-  if (named.length) {
-    expanded.push(...rawEras);
-  } else {
   for (const era of rawEras) {
     const days = localDateToOrdinal(era.endDate) - localDateToOrdinal(era.startDate);
     if (days < 70) {
@@ -205,7 +200,6 @@ export function buildChronicle(
     } else {
       expanded.push(era);
     }
-  }
   }
 
   const eras: TrainingEra[] = expanded.map((era, index) => {

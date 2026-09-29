@@ -82,16 +82,36 @@ describe("engine characterisation — current behaviour, not desired correctness
     expect(buildChronicle([], "epley", goalIds)).toEqual({ eras: [], events: [] });
   });
 
-  it("BUG: naming only the later era orphans earlier sessions from the era timeline", () => {
+  it("naming one era relabels it and leaves every other era and every session where they were (plan I-17)", () => {
     const { slices } = demo();
     const detected = buildChronicle(slices, "epley", goalIds);
     const later = detected.eras.at(-1)!;
     expect(later.startDate).not.toBe(slices[0]!.workout.localDate);
     const renamed = buildChronicle(slices, "epley", goalIds, [{ startDate: later.startDate, name: "Renamed" }]);
-    expect(renamed.eras).toHaveLength(1);
-    expect(renamed.eras[0]?.name).toBe("Renamed");
-    expect(eraForDate(renamed.eras, slices[0]!.workout.localDate)).toBeUndefined();
-    expect(renamed.eras.reduce((sum, era) => sum + era.sessions, 0)).toBeLessThan(slices.length);
+    expect(renamed.eras.map((era) => [era.startDate, era.endDate, era.sessions])).toEqual(
+      detected.eras.map((era) => [era.startDate, era.endDate, era.sessions]),
+    );
+    expect(renamed.eras.at(-1)?.name).toBe("Renamed");
+    expect(renamed.eras.at(-1)?.autoName).toBe(later.autoName);
+    expect(renamed.eras.slice(0, -1).map((era) => era.name)).toEqual(detected.eras.slice(0, -1).map((era) => era.name));
+    expect(eraForDate(renamed.eras, slices[0]!.workout.localDate)).toBeDefined();
+    expect(renamed.eras.reduce((sum, era) => sum + era.sessions, 0)).toBe(slices.length);
+  });
+
+  it("every session falls in exactly one era, whatever names exist", () => {
+    const { log, slices } = demo();
+    for (const names of [[], log.eraNames, [{ startDate: "2000-01-01", name: "Before the log" }]]) {
+      const chronicle = buildChronicle(slices, "epley", goalIds, names);
+      expect(chronicle.eras.reduce((sum, era) => sum + era.sessions, 0)).toBe(slices.length);
+      for (const slice of slices) expect(eraForDate(chronicle.eras, slice.workout.localDate)).toBeDefined();
+    }
+  });
+
+  it("a name whose date is not an era start is kept in the data but labels nothing", () => {
+    const { slices } = demo();
+    const detected = buildChronicle(slices, "epley", goalIds);
+    const stray = buildChronicle(slices, "epley", goalIds, [{ startDate: "2000-01-01", name: "Stray" }]);
+    expect(stray.eras.map((era) => era.name)).toEqual(detected.eras.map((era) => era.name));
   });
 
   it("pins Ghost comparisons and the current skipped-exercise behind verdict", () => {
