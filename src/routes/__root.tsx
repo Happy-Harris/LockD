@@ -13,7 +13,7 @@ import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { ThemeSync } from "@/components/app/theme";
 import { Onboarding } from "@/components/app/onboarding";
 import { CommandPalette } from "@/components/app/command-palette";
-import { StampMark } from "@/components/app/mark";
+import { LockdMark } from "@/components/app/mark";
 import { CloudSync, useCloud } from "@/lib/cloud/sync";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useGym } from "@/lib/gym/store";
@@ -159,7 +159,7 @@ function Splash({ locker }: { locker?: boolean }) {
   return (
     <main className="grid min-h-dvh place-items-center bg-canvas text-ink">
       <div className="flex flex-col items-center gap-3">
-        <StampMark className="size-12" />
+        <LockdMark className="size-12" />
         <p className="stamp text-3xl">LOCKD</p>
         <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-subtle">
           {locker ? "Opening the locker" : "Keep the receipt."}

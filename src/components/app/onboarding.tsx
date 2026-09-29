@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { StampMark } from "@/components/app/mark";
+import { LockdMark } from "@/components/app/mark";
 import { useGym } from "@/lib/gym/store";
 import type { UnitSystem } from "@/domain/types";
 
@@ -13,7 +13,7 @@ export function Onboarding() {
     <main className="relative mx-auto flex min-h-dvh max-w-md flex-col justify-between overflow-hidden px-6 py-10">
       <div className="pointer-events-none absolute -right-10 top-16 size-56 rounded-full bg-accent/15 blur-3xl" />
       <div>
-        <StampMark className="size-14" />
+        <LockdMark className="size-14" />
         <p className="mt-10 stamp text-7xl leading-[0.85] tracking-tight text-ink">LOCKD</p>
         <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.28em] text-accent">Keep the receipt.</p>
         <p className="mt-6 max-w-sm text-base leading-relaxed text-muted">

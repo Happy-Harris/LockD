@@ -2,7 +2,7 @@ import { formatLocalDate } from "@/domain/time";
 import { formatDuration, formatWeightWithUnit, type WeightUnit } from "@/domain/units";
 import type { PersonalRecord, SessionSlice } from "@/lib/gym/analytics";
 import { hardSetCount } from "@/domain/volume";
-import { StampMark } from "./mark";
+import { LockdMark } from "./mark";
 
 export function SessionReceipt({
   slice,
@@ -25,7 +25,7 @@ export function SessionReceipt({
           <p className="stamp text-3xl leading-none tracking-tight">LOCKD</p>
           <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.22em] opacity-60">Keep the receipt.</p>
         </div>
-        <StampMark className="size-9" />
+        <LockdMark className="size-9" />
       </header>
       <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.18em] opacity-55">Session #{serial}</p>
       <h2 className="mt-1 font-display text-3xl font-semibold tracking-tight">{slice.workout.name}</h2>

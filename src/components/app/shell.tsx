@@ -13,7 +13,7 @@ import {
   Settings,
   Wrench,
 } from "lucide-react";
-import { StampMark } from "@/components/app/mark";
+import { LockdMark } from "@/components/app/mark";
 import { RestTimerBar } from "@/components/app/rest-timer";
 import { UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -61,7 +61,7 @@ export function AppShell({ children, hideNav }: { children: React.ReactNode; hid
     <div className="min-h-dvh bg-canvas text-ink lg:flex">
       <aside className={cn("hidden w-60 shrink-0 border-r border-line lg:flex lg:flex-col lg:px-3 lg:py-6", hideNav && "lg:hidden")}>
         <div className="mb-8 flex items-center gap-2.5 px-2">
-          <StampMark className="size-8" />
+          <LockdMark className="size-8" />
           <div>
             <p className="stamp text-xl leading-none text-ink">LOCKD</p>
             <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.18em] text-subtle">Keep the receipt.</p>
