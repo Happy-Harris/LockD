@@ -9,6 +9,16 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 11 (I-25): the autopsy headline keeps 1RM and RPE in capitals
+
+- **The bug (plan I-25):** the plateau autopsy headline lowercased the whole finding title to read inside a sentence, so "Flat estimated 1RM" came out
+  "flat estimated 1rm" on Today. The same line turned "Rising RPE" into "rising rpe", which the plan does not mention.
+- **The fix:** `lowerFirst` in `autopsy.ts` lowers only the first letter. Every title the autopsy can produce (six) keeps the rest as written.
+- **Characterisation diff (the reviewable change):** the pinned headline in `engine-characterisation.test.ts.snap` moved from
+  "Bench Press: missed reps, falling volume, rising rpe." to "... rising RPE." and nothing else in the suite changed.
+- **Tests:** `autopsy-copy.test.ts` (3): the two acronyms, all six titles change only their first letter, the empty title.
+- **Not checked** on screen: the Today card with a stalled lift's headline. The wording comes from the one function the tests cover.
+
 ### 2026-09-29 — Step 11 (I-24): Today and file names use the lifter's own date, not UTC
 
 - **The bug (plan I-24):** the Today header was built from `new Date().toISOString()`, which is UTC. In the evening west of UTC it showed tomorrow's weekday and date, and far
