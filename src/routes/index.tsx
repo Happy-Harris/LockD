@@ -67,12 +67,8 @@ function TodayPage() {
   };
   const visibleRoutines = templates.filter((row) => !row.isArchived).slice(0, 4);
   const notableFirsts = moments.filter((row) => row.kind === "first");
-  const firsts = (
-    notableFirsts.filter((row) => /100 kg bench|140 kg squat|180 kg deadlift/.test(row.title))
-      .length
-      ? notableFirsts.filter((row) => /100 kg bench|140 kg squat|180 kg deadlift/.test(row.title))
-      : notableFirsts
-  ).slice(0, 2);
+  const featuredFirsts = notableFirsts.filter((row) => row.featured);
+  const firsts = (featuredFirsts.length ? featuredFirsts : notableFirsts).slice(0, 2);
   const currentEra = chronicle.current;
 
   const goalCards = settings.goalLiftIds.map((id) => {

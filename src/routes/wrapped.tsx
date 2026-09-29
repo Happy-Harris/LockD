@@ -17,8 +17,8 @@ function WrappedPage() {
   const [year, setYear] = useState(years[0] ?? new Date().getFullYear());
   const unit = weightUnitFor(settings.unitSystem);
   const receipt = useMemo(
-    () => buildYearReceipt(year, slices, chronicle.eras, measurements, settings.oneRepMaxFormula),
-    [year, slices, chronicle.eras, measurements, settings.oneRepMaxFormula],
+    () => buildYearReceipt(year, slices, chronicle.eras, measurements, settings.oneRepMaxFormula, unit),
+    [year, slices, chronicle.eras, measurements, settings.oneRepMaxFormula, unit],
   );
 
   return (

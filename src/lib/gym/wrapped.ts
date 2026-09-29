@@ -1,5 +1,6 @@
 import { localDateToOrdinal } from "@/domain/time";
 import type { BodyMeasurement, OneRepMaxFormula } from "@/domain/types";
+import type { WeightUnit } from "@/domain/units";
 import { hardSetCount } from "@/domain/volume";
 import { computeRecords, type SessionSlice } from "./analytics";
 import type { TrainingEra } from "./chronicle";
@@ -30,6 +31,7 @@ export function buildYearReceipt(
   eras: TrainingEra[],
   measurements: BodyMeasurement[],
   formula: OneRepMaxFormula,
+  unit: WeightUnit = "kg",
 ): YearReceipt {
   const inYear = slices.filter((slice) => slice.workout.localDate.startsWith(String(year)));
   const hardSets = inYear.reduce((sum, slice) => sum + hardSetCount(slice.sets), 0);
@@ -42,7 +44,7 @@ export function buildYearReceipt(
   }
   const records = computeRecords(inYear, formula, true).filter((row) => row.kind === "e1rm");
   const top = records[0];
-  const firsts = detectMilestones(inYear).map((moment) => moment.title);
+  const firsts = detectMilestones(inYear, unit).map((moment) => moment.title);
   const eraNames = eras.filter((era) => era.startDate.startsWith(String(year)) || era.endDate.startsWith(String(year))).map((era) => era.name);
   const months = new Map<string, number>();
   for (const slice of inYear) {
