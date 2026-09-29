@@ -9,6 +9,15 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 13 (I-40): 30 unused dependencies removed
+
+- **What:** `npm uninstall` of every package with no reference anywhere in `src`, `scripts`, `server` or the config files: `@hookform/resolvers`, `react-hook-form`, `@tanstack/react-query`, `@tanstack/react-table`, `@tanstack/router-plugin`, `cmdk`, `date-fns`, `react-day-picker`,
+  `react-resizable-panels`, `tw-animate-css`, `eslint-plugin-prettier`, `lightningcss`, and 18 `@radix-ui/*` packages the UI never imported (the plan said 9; the count grew as the Radix set was checked one by one). The kept set is what the code imports (`@radix-ui/react-dialog` and the like, `vaul`,
+  the three `@fontsource` packages via CSS, `tailwindcss`). The lockfile shrinks by about 1,400 lines.
+- **Checked:** `npm run verify` (lint, typecheck, 964 tests, build), `npm ci --dry-run` on the new lockfile, and `offline-basics` and `logging-speed` e2e on both projects. CI runs the whole e2e suite.
+- **Also here:** Step 11 marked done in STATUS, and the Step 11 owner decisions gathered in § 5 in one place.
+- **Not done:** README and root HANDOFF rewrite (next PR), and Step 12 (needs the owner's go-ahead for the OG-tag move and the D16 deletions). Dependencies used only by the scaffolding will go with it.
+
 ### 2026-09-29 — Step 11 (I-17, I-18, O2): eras follow the lifter's own log, and a name only labels
 
 Two commits in one PR: read them separately. Commit 1 is I-17, commit 2 is I-18 / O2. (D8, the owner's approval of O2 and of the demo no longer seeding era names, is the authority for commit 2.)
