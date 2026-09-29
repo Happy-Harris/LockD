@@ -6,6 +6,36 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 6b: the service worker (closes plan PR 6)
+
+Full description: `docs/OFFLINE.md`.
+
+- **The app opens and works with no network.** `/sw.js` is built after the app
+  (`scripts/build-sw.mjs`; bundled by Vite from `src/sw/worker.ts`), caches every file in the build
+  plus an app shell, serves build files from the device, and opens the shell when a navigation
+  fails, takes over 3 s or gets a 5xx. It never touches server data calls, non-GETs, other origins,
+  or `/s/*`, `/u/*`, `/login`. Decision on tooling (the plan's spike): **hand-written worker, no
+  Workbox and no vite-plugin-pwa**, because Vite 8's bundler has no esbuild and the worker is small
+  enough to test directly. The pure routing rules are in `src/sw/routing.ts`.
+- **The shell is fetched without cookies**, so it is always the guest page. It hydrates for any
+  screen because `GymGate` draws only the splash until the log has loaded, on the server and on
+  the client alike. **Verified**, not assumed: the e2e opens `/history` and `/chronicle` cold and
+  offline from the shell.
+- **Updates wait for the lifter** (SP #35's fix): the new worker installs, the app says "A new
+  version is ready", and only Reload makes it take over (`SKIP_WAITING`, then reload on
+  `controllerchange`). The first install shows no prompt. Old caches are deleted on activation.
+- **Bug found by a unit test:** a prefix check would have treated `/login-help` as a public
+  screen. Screens are now matched as whole folders.
+- **CI** now also runs `npm run test:e2e:offline` (builds, then `e2e-offline/` against
+  `vite preview`). The update test swaps the built `sw.js` on disk, because Playwright cannot
+  intercept the browser's own check for a new worker script.
+- **Limits.** (1) Every new build re-downloads the whole cache (about 1.7 MB); reusing unchanged
+  hashed files across versions would fix it. (2) A screen that needs the server (Locker, cloud sync)
+  shows what it shows with no server; only the guest path is proven offline. (3) The worker is not
+  registered in dev. (4) No install-prompt UI was added; the manifest is what makes the app
+  installable.
+- Remaining in plan § 6 and § 5: the `grok.com` script comes out with the scaffolding (PR 12).
+
 ### 2026-09-29 — Plan PR 6a: what the app needs to run offline, apart from the service worker
 
 The offline plan (PLAN § 6) is split: **6a (this)** removes the things that reach out or break

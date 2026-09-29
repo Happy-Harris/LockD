@@ -19,6 +19,7 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useGym } from "@/lib/gym/store";
 import { StorageNoticeBanner } from "@/components/app/storage-notice";
 import { bootStorage } from "@/lib/storage/boot";
+import { startServiceWorker } from "@/lib/pwa/start";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Lockd";
@@ -106,6 +107,7 @@ function GymGate() {
     bootStorage()
       .then((result) => {
         if (!useGym.getState().hydrated) useGym.getState().setHydrated(true);
+        startServiceWorker();
         // Test hook: how long reading the log took (see `BootResult.readMs`).
         if (result.readMs !== undefined) {
           document.documentElement.dataset.gymBootMs = String(result.readMs);
