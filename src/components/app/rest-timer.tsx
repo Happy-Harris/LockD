@@ -33,6 +33,23 @@ function chime(enabled: boolean) {
   }
 }
 
+/** Vibrate and/or notify when rest ends. Best effort: a phone that is locked or a tab that is throttled may delay it. */
+function alertRestDone(opts: { vibrate: boolean; notify: boolean; label?: string }) {
+  if (typeof navigator === "undefined") return;
+  try {
+    if (opts.vibrate) navigator.vibrate?.([200, 100, 200]);
+  } catch {
+    /* vibration is best-effort */
+  }
+  try {
+    if (opts.notify && typeof Notification !== "undefined" && Notification.permission === "granted" && document.hidden) {
+      new Notification("Rest done", { body: opts.label ?? "Next set", tag: "lockd-rest" });
+    }
+  } catch {
+    /* notifications are best-effort */
+  }
+}
+
 function paintLockArt(seconds: number, label: string): string {
   const canvas = document.createElement("canvas");
   canvas.width = 512;
@@ -61,6 +78,8 @@ export function RestTimerBar() {
   const restTimer = useGym((s) => s.restTimer);
   const workouts = useGym((s) => s.workouts);
   const sound = useGym((s) => s.settings.restTimerSound);
+  const vibrate = useGym((s) => s.settings.restTimerVibrate ?? false);
+  const notify = useGym((s) => s.settings.restTimerNotification ?? false);
   const startRestTimer = useGym((s) => s.startRestTimer);
   const adjustRestTimer = useGym((s) => s.adjustRestTimer);
   const stopRestTimer = useGym((s) => s.stopRestTimer);
@@ -87,8 +106,9 @@ export function RestTimerBar() {
     if (left <= 0 && chimed.current !== restTimer.endsAt) {
       chimed.current = restTimer.endsAt;
       chime(sound);
+      alertRestDone({ vibrate, notify, label: restTimer.label });
     }
-  }, [left, restTimer, sound]);
+  }, [left, restTimer, sound, vibrate, notify]);
 
   useEffect(() => {
     if (!restTimer) {
@@ -249,6 +269,15 @@ export function RestTimerBar() {
             <p className="truncate text-sm font-medium text-ink">{done ? "Rest complete" : "Rest"}</p>
             <p className="truncate text-xs text-muted">{restTimer.label ?? "Between sets"}</p>
           </button>
+          {restTimer.suggestedSeconds && restTimer.isRunning && !done ? (
+            <button
+              type="button"
+              className="shrink-0 rounded-xl px-2 py-1 text-[11px] font-medium text-accent hairline"
+              onClick={() => startRestTimer(restTimer.suggestedSeconds!, restTimer.workoutId, restTimer.setId, restTimer.label)}
+            >
+              You usually rest {formatDuration(restTimer.suggestedSeconds)}
+            </button>
+          ) : null}
           {controls}
         </div>
       </div>

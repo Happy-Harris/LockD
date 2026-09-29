@@ -19,7 +19,6 @@ import {
 } from "@/domain/units";
 import { uuid } from "@/domain/ids";
 import { compareSet, findGhostSlice, formatGhostSet, ghostHeader, ghostSetsForExercise } from "@/lib/gym/ghost";
-import { restPersonalitySeconds, learnedRestSeconds } from "@/lib/gym/dna";
 import { progressExercise, actionLabel } from "@/lib/gym/progression";
 import { useSlices } from "@/lib/gym/hooks";
 import { barbellSnap } from "@/lib/gym/loads";
@@ -184,9 +183,7 @@ function ActiveWorkoutPage() {
             excludeWarmups: settings.excludeWarmupsFromAnalytics,
             snap: block.catalog ? barbellSnap(block.catalog, bars, plates, settings) : undefined,
           });
-          const restHint = block.catalog
-            ? restPersonalitySeconds(block.catalog, learnedRestSeconds(block.catalog.id, slices))
-            : block.exercise.restSeconds;
+          const restHint = block.exercise.restSeconds;
           return (
             <article key={block.exercise.id} className="rounded-[28px] bg-surface p-4 hairline">
               <div className="mb-3 flex items-start justify-between gap-3">

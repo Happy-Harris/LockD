@@ -62,16 +62,6 @@ export function learnedRestSeconds(exerciseId: string, slices: SessionSlice[]): 
   return Math.round(mean(gaps) / 15) * 15;
 }
 
-export function restPersonalitySeconds(exercise: Pick<Exercise, "equipment" | "movementPattern">, learned?: number | null) {
-  if (learned && learned >= 45) return learned;
-  if (exercise.movementPattern === "isolation" || exercise.movementPattern === "core") return 75;
-  if (exercise.equipment === "barbell" && ["squat", "hinge", "horizontal push", "vertical pull"].includes(exercise.movementPattern)) {
-    return 180;
-  }
-  if (exercise.equipment === "barbell") return 150;
-  return 120;
-}
-
 export function buildLiftDna(
   exercise: Pick<Exercise, "id" | "name">,
   slices: SessionSlice[],

@@ -5,7 +5,7 @@ this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HAND
 last PRs did and did not verify). Keep this file current: update the tables in the same PR that
 changes a status.
 
-_Last updated: 2026-09-29, after `LockD#37` merged. In flight: Step 9a (PR pending); next Step 9b._
+_Last updated: 2026-09-29, after `LockD#38` merged. In flight: Step 9b (`LockD#40`); next Step 9c._
 
 ## 1. How to read the labels
 
@@ -93,7 +93,7 @@ State: **done**, **in flight**, **not started**. "GitHub" gives the pull request
 | 8d-1 | Goal lifts are the lifter's own, with pickers; est. 1RM labelled and rounded | done | LockD#33 |
 | 8d-2 | Progression merge (I-20): windowed stall with a layoff guard, loads on the increment grid or buildable with the lifter's plates, program `linear` rule fixed | **done** | branch `claude/step8d2-progression` |
 | 8d-3 | Deterministic Ask the Lab, so guests get an answer that cites the log (I-4, D3) | **done** | branch `claude/step8d3-ask-lab` |
-| 9 | Logging details (sub-steps: 9a input fixes I-27 to I-30; 9b rest timers I-21 and notification/vibrate; 9c intensity pick and RIR I-31; 9d workout-page speed I-26; 9e equipment editor I-35; 9f per-set targets, supersets, unilateral): per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | in progress: 9a in flight | `claude/step9a-input-fixes` |
+| 9 | Logging details (sub-steps: 9a input fixes I-27 to I-30; 9b rest timers I-21 and notification/vibrate; 9c intensity pick and RIR I-31; 9d workout-page speed I-26; 9e equipment editor I-35; 9f per-set targets, supersets, unilateral): per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | in progress: 9a done (`LockD#38`), 9b in flight | `claude/step9a-input-fixes`, `claude/step9b-rest-timers` |
 | 10 | Visual identity: knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | not started | |
 | 11 | Approved improvements, one PR each: I-14, I-15, I-16, I-17/I-18/O2 (eras), I-23, I-24, I-25, I-33, I-34, I-37, I-41 | not started | |
 | 12 | Scaffolding removal: Grok scripts and middleware, preview bridge, app-data, multiplayer; the OG tags move into `/s` and `/u` first (needs the owner's go-ahead); auth and cloud behind config (D16 dead-code deletions need the owner's yes) | not started | |

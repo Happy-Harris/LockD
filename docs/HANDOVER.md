@@ -9,6 +9,25 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9b: your rest wins, separate warm-up rest, vibrate and notify (I-21)
+
+- **Precedence (I-21):** after a set the timer runs the exercise's rest: the routine's rest if it has one, else the
+  default the lifter set (both are snapshotted onto the workout exercise). The built-in 180/150/120/75 s guesses
+  (`restPersonalitySeconds`) are deleted; nothing used them once this landed. The rest the lifter actually takes
+  (`learnedRestSeconds`, needs 4 gaps) is offered as a "You usually rest 2:30" button on the timer bar when it
+  differs by 15 s or more. It is never applied on its own (D7). The manual "Start rest" button on the workout
+  page uses the same rest.
+- **Warm-up rest:** new optional setting `warmupRestSeconds` (missing or 0 = no timer, which is what warm-ups did
+  before). Settings > Rest timer has it. The backup schema accepts it as optional; the old-format backup fixture
+  still loads and the field round-trips (`backup-fields.test.ts`).
+- **Vibrate and notify:** the two settings already in the backup schema now do something. When rest ends the timer
+  bar vibrates and, if the tab is in the background and permission was granted, posts a notification. Turning
+  Notify on asks for permission and stays off if it is refused. **Limit:** this is best effort. A locked phone or
+  a throttled tab can delay it, and iPhone Safari does not vibrate. A reliable lock-screen timer needs native code
+  (Phase 4 design doc).
+- Tests: `rest.test.ts` (5: precedence, warm-up rule, suggestion threshold, the store starting the right timer).
+- **Not verified on a real phone:** vibrate and the notification.
+
 ### 2026-09-29 — Step 9a: four logging input fixes (I-27, I-28, I-29, I-30)
 
 - **I-27:** weight inputs show an ungrouped number (`formatWeightInput`), so 1000 kg is no longer shown as "1,000" and
