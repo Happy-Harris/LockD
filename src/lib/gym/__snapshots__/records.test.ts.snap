@@ -1,0 +1,18 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`personal records — first exposure > the Chronicle's PR runs are built from the same rule 1`] = `
+[
+  {
+    "count": 9,
+    "id": "prrun-2026-08-26",
+  },
+  {
+    "count": 80,
+    "id": "prrun-2026-02-20",
+  },
+  {
+    "count": 143,
+    "id": "prrun-2025-10-13",
+  },
+]
+`;
