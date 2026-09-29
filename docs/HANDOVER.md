@@ -9,6 +9,27 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9f-2c: log a unilateral exercise as left and right rows
+
+- **Per-exercise switch:** the exercise page has "Log each side separately" (`updateExercise({ unilateral })`), so existing
+  installs need no seed migration. It applies to workouts started afterwards; the workout exercise snapshots it
+  (`unilateralSnapshot`), so a mid-workout edit cannot change how it logs.
+- **Rows:** starting from a routine or a program, Add exercise, and Add set now create a left and a right row per set,
+  sharing a `pairId` (`pairs.ts`). A routine's `targetSets` counts sets (pairs), never rows. A warm-up stays one row.
+  Bilateral exercises are untouched (the existing bilateral tests and snapshots pass unmodified).
+- **Rest:** one tap completes one side; the rest timer starts after the second side (and, in a superset, after the last
+  exercise). **Check:** in the running app, no timer after the left side and a 2:02 timer after the right.
+- **Previous values and ghosts:** a sided row takes the same set number on the same side. If the last session had no
+  sides, both sides take that session's set of the same number (never the right side against set 2).
+- **Display:** rows show 1L, 1R, 2L, 2R. The header counts sets, not rows (0/3, 1/3 after the left side, still 1/3 after
+  the right). Saving a routine from a workout saved 6 sets for 3 pairs before this was fixed; a test now pins it.
+- **Bug found by the running app:** none in the product. A redirect from `/workout` seen while testing came from a
+  test hook that created a second copy of the store, not the app (see the run-lockd skill gotcha).
+- Tests: `pairs.test.ts` (14). Screenshots at 390 and 1024 px were looked at; not compared with `baseline/`.
+- **Not done:** deleting one side leaves an orphan side (counts as one set); swapping to a unilateral exercise keeps
+  the old rows; RPE/RIR is per row; the receipt still does not say "pairs counted as one set"; the left/right
+  difference view (VISION #32) is untouched.
+
 ### 2026-09-29 — Step 9f-2b: a left/right pair counts as one set
 
 - **Rule (a default the owner can reverse; the donor's rule was not reachable):** rows with a `side` and a shared
@@ -21,8 +42,8 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 - **Test diff:** only `unilateral-counting.test.ts` (renamed from the 9f-2a file) changed values: 6 to 3 sets, 8 to 5
   hard sets. The other 830 tests, including every engine snapshot, pass unmodified, so nothing shown for a
   bilateral log moved.
-- **Not done:** the receipt copy "pairs counted as one set" (the receipts don't yet distinguish pairs); Lab and history
-  screens that count `sets.length` directly were not audited; nothing creates left/right rows when logging yet (9f-2c).
+- **Not done:** the receipt copy "pairs counted as one set" (the receipts don't yet distinguish pairs); screens
+  that count rows for display were checked by grep (only the workout header did; fixed in 9f-2c); nothing creates left/right rows when logging yet (9f-2c).
 
 ### 2026-09-29 — Step 9f-2a: pin how left/right rows are counted today (characterisation only)
 

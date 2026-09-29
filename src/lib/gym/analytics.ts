@@ -337,6 +337,7 @@ export interface PreviousSet {
   weightG?: number;
   reps?: number;
   rpe?: number;
+  side?: WorkoutSet["side"];
 }
 
 export function previousSetsForExercise(
@@ -356,7 +357,7 @@ export function previousSetsForExercise(
       )
       .sort((a, b) => a.order - b.order);
     if (sets.length === 0) continue;
-    return sets.map((set) => ({ weightG: set.weightG, reps: set.reps, rpe: set.rpe }));
+    return sets.map((set) => ({ weightG: set.weightG, reps: set.reps, rpe: set.rpe, side: set.side }));
   }
   return [];
 }

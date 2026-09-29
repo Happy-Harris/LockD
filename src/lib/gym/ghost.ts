@@ -7,6 +7,7 @@ export interface GhostSet {
   weightG?: number;
   reps?: number;
   rpe?: number;
+  side?: "left" | "right";
 }
 
 export type GhostVerdict = "beat" | "tie" | "behind" | "new";
@@ -46,7 +47,7 @@ export function ghostSetsForExercise(slice: SessionSlice | undefined, exerciseId
   return slice.sets
     .filter((set) => set.workoutExerciseId === row.id && set.isCompleted && set.setType !== "warmup")
     .sort((a, b) => a.order - b.order)
-    .map((set) => ({ weightG: set.weightG, reps: set.reps, rpe: set.rpe }));
+    .map((set) => ({ weightG: set.weightG, reps: set.reps, rpe: set.rpe, side: set.side }));
 }
 
 export function formatGhostSet(set: GhostSet | undefined, unit: WeightUnit): string {
