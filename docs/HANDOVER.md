@@ -9,6 +9,19 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9e: equipment editor for bars, collars and plates (I-35)
+
+- **Settings > Equipment** (`equipment-editor.tsx`): pick the default bar, edit its name, weight and collar weight (in
+  your unit), add a bar; pick the default plate inventory and set how many plates of each weight you own (steps of
+  two, since counts are physical plates and only pairs load), add a weight, set a count to 0 to remove it.
+- **It drives the maths:** plate-aware rounding (`barbellSnap`) and the plate calculator read the same bars and plates
+  the editor writes, so suggested loads are ones your gym can make. `equipment.test.ts` (5) pins that a typed bar
+  weight moves the snap and a removed plate stops being offered.
+- **Storage:** no change. `bars`, `plates` and both default ids were already persisted and in the backup schema,
+  so no migration. New store actions: `updateBar`, `addBar`, `setPlateCount`.
+- **Not done:** deleting a bar or an inventory, editing per-exercise bars, a new-inventory flow. **Not covered:** no
+  component or e2e test of the editor, no 390/1024 px screenshots.
+
 ### 2026-09-29 — Step 9d: the workout page stops redoing history work (I-26)
 
 - **Clock isolated:** the once-a-second tick now lives in `ElapsedClock`, so the page and its set rows no longer
