@@ -2,6 +2,7 @@ import type { OneRepMaxFormula } from "@/domain/types";
 import { formatLocalDate } from "@/domain/time";
 import { hardSetCount } from "@/domain/volume";
 import type { SessionSlice } from "./analytics";
+import { STALL_WINDOW_DAYS } from "@/domain/progression";
 import { collectExposures, type ProgressionCall } from "./progression";
 
 export type AutopsyCode =
@@ -65,7 +66,7 @@ export function autopsyLift(
     findings.push({
       code: "flat_e1rm",
       title: "Flat estimated 1RM",
-      detail: `No new peak across ${call.stallSessions} sessions.`,
+      detail: `Best estimated 1RM over the last ${STALL_WINDOW_DAYS} days is flat or down against the sessions before them (${call.stallSessions} sessions).`,
       evidence: `${formatLocalDate(first.date)} → ${formatLocalDate(last.date)} held around the same estimate.`,
     });
   }

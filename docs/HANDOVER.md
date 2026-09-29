@@ -9,6 +9,26 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 8d-2: one stall rule, loads you can build (I-20)
+
+- **Stall:** the progression engine no longer measures a stall against the lift's all-time peak (which
+  made every comeback look stalled). It uses `computeStallComparison`: best e1RM over at least three
+  sessions in the last 28 days against the same number before them. A gap over 28 days between the
+  two windows (`STALL_MAX_GAP_DAYS`) is a layoff, not a stall. Consequence: a lifter with fewer than
+  two windows of sessions gets no stall call. Autopsy and easier-week wording now say what was compared.
+- **Loads:** `stepUpG`/`stepDownG` (domain) move a load by one increment or a percentage and always
+  land on the increment grid. For barbell lifts with a bar and plates set up, `barbellSnap`
+  (`src/lib/gym/loads.ts`) rounds to a total those plates can make. `ProgressionCall.lastWeightG` is the
+  heaviest working load of the last session.
+- **Program `linear` rule fixed:** it used to run only when there was no suggestion, which is never
+  once there is history, so it never ran. Now it adds one increment to the last working load when the
+  last session went to plan; after a miss the engine's lighter suggestion stands. Deload steps down
+  from the suggestion. Snapshots: program deload 101150 → 87500 g, normal 105000 → 102500 g.
+- **Tests:** `progression.test.ts` (stall window, layoff, grid, plate snap, program rule);
+  characterisation snapshots re-recorded (only `lastWeightG` additions, the program numbers, and the
+  autopsy losing its `flat_e1rm` finding for lack of an earlier window).
+- **Not verified:** real-world plate inventories beyond the unit fixtures.
+
 ### 2026-09-29 — Docs: STATUS.md, one label scheme for handing the project on
 
 - Added `docs/STATUS.md`: what "Step 7b", "Opp 4", "LockD#23", "I-20", "D5" and "O2" each mean, every

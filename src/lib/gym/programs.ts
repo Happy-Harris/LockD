@@ -11,6 +11,7 @@ import type {
 } from "@/domain/types";
 import { PROGRAM_FILE_VERSION, PROGRAM_FORMAT } from "@/domain/types";
 import { seedExerciseId } from "./seed";
+import { stepDownG, stepUpG, type LoadSnap } from "@/domain/progression";
 import type { ProgressionCall } from "./progression";
 
 export interface ProgramPackExercise {
@@ -395,19 +396,33 @@ export function applyProgramLoad(opts: {
   previousWeightG?: number;
   previousReps?: number;
   baseSets: number;
+  /** Rounds a load to one that can be built (barbell work with the lifter's plates). */
+  snap?: LoadSnap;
 }): { weightG?: number; reps?: number; sets: number } {
-  const { rule, weekNumber, isDeload, suggestion, previousWeightG, previousReps, baseSets } = opts;
+  const { rule, isDeload, suggestion, previousWeightG, previousReps, baseSets, snap } = opts;
   let weightG = suggestion?.suggestedWeightG ?? previousWeightG;
   const reps = suggestion?.suggestedReps ?? previousReps;
   const sets = isDeload ? Math.max(2, baseSets - 1) : baseSets;
+  const increment = rule.incrementG ?? 2500;
 
-  if (rule.kind === "linear" && weightG && !suggestion) {
-    const increment = rule.incrementG ?? 2500;
-    weightG = weightG + increment * Math.max(0, weekNumber - 1);
+  // A `linear` program says "add one increment each week". It applies when the last session went
+  // to plan. If the lifter missed the target (the engine calls a drop or an easier week), the
+  // engine's lighter suggestion stands: a program that added load after a failed session would be
+  // the "advances on a schedule regardless of performance" it should not be. (This rule used to
+  // run only when there was no suggestion, which is never when there is history, so it never ran.)
+  const wentToPlan =
+    !suggestion ||
+    (suggestion.missStreak === 0 &&
+      suggestion.action !== "deload" &&
+      suggestion.action !== "easier_week");
+  // Step from the heaviest working load of the last session, not from a warm-up set.
+  const lastLoadG = suggestion?.lastWeightG ?? previousWeightG;
+  if (rule.kind === "linear" && !isDeload && lastLoadG && wentToPlan) {
+    weightG = stepUpG(lastLoadG, increment, snap);
   }
   if (isDeload && weightG) {
     const pct = rule.deloadPercent ?? 0.85;
-    weightG = Math.round(weightG * pct);
+    weightG = stepDownG(weightG, pct, increment, snap);
   }
   return { weightG, reps, sets };
 }

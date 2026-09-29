@@ -52,6 +52,7 @@ import {
   PROGRAM_PACKS,
   type InstalledProgram,
 } from "./programs";
+import { barbellSnap } from "./loads";
 import { progressExercise } from "./progression";
 import { seedBarProfiles, seedExercises, seedPlateInventories } from "./seed";
 import { generateWarmup } from "@/domain/warmup";
@@ -486,6 +487,7 @@ export const useGym = create<GymState>()(
             slices,
             formula: state.settings.oneRepMaxFormula,
             excludeWarmups: state.settings.excludeWarmupsFromAnalytics,
+            snap: barbellSnap(exercise, state.bars, state.plates, state.settings),
           });
           const count = Math.max(row.targetSets, 1);
           for (let i = 0; i < count; i += 1) {
@@ -561,6 +563,7 @@ export const useGym = create<GymState>()(
             slices,
             formula: state.settings.oneRepMaxFormula,
             excludeWarmups: state.settings.excludeWarmupsFromAnalytics,
+            snap: barbellSnap(exercise, state.bars, state.plates, state.settings),
           });
           const applied = applyProgramLoad({
             rule: row.rule,
@@ -570,6 +573,7 @@ export const useGym = create<GymState>()(
             previousWeightG: previous[0]?.weightG,
             previousReps: previous[0]?.reps,
             baseSets: row.targetSets,
+            snap: barbellSnap(exercise, state.bars, state.plates, state.settings),
           });
           const count = Math.max(applied.sets, 1);
           for (let i = 0; i < count; i += 1) {
