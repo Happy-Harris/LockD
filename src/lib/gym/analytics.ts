@@ -23,14 +23,53 @@ export function sliceSessions(
   workoutExercises: WorkoutExercise[],
   workoutSets: WorkoutSet[],
 ): SessionSlice[] {
-  const completed = workouts.filter((workout) => workout.status === "completed");
-  return completed
+  const exercisesByWorkout = groupByWorkout(workoutExercises);
+  const setsByWorkout = groupByWorkout(workoutSets);
+  return workouts
+    .filter((workout) => workout.status === "completed")
     .map((workout) => ({
       workout,
-      exercises: workoutExercises.filter((row) => row.workoutId === workout.id),
-      sets: workoutSets.filter((row) => row.workoutId === workout.id),
+      exercises: exercisesByWorkout.get(workout.id) ?? [],
+      sets: setsByWorkout.get(workout.id) ?? [],
     }))
     .sort((a, b) => a.workout.localDate.localeCompare(b.workout.localDate));
+}
+
+/** One pass over the rows instead of one filter per workout. Each list keeps its original order. */
+function groupByWorkout<T extends { workoutId: string }>(rows: T[]): Map<string, T[]> {
+  const grouped = new Map<string, T[]>();
+  for (const row of rows) {
+    const list = grouped.get(row.workoutId);
+    if (list) list.push(row);
+    else grouped.set(row.workoutId, [row]);
+  }
+  return grouped;
+}
+
+const sameItems = <T>(a: T[], b: T[]) =>
+  a.length === b.length && a.every((item, i) => item === b[i]);
+
+/**
+ * Reuses the previous slice for every session whose workout, exercises and sets are the very same
+ * objects, and the previous array when nothing changed. Editing the active workout then leaves
+ * every finished session, and anything memoised on the slices, untouched.
+ */
+export function stabiliseSlices(
+  previous: SessionSlice[] | undefined,
+  next: SessionSlice[],
+): SessionSlice[] {
+  if (!previous) return next;
+  const byId = new Map(previous.map((slice) => [slice.workout.id, slice]));
+  const reused = next.map((slice) => {
+    const before = byId.get(slice.workout.id);
+    return before &&
+      before.workout === slice.workout &&
+      sameItems(before.exercises, slice.exercises) &&
+      sameItems(before.sets, slice.sets)
+      ? before
+      : slice;
+  });
+  return sameItems(previous, reused) ? previous : reused;
 }
 
 /**
@@ -171,13 +210,21 @@ export interface WeeklyPoint {
   tonnageG: number;
 }
 
-export function weeklySeries(slices: SessionSlice[], weekStartDay: AppSettings["weekStartDay"]): WeeklyPoint[] {
+export function weeklySeries(
+  slices: SessionSlice[],
+  weekStartDay: AppSettings["weekStartDay"],
+): WeeklyPoint[] {
   const buckets = new Map<string, WeeklyPoint>();
   for (const slice of slices) {
     const [y, m, d] = slice.workout.localDate.split("-").map(Number);
     const date = new Date(y!, (m ?? 1) - 1, d ?? 1);
     const start = localDateOf(startOfTrainingWeek(date, weekStartDay));
-    const current = buckets.get(start) ?? { weekStart: start, sessions: 0, hardSets: 0, tonnageG: 0 };
+    const current = buckets.get(start) ?? {
+      weekStart: start,
+      sessions: 0,
+      hardSets: 0,
+      tonnageG: 0,
+    };
     current.sessions += 1;
     current.hardSets += hardSetCount(slice.sets);
     current.tonnageG += workoutTonnageG(slice, true);
@@ -192,7 +239,10 @@ export function muscleSetMap(
   rangeEnd: string,
   secondaryCredit: number,
 ): Record<MuscleGroup, number> {
-  const totals = Object.fromEntries(HEATMAP_MUSCLES.map((muscle) => [muscle, 0])) as Record<MuscleGroup, number>;
+  const totals = Object.fromEntries(HEATMAP_MUSCLES.map((muscle) => [muscle, 0])) as Record<
+    MuscleGroup,
+    number
+  >;
   for (const slice of slices) {
     if (slice.workout.localDate < rangeStart || slice.workout.localDate > rangeEnd) continue;
     for (const exercise of slice.exercises) {
@@ -301,7 +351,9 @@ export function previousSetsForExercise(
     const row = slice.exercises.find((exercise) => exercise.exerciseId === exerciseId);
     if (!row) continue;
     const sets = slice.sets
-      .filter((set) => set.workoutExerciseId === row.id && set.isCompleted && set.setType !== "warmup")
+      .filter(
+        (set) => set.workoutExerciseId === row.id && set.isCompleted && set.setType !== "warmup",
+      )
       .sort((a, b) => a.order - b.order);
     if (sets.length === 0) continue;
     return sets.map((set) => ({ weightG: set.weightG, reps: set.reps, rpe: set.rpe }));
@@ -336,7 +388,12 @@ export function e1rmSeries(
   exerciseId: string,
   slices: SessionSlice[],
   formula: OneRepMaxFormula,
-): Array<{ date: string; value: number; label: string; source: { weightG: number; reps: number } }> {
+): Array<{
+  date: string;
+  value: number;
+  label: string;
+  source: { weightG: number; reps: number };
+}> {
   const points: Array<{
     date: string;
     value: number;
@@ -360,7 +417,11 @@ export function e1rmSeries(
   return points;
 }
 
-export function estimateFromSet(weightG: number, reps: number, formula: OneRepMaxFormula): number | null {
+export function estimateFromSet(
+  weightG: number,
+  reps: number,
+  formula: OneRepMaxFormula,
+): number | null {
   return estimateOneRepMax(weightG, reps, formula)?.value ?? null;
 }
 

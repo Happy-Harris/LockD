@@ -9,6 +9,20 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9d: the workout page stops redoing history work (I-26)
+
+- **Clock isolated:** the once-a-second tick now lives in `ElapsedClock`, so the page and its set rows no longer
+  re-render every second.
+- **Progression memoised:** the per-exercise progression suggestion is computed in one `useMemo` that depends on the
+  finished sessions, not on the sets being edited, instead of for every block on every render.
+- **Slices:** `sliceSessions` groups exercises and sets by workout in one pass (was a filter per workout), same
+  output and order (`slices.test.ts`). `stabiliseSlices` (used by `useSlices`) reuses the previous slice for every
+  session whose objects are unchanged, so editing the active workout leaves the finished sessions, and anything
+  memoised on them, alone.
+- Numbers are unchanged: the 817 existing tests, including the engine snapshots, pass unmodified.
+- **Not measured:** no timing was taken on a large history; the change removes the repeated work by construction.
+  The "learned rest over full history" part of I-26 was already moved out of render in 9b.
+
 ### 2026-09-29 — Step 9c: pick RPE or RIR directly (I-31)
 
 - **I-31:** the effort button on a set opens a pick sheet (RPE 6 to 10 in halves, or RIR 0 to 5) instead of
