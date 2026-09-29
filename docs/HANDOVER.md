@@ -9,6 +9,16 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 12a: the routes state their own share-card tags; the head-injecting middleware is gone
+
+- **Owner go-ahead:** "Yes to both" (2026-09-29) to moving the OG tags into the routes and to the D16 dead-code deletions. This PR is the first: the tags. The deletions are 12c.
+- **What the middleware did:** on every HTML page it stripped any `og:*` / `twitter:*` tags and wrote its own: the title "Lock'd", **an image from a third-party card service** (`…/v1/card.png?host=…&title=…`, so every share crawl sent our host and title elsewhere), Grok's PWA meta tags, and a third-party script (`grok.com/grok-app-builder/extensions.js`) that was also the source of the `ERR_CERT_AUTHORITY_INVALID` console error on every screen.
+- **What replaces it:** `src/lib/og/tags.ts` builds the tags as data. The root route carries the site card (title, description, `og:*`, `twitter:*`, absolute URLs on the request's own origin, `apple-mobile-web-app-*`); `/s/$id` and `/u/$handle` load their share or locker before rendering so the card is in the server-rendered HTML. A share card repeats only the share's own title and a line by kind; a public locker card only the display name and handle the page shows; a missing, unreachable or **private** locker gets the site card and confirms nothing. The card image is `public/og.png` (1200 x 630, Mill / Oxide / Chalk, both self-hosted faces), drawn by `scripts/make-icons.mjs` and read back by `brand.test.ts`.
+- **Removed:** `server/` (the middleware and its virtual module), `scripts/grok-pwa-plugin.mjs` and its test, `grok-pwa-shared.*`, `install-page.html`, `public/__grok/` (Grok's Home Screen tutorial), `src/lib/og/site.json`, the plugin and the Nitro `serverDir` option in `vite.config.ts`, and the offline e2e's one-script exemption: **the page now makes no request to another origin at all**, and the test says so.
+- **Tests:** `src/lib/og/tags.test.ts` (8); `e2e/share-tags.spec.ts` (4, reading the raw HTML the way a crawler does: absolute image URL on the request's origin, the image served at 1200 x 630, a missing share and a non-public locker both getting the site card); `offline-basics` with no exemption; the offline suite against the production build passes. Checked by hand on the production build: the tags are in the HTML, `x-forwarded-host` is honoured, and the page contains no "grok".
+- **Not checked:** a real published share or public locker (no database round trip in this environment; the loaders call the same server functions the pages already used), and a real crawler or unfurl preview on a chat app.
+- **Next:** 12b (preview bridge, app-data, multiplayer, `with-app-env`, the legacy `test:legacy` suites), 12c (D16), 12d (the auth broker, needs a provider choice).
+
 ### 2026-09-29 — Step 13: README and HANDOFF rewritten from the code, and one more unused dependency
 
 - **What:** `README.md` and the root `HANDOFF.md` are rewritten from what the code does today, not from the app-builder-era brief. The README states the promise, what the app is, the stack (only what is imported now), how to run and check it, and where things live. The HANDOFF states the product test,

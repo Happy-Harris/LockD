@@ -24,11 +24,10 @@ const BUILD = {
   "icon-192.png": "p",
   "sw.js": "old worker",
   "assets/index-abc.js.map": "map",
-  "__grok/install/index.html": "scaffolding",
 };
 
 describe("collectPrecache", () => {
-  it("lists what the app needs, sorted, without the worker, maps or the scaffolding", () => {
+  it("lists what the app needs, sorted, without the worker or maps", () => {
     expect(collectPrecache(fakeBuild(BUILD) as string)).toEqual([
       "/assets/font-x.woff2",
       "/assets/index-abc.js",

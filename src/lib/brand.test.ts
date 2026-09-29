@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { BRAND, FONTS } from "./brand";
+import { OG_IMAGE_PATH } from "./og/tags";
 
 const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const css = read("src/styles.css");
@@ -53,7 +54,6 @@ describe("the palette has one definition", () => {
       "src/styles.css",
       "public/manifest.webmanifest",
       "public/favicon.svg",
-      "src/lib/og/site.json",
       "src/routes/__root.tsx",
     ]) {
       expect(read(file).toLowerCase(), file).not.toContain("c24a32");
@@ -67,7 +67,12 @@ describe("the palette has one definition", () => {
     expect(manifest.theme_color).toBe(BRAND.mill);
     expect(read("public/favicon.svg")).toContain(BRAND.oxide);
     expect(read("public/favicon.svg")).toContain(BRAND.mill);
-    expect(JSON.parse(read("src/lib/og/site.json")).color).toBe(BRAND.oxide.slice(1));
+    // The share card is drawn from the palette by scripts/make-icons.mjs; the tags point at it and say 1200 x 630.
+    const card = readFileSync(new URL("../../public/og.png", import.meta.url));
+    expect(card.subarray(1, 4).toString()).toBe("PNG");
+    expect(card.readUInt32BE(16)).toBe(1200);
+    expect(card.readUInt32BE(20)).toBe(630);
+    expect(OG_IMAGE_PATH).toBe("/og.png");
     expect(read("src/routes/__root.tsx")).toContain(`content: "${BRAND.mill}"`);
   });
 });
