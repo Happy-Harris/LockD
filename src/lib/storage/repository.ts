@@ -124,3 +124,25 @@ export function diffSlices(prev: PersistedSlice, next: PersistedSlice): ChangeSe
   if (Object.keys(kv).length) changes.kv = kv as ChangeSet["kv"];
   return changes.put || changes.remove || changes.kv ? changes : null;
 }
+
+/**
+ * Applies a change set to a state of the log and returns the new state; untouched collections keep
+ * their array identity, so `diffSlices` and React see nothing changed there. This is how a tab takes
+ * on what another tab wrote: the row-level inverse of `diffSlices`.
+ */
+export function applyChangeSet(slice: PersistedSlice, changes: ChangeSet): PersistedSlice {
+  const next: Record<string, unknown> = { ...slice };
+  for (const collection of ROW_COLLECTIONS) {
+    const put = changes.put?.[collection] as readonly unknown[] | undefined;
+    const remove = changes.remove?.[collection];
+    if (!put?.length && !remove?.length) continue;
+    const rows = new Map(
+      (slice[collection] as readonly unknown[]).map((row) => [keyOf(collection, row), row]),
+    );
+    for (const key of remove ?? []) rows.delete(key);
+    for (const row of put ?? []) rows.set(keyOf(collection, row), row);
+    next[collection] = [...rows.values()];
+  }
+  for (const key of KV_KEYS) if (changes.kv && key in changes.kv) next[key] = changes.kv[key];
+  return next as unknown as PersistedSlice;
+}
