@@ -60,6 +60,7 @@ export function formatGhostSet(set: GhostSet | undefined, unit: WeightUnit): str
 export function compareSet(
   current: { weightG?: number; reps?: number },
   ghost?: GhostSet,
+  unit: WeightUnit = "kg",
 ): GhostCompare {
   if (!ghost || ((ghost.weightG ?? 0) === 0 && (ghost.reps ?? 0) === 0)) {
     return { verdict: "new", label: "First time", weightDeltaG: 0, repsDelta: 0 };
@@ -68,8 +69,7 @@ export function compareSet(
   const repsDelta = (current.reps ?? 0) - (ghost.reps ?? 0);
   const bits: string[] = [];
   if (weightDeltaG !== 0) {
-    const kg = Math.abs(weightDeltaG) / 1000;
-    bits.push(`${weightDeltaG > 0 ? "+" : "−"}${trim(kg)} kg`);
+    bits.push(`${weightDeltaG > 0 ? "+" : "−"}${formatWeight(Math.abs(weightDeltaG), unit)} ${unit}`);
   }
   if (repsDelta !== 0) {
     bits.push(`${repsDelta > 0 ? "+" : ""}${repsDelta} rep${Math.abs(repsDelta) === 1 ? "" : "s"}`);
@@ -119,7 +119,7 @@ export function workoutDiff(
     if (nowSets.length === 0 && prior.length === 0) continue;
     const nowBest = bestWorking(nowSets);
     const ghostBest = prior[0] ? bestGhost(prior) : undefined;
-    const cmp = compareSet(nowBest, ghostBest);
+    const cmp = compareSet(nowBest, ghostBest, unit);
     score[cmp.verdict] += 1;
     const nowLabel = formatGhostSet(nowBest, unit);
     const ghostLabel = formatGhostSet(ghostBest, unit);
@@ -204,8 +204,4 @@ export function ghostHeader(workout: Workout, ghost?: SessionSlice): string {
   if (workout.beatWorkoutId && ghost) return `Beat this · ${ghost.workout.localDate}`;
   if (ghost) return `Ghost · ${ghost.workout.localDate}`;
   return "No ghost on file";
-}
-
-function trim(value: number): string {
-  return String(Math.round(value * 100) / 100).replace(/\.0+$/, "");
 }
