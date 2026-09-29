@@ -105,7 +105,7 @@ export function CommandPalette() {
       },
     }));
     return [...sessionItems, ...jumps];
-  }, [templates, query, navigate, startEmptyWorkout, startFromTemplate, repeatLastWorkout, slices]);
+  }, [templates, query, navigate, startEmptyWorkout, startFromTemplate, repeatLastWorkout, slices, unit]);
 
   if (!open) return null;
 
