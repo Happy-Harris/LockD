@@ -28,6 +28,20 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 - Tests: `rest.test.ts` (5: precedence, warm-up rule, suggestion threshold, the store starting the right timer).
 - **Not verified on a real phone:** vibrate and the notification.
 
+### 2026-09-29 — Step 9a: four logging input fixes (I-27, I-28, I-29, I-30)
+
+- **I-27:** weight inputs show an ungrouped number (`formatWeightInput`), so 1000 kg is no longer shown as "1,000" and
+  read back as 1. Display elsewhere still uses the grouped formatter.
+- **I-28:** clearing the reps box clears the value (`parseRepsInput`) instead of storing 0.
+- **I-29:** the +/- steppers use the exercise's own `incrementG` (dumbbells, machines) before the global quick
+  increment. The workout page's suggestion also now passes the plate-aware `snap`, so it agrees with what
+  starting from a routine prefilled (it did not before 8d-2).
+- **I-30:** starting from a routine no longer puts the working weight into the warm-up row; `ensureWarmups` still
+  builds the ramp.
+- Tests: `logging-inputs.test.ts` (6). **Not covered by a test:** the stepper increment wiring (a UI change with no
+  component test), checked by reading only.
+- Step 9 is split into 9a to 9f; the list is in the STATUS.md row.
+
 ### 2026-09-29 — Step 8d-3: Ask the Lab answers on the device, with citations (I-4, D3)
 
 - Ported the donor's deterministic Ask the Lab into `src/domain/analytics/askLab*.ts` (engine, data intents,

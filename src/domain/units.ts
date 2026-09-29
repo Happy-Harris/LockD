@@ -50,6 +50,15 @@ export function formatWeight(
   return trimNumber(rounded);
 }
 
+/**
+ * Display weight for an editable input: no digit grouping, so "1000" is never shown as "1,000" and read back
+ * as 1 (or 1.000 as 1 in de-DE). Same rounding as formatWeight.
+ */
+export function formatWeightInput(grams: number, unit: WeightUnit): string {
+  const value = roundTo(fromGrams(grams, unit), 2);
+  return Object.is(value, -0) || !Number.isFinite(value) ? "0" : String(value);
+}
+
 export function formatWeightWithUnit(grams: number, unit: WeightUnit): string {
   return `${formatWeight(grams, unit)} ${unit}`;
 }
@@ -161,6 +170,14 @@ export function formatDistance(metres: number, system: UnitSystem): string {
   return miles >= 0.1
     ? `${trimNumber(roundTo(miles, 2))} mi`
     : `${Math.round(metres * 1.09361)} yd`;
+}
+
+/** Parse typed reps: blank or invalid is undefined (not 0), so clearing the field clears the value. */
+export function parseRepsInput(raw: string): number | undefined {
+  const cleaned = raw.trim();
+  if (!cleaned) return undefined;
+  const value = Number(cleaned);
+  return Number.isFinite(value) && value >= 0 ? value : undefined;
 }
 
 /** Parse a typed weight ("102.5", "102,5") into canonical grams; undefined for blank or invalid input. */

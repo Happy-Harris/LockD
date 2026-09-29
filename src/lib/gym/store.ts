@@ -493,13 +493,15 @@ export const useGym = create<GymState>()(
           const count = Math.max(row.targetSets, 1);
           for (let i = 0; i < count; i += 1) {
             const prior = previous[i] ?? previous[previous.length - 1];
+            const isWarmup = i === 0 && row.includeWarmup;
             workoutSets.push({
               id: uuid(),
               workoutExerciseId: we.id,
               workoutId: workout.id,
               order: i,
-              setType: i === 0 && row.includeWarmup ? "warmup" : row.defaultSetType,
-              weightG: call.suggestedWeightG ?? prior?.weightG,
+              setType: isWarmup ? "warmup" : row.defaultSetType,
+              // A warm-up row is not a working set: it gets no working weight (ensureWarmups builds the ramp).
+              weightG: isWarmup ? undefined : (call.suggestedWeightG ?? prior?.weightG),
               reps: call.suggestedReps ?? prior?.reps,
               rpe: prior?.rpe,
               isCompleted: false,

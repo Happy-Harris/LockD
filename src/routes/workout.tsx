@@ -10,11 +10,18 @@ import { Input } from "@/components/ui/input";
 import { SET_TYPES, titleCase, usesReps, usesWeight } from "@/domain/taxonomy";
 import { elapsedSeconds } from "@/domain/time";
 import type { GrindFeel, SetType, WorkoutSet } from "@/domain/types";
-import { formatDuration, formatWeight, parseWeightInput, weightUnitFor } from "@/domain/units";
+import {
+  formatDuration,
+  formatWeightInput,
+  parseRepsInput,
+  parseWeightInput,
+  weightUnitFor,
+} from "@/domain/units";
 import { uuid } from "@/domain/ids";
 import { compareSet, findGhostSlice, formatGhostSet, ghostHeader, ghostSetsForExercise } from "@/lib/gym/ghost";
 import { progressExercise, actionLabel } from "@/lib/gym/progression";
 import { useSlices } from "@/lib/gym/hooks";
+import { barbellSnap } from "@/lib/gym/loads";
 import { useGym } from "@/lib/gym/store";
 import { putClipBlob } from "@/lib/gym/vault";
 import { cn } from "@/lib/utils";
@@ -30,6 +37,8 @@ function ActiveWorkoutPage() {
   const templateExercises = useGym((s) => s.templateExercises);
   const settings = useGym((s) => s.settings);
   const exercises = useGym((s) => s.exercises);
+  const bars = useGym((s) => s.bars);
+  const plates = useGym((s) => s.plates);
   const machineSetups = useGym((s) => s.machineSetups);
   const lessons = useGym((s) => s.lessons);
   const addExerciseToWorkout = useGym((s) => s.addExerciseToWorkout);
@@ -160,17 +169,19 @@ function ActiveWorkoutPage() {
             block.prescription?.targetRepMin && block.prescription.targetRepMax
               ? `${block.prescription.targetSets} × ${block.prescription.targetRepMin}–${block.prescription.targetRepMax}`
               : null;
+          const blockIncrement = block.catalog?.incrementG ?? increment;
           const suggestion = progressExercise({
             exerciseId: block.exercise.exerciseId,
             exerciseName: block.exercise.exerciseNameSnapshot,
             trackingType: block.exercise.trackingTypeSnapshot,
-            incrementG: increment,
+            incrementG: blockIncrement,
             targetRepMin: block.prescription?.targetRepMin,
             targetRepMax: block.prescription?.targetRepMax,
             targetSets: block.prescription?.targetSets,
             slices,
             formula: settings.oneRepMaxFormula,
             excludeWarmups: settings.excludeWarmupsFromAnalytics,
+            snap: block.catalog ? barbellSnap(block.catalog, bars, plates, settings) : undefined,
           });
           const restHint = block.exercise.restSeconds;
           return (
@@ -243,7 +254,7 @@ function ActiveWorkoutPage() {
                       set={set}
                       index={index}
                       unit={unit}
-                      incrementG={increment}
+                      incrementG={blockIncrement}
                       showWeight={usesWeight(tracking)}
                       showReps={usesReps(tracking)}
                       showRpe={settings.intensityMode === "rpe"}
@@ -381,12 +392,12 @@ function SetRow({
   onDelete: () => void;
   onClip: (file: File) => void;
 }) {
-  const [weight, setWeight] = useState(() => (set.weightG != null ? formatWeight(set.weightG, unit) : ""));
+  const [weight, setWeight] = useState(() => (set.weightG != null ? formatWeightInput(set.weightG, unit) : ""));
   const [reps, setReps] = useState(() => (set.reps != null ? String(set.reps) : ""));
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setWeight(set.weightG != null ? formatWeight(set.weightG, unit) : "");
+    setWeight(set.weightG != null ? formatWeightInput(set.weightG, unit) : "");
   }, [set.weightG, unit]);
   useEffect(() => {
     setReps(set.reps != null ? String(set.reps) : "");
@@ -412,7 +423,7 @@ function SetRow({
         {showWeight ? (
           <Stepper
             value={weight}
-            placeholder={ghost?.weightG != null ? formatWeight(ghost.weightG, unit) : "0"}
+            placeholder={ghost?.weightG != null ? formatWeightInput(ghost.weightG, unit) : "0"}
             ariaLabel={`Set ${index + 1} weight`}
             onMinus={() => onNudgeWeight(-incrementG)}
             onPlus={() => onNudgeWeight(incrementG)}
@@ -463,8 +474,7 @@ function SetRow({
             onPlus={() => onNudgeReps(1)}
             onChange={(value) => {
               setReps(value);
-              const parsed = Number(value);
-              onChange({ reps: Number.isFinite(parsed) ? parsed : undefined });
+              onChange({ reps: parseRepsInput(value) });
             }}
             onEnter={onToggle}
           />
