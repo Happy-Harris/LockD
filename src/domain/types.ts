@@ -149,6 +149,12 @@ export interface Workout {
   startedAt: ISODateTime;
   endedAt?: ISODateTime;
   localDate: ISODate;
+  /**
+   * Raw `Date.getTimezoneOffset()` at the start of the session: positive WEST of UTC, so UTC+1 is
+   * -60 and UTC-5 is 300. This is a live identifier of the log format and never changes sign.
+   * Strong-Pro stored the opposite sign; importers must negate it. `utcOffsetMinutes()` in
+   * time.ts is the positive-east value and must not be written here.
+   */
   tzOffsetMinutes: number;
   pausedSeconds: number;
   notes?: string;
