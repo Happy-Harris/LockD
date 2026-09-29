@@ -14,6 +14,7 @@ import {
 import { applyBackup, restoreMessage, type RestoreMode } from "@/lib/backup/apply";
 import { parseBackup } from "@/lib/backup/schema";
 import { takeSafetyBackup } from "@/lib/storage/safety";
+import { localDateOf } from "@/domain/time";
 import { defaultQuickIncrementG, lengthUnitFor, weightUnitFor } from "@/domain/units";
 import { EquipmentEditor } from "@/components/app/equipment-editor";
 import { GoalLiftPicker } from "@/components/app/goal-lift-picker";
@@ -49,7 +50,7 @@ function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `lockd-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `lockd-backup-${localDateOf()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -62,7 +63,7 @@ function SettingsPage() {
         mass: weightUnitFor(state.settings.unitSystem),
         length: lengthUnitFor(state.settings.unitSystem),
       },
-      new Date().toISOString().slice(0, 10),
+      localDateOf(),
     )[kind];
     // A byte-order mark so Excel reads names with accents correctly; the importer ignores it.
     const blob = new Blob(["\uFEFF", file.content], { type: "text/csv;charset=utf-8" });

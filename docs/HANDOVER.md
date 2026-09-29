@@ -9,6 +9,30 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 11 (I-25): the autopsy headline keeps 1RM and RPE in capitals
+
+- **The bug (plan I-25):** the plateau autopsy headline lowercased the whole finding title to read inside a sentence, so "Flat estimated 1RM" came out
+  "flat estimated 1rm" on Today. The same line turned "Rising RPE" into "rising rpe", which the plan does not mention.
+- **The fix:** `lowerFirst` in `autopsy.ts` lowers only the first letter. Every title the autopsy can produce (six) keeps the rest as written.
+- **Characterisation diff (the reviewable change):** the pinned headline in `engine-characterisation.test.ts.snap` moved from
+  "Bench Press: missed reps, falling volume, rising rpe." to "... rising RPE." and nothing else in the suite changed.
+- **Tests:** `autopsy-copy.test.ts` (3): the two acronyms, all six titles change only their first letter, the empty title.
+- **Not checked** on screen: the Today card with a stalled lift's headline. The wording comes from the one function the tests cover.
+
+### 2026-09-29 — Step 11 (I-24): Today and file names use the lifter's own date, not UTC
+
+- **The bug (plan I-24):** the Today header was built from `new Date().toISOString()`, which is UTC. In the evening west of UTC it showed tomorrow's weekday and date, and far
+  east in the early morning it showed yesterday's. The same expression named the JSON backup and the CSV exports, so a backup made at 8 pm on the 29th in
+  California was called `lockd-backup-2026-09-30.json`. The plan names only the header; the file names are the same bug and are fixed here too.
+- **The fix:** `todayHeader()` in `src/domain/time.ts` (the weekday and date from `localDateOf`); the header and both file names use it. History dates were already local
+  (`workout.localDate`), so nothing stored changes.
+- **Tests:** three in `time.test.ts`, run in real time zones (the suite already switches `TZ` this way): Los Angeles, where the old expression says the 30th and the new one
+  the 29th; Auckland, where it says the 29th and the new one the 30th; and UTC, where they agree.
+- **Checked:** the full suite (889) passes. **Not checked** in the browser: the header in a non-UTC time zone; the unit tests cover the logic, not the screen.
+- Other Step 11 items read but not done yet: I-25 (the autopsy headline lowercases "1RM" and also "RPE"), I-23 (the demo stores fractional millimetres for the waist
+  and for both arms, not just the waist the plan names), I-34 (clip files left behind on delete; undo must still find its clip, so the file delete has to wait for the
+  undo window).
+
 ### 2026-09-29 — Step 10e: Oxide marks live and actionable things only (O3)
 
 - **Rule (recorded in STATUS):** the accent marks something live, selected or actionable. I classified all 82 uses of the accent across 33 files. Kept: selected
