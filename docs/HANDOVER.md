@@ -9,6 +9,14 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 11 (I-23): the demo stores whole millimetres
+
+- **The bug (plan I-23):** the demo data stored fractional millimetres for the waist, and also for both arms (137 values in all), against principle 3 (canonical integer storage).
+- **The fix:** the `measurement()` helper in `demo.ts` stores `Math.round(value)`. The app's own entry path already rounds through `toMillimetres`, so only the demo was off.
+- **Tests:** `demo-integers.test.ts` (3): every stored measurement is an integer, for the waist and both arms; it fails without the fix. No snapshot changed.
+- **Nothing broke before:** the backup schema accepts fractions, so this was a principle 3 breach, not a crash.
+- **Checked:** `npm run verify`. Existing installs that already loaded the demo keep their fractional values; they are not rewritten (that would edit stored history).
+
 ### 2026-09-29 — Step 11 (I-25): the autopsy headline keeps 1RM and RPE in capitals
 
 - **The bug (plan I-25):** the plateau autopsy headline lowercased the whole finding title to read inside a sentence, so "Flat estimated 1RM" came out
