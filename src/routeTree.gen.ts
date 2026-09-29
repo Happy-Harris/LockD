@@ -14,6 +14,7 @@ import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as BodyRouteImport } from './routes/body'
 import { Route as ChronicleRouteImport } from './routes/chronicle'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as ImportRouteImport } from './routes/import'
 import { Route as LabRouteImport } from './routes/lab'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as LockerRouteImport } from './routes/locker'
@@ -61,6 +62,11 @@ const ChronicleRoute = ChronicleRouteImport.update({
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImportRoute = ImportRouteImport.update({
+  id: '/import',
+  path: '/import',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LabRoute = LabRouteImport.update({
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/body': typeof BodyRoute
   '/chronicle': typeof ChronicleRoute
   '/history': typeof HistoryRoute
+  '/import': typeof ImportRoute
   '/lab': typeof LabRoute
   '/library': typeof LibraryRoute
   '/locker': typeof LockerRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/body': typeof BodyRoute
   '/chronicle': typeof ChronicleRoute
   '/history': typeof HistoryRoute
+  '/import': typeof ImportRoute
   '/lab': typeof LabRoute
   '/library': typeof LibraryRoute
   '/locker': typeof LockerRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/body': typeof BodyRoute
   '/chronicle': typeof ChronicleRoute
   '/history': typeof HistoryRoute
+  '/import': typeof ImportRoute
   '/lab': typeof LabRoute
   '/library': typeof LibraryRoute
   '/locker': typeof LockerRoute
@@ -278,6 +287,7 @@ export interface FileRouteTypes {
     | '/body'
     | '/chronicle'
     | '/history'
+    | '/import'
     | '/lab'
     | '/library'
     | '/locker'
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/body'
     | '/chronicle'
     | '/history'
+    | '/import'
     | '/lab'
     | '/library'
     | '/locker'
@@ -338,6 +349,7 @@ export interface FileRouteTypes {
     | '/body'
     | '/chronicle'
     | '/history'
+    | '/import'
     | '/lab'
     | '/library'
     | '/locker'
@@ -369,6 +381,7 @@ export interface RootRouteChildren {
   BodyRoute: typeof BodyRoute
   ChronicleRoute: typeof ChronicleRoute
   HistoryRoute: typeof HistoryRoute
+  ImportRoute: typeof ImportRoute
   LabRoute: typeof LabRoute
   LibraryRoute: typeof LibraryRoute
   LockerRoute: typeof LockerRoute
@@ -429,6 +442,13 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/import': {
+      id: '/import'
+      path: '/import'
+      fullPath: '/import'
+      preLoaderRoute: typeof ImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lab': {
@@ -601,6 +621,7 @@ const rootRouteChildren: RootRouteChildren = {
   BodyRoute: BodyRoute,
   ChronicleRoute: ChronicleRoute,
   HistoryRoute: HistoryRoute,
+  ImportRoute: ImportRoute,
   LabRoute: LabRoute,
   LibraryRoute: LibraryRoute,
   LockerRoute: LockerRoute,

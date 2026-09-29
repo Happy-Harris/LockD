@@ -36,6 +36,7 @@ import { exportSetsCsv } from "./csv";
 import { applyImportBatch, buildImportBatch, storedFingerprints } from "@/lib/import/batch";
 import type { ImportAnalysis, SourceProfile } from "@/lib/import/engine";
 import { analyseHevyCsv, HEVY_PROFILE } from "@/lib/import/hevy";
+import { applyClassification, type Classification } from "@/lib/import/classify";
 import { parseJsonInput } from "@/lib/import/foreign";
 import { isKnurlVault, KNURL_SOURCE, readKnurlVault } from "@/lib/import/knurl";
 import { readRepforgeBackup, REPFORGE_SOURCE } from "@/lib/import/repforge";
@@ -118,6 +119,16 @@ export interface ImportSummary {
   notes: string[];
 }
 
+export interface PreparedImport {
+  analysis: ImportAnalysis;
+  source: Pick<SourceProfile, "id" | "label">;
+  fileName: string;
+  selectedKeys: ReadonlySet<string>;
+  allowDuplicates: boolean;
+  nameOverrides: ReadonlyMap<string, string>;
+  notes?: string[];
+}
+
 export type ImportOutcome =
   | { ok: true; summary: ImportSummary }
   | { ok: false; errors: string[] };
@@ -178,6 +189,10 @@ interface GymActions {
   importBackup: (backup: LockdBackup, mode: "replace" | "merge") => void;
   importStrongCsv: (csv: string, fileName?: string) => ImportSummary;
   importHevyCsv: (csv: string, fileName?: string) => ImportSummary;
+  /** The wizard's last step: applies an analysed file with the person's choices. */
+  importPrepared: (args: PreparedImport) => ImportSummary;
+  /** Bulk Classify: fills in only exercises that are still unmapped. Returns how many changed. */
+  classifyExercises: (items: Classification[]) => number;
   /** A backup file written by a sister app. Adds what is new; never replaces anything. */
   importOtherAppBackup: (text: string, fileName?: string) => ImportOutcome;
   exportSetsCsvText: () => string;
@@ -303,6 +318,10 @@ function runImport(
     source: Pick<SourceProfile, "id" | "label">;
     fileName: string;
     notes?: string[];
+    /** The wizard's choices; the one-step imports leave these out. */
+    selectedKeys?: ReadonlySet<string>;
+    allowDuplicates?: boolean;
+    nameOverrides?: ReadonlyMap<string, string>;
   },
 ): ImportSummary {
   const batch = buildImportBatch(args.analysis, {
@@ -312,6 +331,9 @@ function runImport(
     existingFingerprints: storedFingerprints(state),
     existingTemplates: state.templates,
     existingMeasurements: state.measurements,
+    selectedKeys: args.selectedKeys,
+    allowDuplicates: args.allowDuplicates,
+    nameOverrides: args.nameOverrides,
   });
   const addsAnything =
     batch.workouts.length > 0 ||
@@ -1249,6 +1271,17 @@ export const useGym = create<GymState>()(
           source: HEVY_PROFILE,
           fileName,
         });
+      },
+
+      importPrepared: (args) => runImport(get(), set, args),
+
+      classifyExercises: (items) => {
+        const state = get();
+        const result = applyClassification(state, items, new Date().toISOString());
+        if (result.changed > 0) {
+          set({ exercises: result.exercises, workoutExercises: result.workoutExercises });
+        }
+        return result.changed;
       },
 
       importOtherAppBackup: (text, fileName = "backup.json") => {

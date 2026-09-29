@@ -6,6 +6,40 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 7e: the import wizard and Bulk Classify
+
+- **`/import` (More → Import; also linked from Settings):** pick a source (Strong CSV, Hevy CSV,
+  another CSV, a backup from another app), then **Columns** (CSV only: each field's column with
+  sample values, required fields flagged, weight and distance unit choices that beat the header),
+  **Sessions** (tick or untick each; sessions already in the log are marked and start unticked;
+  "add a second copy" is an explicit opt-in; issues listed), **Exercises / Resolve** (exact-name
+  matches are merged without asking; a near match is a question, "Same exercise" or "Different, add
+  as new", default new), **Ready to import** (counts; nothing has been written yet), **Done**
+  (summary, then Bulk Classify). Works offline (the route uses the shell like every screen).
+- **Nothing is written before the last button.** `importPrepared` applies the analysed file with the
+  choices (`selectedKeys`, `allowDuplicates`, `nameOverrides`); the one-step Settings imports are
+  unchanged.
+- **Bulk Classify (`BulkClassify`, on the Done step and in Library when any exercise is unmapped):**
+  lists exercises with no muscle group; a name-based suggestion (`suggestExerciseTaxonomy`) is shown
+  and used only when tapped ("Fill in all N suggestions to review" also only fills the form);
+  nothing is saved until **Apply**. `classifyExercises` changes only exercises that are still
+  `unmapped`, and fills a past session's snapshot only where it is still `unmapped` (equipment only
+  where it is still `other`), because muscle analytics reads the session's snapshot. It never
+  overwrites a classification, and "unmapped" is not accepted as one.
+- **Engine:** `chosenUnit` and `chosenDistanceUnit` (a person's choice beats the header, which beats
+  the setting), `detectedDistanceUnit`, and a `generic-csv` profile (Strong's column spellings; the
+  Columns step fixes the rest). "Not in this file" on a column is an explicit `undefined` that beats
+  the automatic guess.
+- **Also:** `Card` now forwards `data-testid` (it silently dropped it before; TypeScript allows any
+  `data-*` attribute, so nothing warned). `describeImport` moved to `src/lib/import/summary.ts`.
+- **Tests:** `classify.test.ts`, `wizard.test.ts`, `wizard-store.test.ts` (mutation-checked: no
+  overwrite of a classified exercise or of a session's own muscle, "unmapped" as a classification,
+  both unit choices), and `e2e/import-wizard.spec.ts` (map unfamiliar columns and confirm a merge,
+  nothing written before Import, classify only what is accepted; backup with an unticked session and
+  the "already here" marking; a bad file is refused).
+- **Not done / next:** 7f the CSV exporter rewrite and the seed library top-up to 92 exercises.
+  Not tested on a real device; the wizard is a plain form flow with no new dependencies.
+
 ### 2026-09-29 — Plan PR 7d-2: import a vault from the other sister app (knurl-os v1), and unsided girths
 
 - **`src/lib/import/knurl.ts`:** reads a vault export (`brand: "knurl-os"`, schema version 1) through

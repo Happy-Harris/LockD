@@ -4,12 +4,18 @@ export function Card({
   className,
   children,
   as: Tag = "div",
+  "data-testid": testId,
 }: {
   className?: string;
   children: React.ReactNode;
   as?: "div" | "article" | "section" | "button" | "li";
+  "data-testid"?: string;
 }) {
-  return <Tag className={cn("rounded-2xl bg-surface p-4 hairline", className)}>{children}</Tag>;
+  return (
+    <Tag className={cn("rounded-2xl bg-surface p-4 hairline", className)} data-testid={testId}>
+      {children}
+    </Tag>
+  );
 }
 
 export function Stat({
