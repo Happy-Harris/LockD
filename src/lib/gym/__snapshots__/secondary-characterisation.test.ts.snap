@@ -449,7 +449,6 @@ exports[`secondary engine characterisation — current outcomes, including known
   "hitRatePrior": 1,
   "insights": [
     "The progression engine wants an easier week. Trust the misses, not the ego.",
-    "The main lift has tended to move more after quieter volume weeks.",
     "RPE is holding around 7.8.",
     "Arms: right is 2.0% larger on the latest measurement.",
     "Last session: 19 hard sets in Push Day.",
@@ -484,7 +483,7 @@ exports[`secondary engine characterisation — current outcomes, including known
     "previous": 7.814814814814815,
     "recent": 7.814814814814815,
   },
-  "volumeResponse": "The main lift has tended to move more after quieter volume weeks.",
+  "volumeResponse": "No clear link between weekly volume and next-week progress (from 44 weeks).",
 }
 `;
 

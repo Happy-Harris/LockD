@@ -22,6 +22,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 - **Not done:** the Lab brief (`brief.ts`) still writes its numbers in kilograms; Lab answers cite the log and that is a separate change. Milestone ids include the threshold in grams, so a lifter who switches unit gets the other ladder's moments as different ones.
 - **Checked:** `npm run verify`. **Not checked** on screen: Today's featured milestones in lb, the ghost delta chip in lb.
 
+### 2026-09-29 — Step 11 (I-15): the intelligence insights stay silent on tiny samples and show n
+
+- **The bug (plan I-15):** "volume response" split the weeks into high and low volume and named a winner however small the gap (a 1 g difference counted) from as few as 4 week pairs.
+- **The fix:** `readVolumeResponse` (pure, in `intelligence.ts`) needs at least 6 week pairs, at least 3 in each of the high and low groups, and a gap of at least 2.5 kg of e1RM
+  (`VOLUME_RESPONSE_MIN_EFFECT_G`, one plate step). Below 6 pairs the old "not enough weeks" line stays. With enough weeks but no such gap it says "No clear link … (from N weeks)"
+  and adds nothing to the insights list. Every claim it does make ends with "from N weeks". The fatigue note and the rest note now show their sample sizes too.
+- **The thresholds (6, 3, 2.5 kg) are my choice, not from the evidence catalog.** They are named constants with a comment; the owner can change them in one place. Fatigue (3% gap, 3 + 3 exposures)
+  and rest (15 s gap, 4 + 3 exercises) already had minimums and are unchanged.
+- **Tests:** `intelligence-small-samples.test.ts` (6): under six pairs, a 1 g gap, a group of fewer than three, both directions, and the exact 2500 g / 2499 g edge. **Characterisation diff:** on the
+  dated demo (44 week pairs) the old text "moved more after quieter volume weeks" becomes "No clear link … (from 44 weeks)", because the demo's real gap is under 2.5 kg. Nothing else in the snapshot changes.
+- **Checked:** `npm run verify`. **Not checked** on screen: the Lab page and the brief read `volumeResponse` as text, so they need no change.
 ### 2026-09-29 — Step 11 (I-34): deleting a set, exercise or workout no longer leaves its clip file behind
 
 - **The bug (plan I-34):** a set's video clip is a blob in IndexedDB (`lockd-vault`) plus a `ClipMeta` in the store. Deleting a set, removing an exercise or discarding a workout removed
