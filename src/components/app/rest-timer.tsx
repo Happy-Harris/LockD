@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { formatDuration } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
 import { cn } from "@/lib/utils";
-import { BRAND } from "@/lib/brand";
+import { BRAND, FONTS } from "@/lib/brand";
 
 function remainingMs(endsAt: string) {
   return Date.parse(endsAt) - Date.now();
@@ -67,15 +67,15 @@ function paintLockArt(seconds: number, label: string): string {
   ctx.fillStyle = BRAND.oxide;
   ctx.fillRect(0, 0, 512, 18);
   ctx.fillStyle = BRAND.inkOnDark;
-  ctx.font = "700 42px Barlow Condensed, sans-serif";
+  ctx.font = `700 42px ${FONTS.display}, sans-serif`;
   ctx.fillText("LOCK'D", 36, 90);
-  ctx.font = "800 160px Barlow Condensed, sans-serif";
+  ctx.font = `800 160px ${FONTS.display}, sans-serif`;
   ctx.fillText(formatDuration(seconds), 36, 280);
   ctx.fillStyle = "#b8b0a2";
-  ctx.font = "500 28px Barlow, sans-serif";
+  ctx.font = `500 28px ${FONTS.sans}, sans-serif`;
   ctx.fillText(label.slice(0, 28) || "Rest", 36, 340);
   ctx.fillStyle = "#7e776c";
-  ctx.font = "500 22px IBM Plex Mono, monospace";
+  ctx.font = `500 22px ${FONTS.mono}, monospace`;
   ctx.fillText("Keep the receipt.", 36, 460);
   return canvas.toDataURL("image/png");
 }

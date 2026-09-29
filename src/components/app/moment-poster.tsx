@@ -3,7 +3,7 @@ import { formatLocalDate } from "@/domain/time";
 import { formatWeightWithUnit, type WeightUnit } from "@/domain/units";
 import type { TrainingMoment } from "@/lib/gym/moments";
 import { cn } from "@/lib/utils";
-import { BRAND } from "@/lib/brand";
+import { BRAND, FONTS } from "@/lib/brand";
 
 export function MomentPoster({
   moment,
@@ -49,24 +49,24 @@ export function downloadPosterPng(filename: string, moment: TrainingMoment) {
   ctx.fillStyle = BRAND.oxide;
   ctx.fillRect(0, 0, width, 18);
   ctx.fillStyle = BRAND.ink;
-  ctx.font = "600 22px Barlow, sans-serif";
+  ctx.font = `600 22px ${FONTS.sans}, sans-serif`;
   ctx.fillStyle = "#6a6358";
   ctx.fillText(moment.kicker.toUpperCase(), 72, 120);
   ctx.fillStyle = BRAND.ink;
-  ctx.font = "800 96px Barlow Condensed, Arial Narrow, sans-serif";
+  ctx.font = `800 96px ${FONTS.display}, Arial Narrow, sans-serif`;
   wrap(ctx, moment.title, 72, 240, width - 144, 96);
-  ctx.font = "500 28px Barlow, sans-serif";
+  ctx.font = `500 28px ${FONTS.sans}, sans-serif`;
   ctx.fillStyle = "#4a453c";
   wrap(ctx, moment.detail, 72, 560, width - 144, 40);
   if (moment.valueLabel) {
     ctx.fillStyle = BRAND.oxide;
-    ctx.font = "700 48px Barlow Condensed, sans-serif";
+    ctx.font = `700 48px ${FONTS.display}, sans-serif`;
     ctx.fillText(moment.valueLabel, 72, 500);
   }
   ctx.fillStyle = "#6a6358";
-  ctx.font = "500 22px Barlow, sans-serif";
+  ctx.font = `500 22px ${FONTS.sans}, sans-serif`;
   ctx.fillText(moment.date, 72, height - 80);
-  ctx.font = "800 32px Barlow Condensed, sans-serif";
+  ctx.font = `800 32px ${FONTS.display}, sans-serif`;
   ctx.fillStyle = BRAND.ink;
   ctx.fillText(moment.eraName ?? "LOCKD", width - 320, height - 80);
   const link = document.createElement("a");

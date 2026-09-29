@@ -9,6 +9,27 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 10c: Big Shoulders Display and Archivo replace Barlow
+
+- **Faces (plan D9 and the knurl port):** Big Shoulders Display 700 and 800 for headings and big numbers, and one variable Archivo file for
+  body text, both OFL-1.1, self-hosted through `@fontsource` packages. Barlow and Barlow Condensed and their packages are gone.
+  **IBM Plex Mono stays** for numbers: the plan names no mono face, and aligned digits matter for reading a record. That is
+  the owner's call to revisit.
+- **One definition:** `FONTS` in `src/lib/brand.ts`; `styles.css` sets the same families as `--font-*`, and the posters,
+  receipts and lock-screen art read the names from it. `brand.test.ts` (now 16) checks they match, every declared file exists,
+  no Barlow remains in the styles, canvas code or dependencies, and that the licence text is present.
+- **Licence:** OFL asks that the notice travel with the font, so `public/font-licences.txt` (served at `/font-licences.txt`, checked 200
+  in the running app) holds the texts copied from the three packages; `docs/FONTS.md` says how to regenerate it.
+- **Layout check (the real risk):** Archivo is wider than Barlow. A scan of 15 routes at 390 and 1024 px found one real regression, the
+  "Add reps" pill on Today wrapping onto two lines; `Badge` now never wraps or shrinks (checked on screen afterwards). The other
+  flagged items are rows designed to have two lines. I also looked at Today and the workout page at 390 px. **Not checked:**
+  every screen by eye, light theme, and long exercise names in the big display face.
+- **Not verified:** the poster, receipt and lock-screen canvases with the new faces. They draw with the family names, but a canvas can draw before
+  its font loads (already true with Barlow); the fix is 10d.
+- Merge note: this branch conflicted with 10b in `receipt.tsx` (import lines) and `brand.test.ts` (two new test groups); both kept.
+- **CI caught a test I missed:** `e2e/offline-basics.spec.ts` asserted that the loaded fonts were Barlow. It now asserts the app's own Big Shoulders
+  Display and Archivo are loaded and in use, with the same "no request to another origin" check. Lesson: search `e2e/` for a face by name when swapping it.
+
 ### 2026-09-29 — Step 10b: the mark draws an L, and the icons are redrawn (I-38)
 
 - **Mark:** `StampMark` (which drew an R) is now `LockdMark`, an L on an Oxide tile in the theme's accent and accent ink, at
