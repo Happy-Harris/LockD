@@ -9,7 +9,12 @@ export type {
   EvidenceSource,
   EvidenceType,
 } from "./types";
-export { EVIDENCE_CATALOG, EVIDENCE_CLAIMS, EVIDENCE_SOURCES } from "./catalog";
+export {
+  EVIDENCE_CATALOG,
+  EVIDENCE_CLAIMS,
+  EVIDENCE_SOURCES,
+  RESEARCH_WEEKLY_SET_BAND,
+} from "./catalog";
 
 const sourceById = new Map<string, EvidenceSource>(
   EVIDENCE_SOURCES.map((source) => [source.id, source]),

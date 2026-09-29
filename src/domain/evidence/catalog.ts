@@ -1,4 +1,8 @@
+import type { MuscleTargetBand } from "@/domain/types";
 import type { EvidenceCatalog, EvidenceClaim, EvidenceSource } from "./types";
+
+/** Product default for weekly credited sets per muscle. Kept stable on purpose; personal targets override it. */
+export const RESEARCH_WEEKLY_SET_BAND: Readonly<MuscleTargetBand> = { min: 10, max: 20 };
 
 /**
  * Sources are cited only where a claim leans on them, and every DOI here was resolved against
