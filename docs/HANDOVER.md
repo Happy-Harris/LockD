@@ -9,6 +9,20 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 11 (I-33): a program file's unknown exercise is kept, named and announced
+
+- **The bug (plan I-33):** importing a program file whose exercise this library lacks (a sender's custom lift, or a different spelling) kept a row holding only the file's id.
+  The name was dropped, the program page showed the raw id, and starting the session left the exercise out without a word.
+- **The fix:** `ProgramExercise.unresolvedName` keeps the name the file gave. `resolveProgramExercise` finds the row's exercise by id, then by that name, so adding the
+  exercise later (same name) makes it start normally. Export writes the name back out. `unresolvedProgramRows` is the one helper that says which rows cannot start.
+  Three places say so: a toast on import, a toast on start ("Left out of this session: …"), and a persistent note on the program page, where the row also carries a
+  "not in library" badge. The hooks are in `src/lib/gym/program-hooks.ts` and every start and import button uses them.
+- **Stored data:** `unresolvedName` is optional, so old backups load unchanged and no migration is needed. It is in the backup schema and a round-trip test covers it.
+- **Tests:** `program-unresolved.test.ts`. The characterisation commit pinned the old behaviour (name lost, silent skip); the diff from it is the change. Six tests: kept and
+  flagged, still skipped and reported, exported by name, resolves after the exercise is added, a library row is never flagged, and the backup round trip.
+- **Not done, on purpose:** no automatic mapping of a near-match name to a library exercise (that would be a silent guess), and no picker to resolve it at import.
+  The lifter can swap the row on the program page as before.
+- **Checked:** `npm run verify`. **Not checked** in the browser: the toasts and the note on the program page.
 ### 2026-09-29 — Step 11 (I-25): the autopsy headline keeps 1RM and RPE in capitals
 
 - **The bug (plan I-25):** the plateau autopsy headline lowercased the whole finding title to read inside a sentence, so "Flat estimated 1RM" came out

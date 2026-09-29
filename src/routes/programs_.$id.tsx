@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useStartProgramSession } from "@/lib/gym/program-hooks";
 import { Play } from "lucide-react";
 import { useState } from "react";
 import { ExercisePicker } from "@/components/app/exercise-picker";
@@ -10,6 +11,7 @@ import { useGymDerived } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
 import { PublishButton } from "@/components/app/publish-button";
 import { programShare } from "@/lib/cloud/shares";
+import { resolveProgramExercise, unresolvedProgramRows } from "@/lib/gym/programs";
 
 export const Route = createFileRoute("/programs_/$id")({ component: ProgramDetailPage });
 
@@ -17,7 +19,7 @@ function ProgramDetailPage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const { programs, programWeeks, programSessions, programExercises, exercises } = useGymDerived();
-  const startFromProgramSession = useGym((s) => s.startFromProgramSession);
+  const startFromProgramSession = useStartProgramSession();
   const setActiveProgram = useGym((s) => s.setActiveProgram);
   const duplicateProgram = useGym((s) => s.duplicateProgram);
   const deleteProgram = useGym((s) => s.deleteProgram);
@@ -36,7 +38,11 @@ function ProgramDetailPage() {
 
   const weeks = programWeeks.filter((row) => row.programId === id).sort((a, b) => a.weekNumber - b.weekNumber);
   const sessions = programSessions.filter((row) => row.programId === id).sort((a, b) => a.order - b.order);
-  const names = new Map(exercises.map((row) => [row.id, row.name]));
+  const sessionIds = new Set(sessions.map((row) => row.id));
+  const unresolved = unresolvedProgramRows(
+    programExercises.filter((row) => sessionIds.has(row.programSessionId)),
+    exercises,
+  );
 
   const download = () => {
     const file = exportProgram(id);
@@ -59,6 +65,16 @@ function ProgramDetailPage() {
         Week {program.currentWeek} of {program.weekCount}
         {program.isActive ? " · active" : ""}
       </p>
+
+      {unresolved.length > 0 ? (
+        <Card className="mt-4" data-testid="unresolved-notice">
+          <p className="text-sm font-medium">Not in your library</p>
+          <p className="mt-1 text-sm text-muted">
+            {[...new Set(unresolved.map((row) => row.name))].join(", ")}. These stay in the program and are
+            skipped when you start a session. Add an exercise with the same name, or swap it below.
+          </p>
+        </Card>
+      ) : null}
 
       <div className="mt-5 grid grid-cols-2 gap-2">
         <Button
@@ -137,7 +153,12 @@ function ProgramDetailPage() {
                 {lifts.map((lift) => (
                   <li key={lift.id} className="flex items-center justify-between gap-2 text-sm">
                     <span>
-                      {names.get(lift.exerciseId) ?? lift.exerciseId}
+                      {resolveProgramExercise(lift, exercises)?.name ?? lift.unresolvedName ?? lift.exerciseId}
+                      {!resolveProgramExercise(lift, exercises) ? (
+                        <Badge tone="muted" className="ml-2">
+                          not in library
+                        </Badge>
+                      ) : null}
                       <span className="ml-2 text-xs text-subtle">
                         {lift.targetSets} × {lift.targetRepMin ?? "—"}–{lift.targetRepMax ?? "—"} · {lift.rule.kind.replace("_", " ")}
                       </span>

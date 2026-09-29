@@ -323,6 +323,7 @@ const programExercise = z.object({
   restSeconds: seconds,
   includeWarmup: z.boolean(),
   substitutionOf: id.optional(),
+  unresolvedName: name.optional(),
   rule: z.object({
     kind: z.enum(["double_progression", "linear", "hold", "percent_deload"]),
     incrementG: grams.optional(),
