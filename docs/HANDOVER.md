@@ -9,6 +9,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 9c: pick RPE or RIR directly (I-31)
+
+- **I-31:** the effort button on a set opens a pick sheet (RPE 6 to 10 in halves, or RIR 0 to 5) instead of
+  cycling up to nine taps. Tapping the chosen value again clears it; a set with no value shows "—", never 0 (RIR 0 is a
+  real value). New setting Settings > Effort: RPE, RIR or Off (`intensityMode`, already in the backup schema, so no
+  migration). Logic is in `src/lib/gym/intensity.ts` with `intensity.test.ts` (4).
+- **Never converted (D4):** RPE and RIR are stored in their own fields; switching mode hides the other, deletes nothing.
+- **Not done:** the routine's `targetRir` is not shown yet, and a new set does not copy the previous session's RIR
+  (RPE still does). Both belong with 9f per-set targets.
+- **Not covered:** the sheet itself has no component or e2e test; not checked at 390/1024 px screenshots.
+
 ### 2026-09-29 — Step 9b: your rest wins, separate warm-up rest, vibrate and notify (I-21)
 
 - **Precedence (I-21):** after a set the timer runs the exercise's rest: the routine's rest if it has one, else the
