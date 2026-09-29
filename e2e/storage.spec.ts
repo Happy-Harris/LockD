@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
-import { goTo, readLog, waitForApp, waitForSessions } from "./helpers";
+import { goTo, openWithSampleLog, readLog, waitForApp, waitForSessions } from "./helpers";
 
 const fixture = (name: string) =>
   fs.readFileSync(
@@ -151,5 +151,34 @@ test.describe("durable storage", () => {
     // Onboarding shows again: the log really was reset. (The URL stays on /settings.)
     await page.getByRole("button", { name: /Start empty/i }).click();
     await expect(page.getByTestId("safety-backups")).toContainText("None yet");
+  });
+
+  test("a workout started in one tab shows up in another without a reload", async ({
+    page,
+    context,
+  }) => {
+    await openWithSampleLog(page);
+    const other = await context.newPage();
+    await other.goto("/");
+    await waitForApp(other);
+
+    const activeIn = (target: Page) =>
+      target.evaluate(async () => {
+        const { useGym } = await import("/src/lib/gym/store.ts");
+        return useGym.getState().resumeActiveWorkoutId() ?? null;
+      });
+    expect(await activeIn(other)).toBeNull();
+
+    await page.getByRole("button", { name: /Repeat last/i }).click();
+    await expect(page).toHaveURL(/\/workout$/);
+    const started = await (async () => {
+      await expect.poll(() => activeIn(page)).not.toBeNull();
+      return activeIn(page);
+    })();
+
+    await expect.poll(() => activeIn(other), { timeout: 15_000 }).toBe(started);
+    // And the other tab wrote nothing of its own back: the database holds one active workout.
+    const log = await readLog(other);
+    expect(log.workouts.filter((w) => w.status === "active")).toHaveLength(1);
   });
 });

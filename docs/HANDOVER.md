@@ -6,6 +6,26 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 5e: tabs stay in step
+
+- Closes plan PR 5. After each successful write a tab announces it on `BroadcastChannel('lockd-log')`.
+  A tab that hears it applies the same rows to its own store (`applyChangeSet`, the row-level inverse
+  of `diffSlices`) and moves its write baseline forward, so it **does not write them back** (no
+  echo, no loop). A whole-log replace (delete everything, restore, taking the cloud copy) is
+  announced as `replace`, and the other tab reloads from the database after its own pending writes.
+  Settings and the rest timer are documents and travel the same way.
+- **Two tabs no longer clobber each other.** Under `localStorage` the last writer replaced the whole
+  log; now writes are per row, and two edits to different rows at the same time both survive.
+- **Known limits.** The same row edited in two tabs at once is last-writer-wins. A tab that is in the
+  middle of loading a `replace` can lose a local change made in that instant from its screen (the
+  database still has it). Both need two tabs and very tight timing.
+- **Tests.** Seven unit tests run two real copies of the app's modules on one database and check:
+  a change appears in the other tab and is not echoed, both directions without looping, edits to
+  different rows at the same time, settings and the timer, and a replace. Two mutations (baseline not
+  moved, no announcement) each fail 4 to 5 of them. One e2e opens two pages in one browser context.
+- Remaining from plan § 4: deleting the old `lockd-v1` key (a separate PR, 30 days and three good
+  boots after release), and the SQLite adapter for Capacitor (later).
+
 ### 2026-09-29 — Plan PR 5d: durable storage is live
 
 **The app now saves to the `lockd` database, not `localStorage`.** Read this entry before touching

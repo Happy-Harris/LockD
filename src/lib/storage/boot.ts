@@ -4,7 +4,7 @@ import { getLockdDb } from "./db";
 import { DexieRepository } from "./dexie-repository";
 import { runMigration, withFreshDefaults } from "./migration";
 import { migratePersisted, persistedSlice, PERSIST_KEY, type PersistedSlice } from "./persisted";
-import { diffSlices, type LockdRepository } from "./repository";
+import { applyChangeSet, diffSlices, type ChangeSet, type LockdRepository } from "./repository";
 
 /**
  * Starts durable storage (docs/consolidation/PLAN.md § 4): decides where the log lives, loads it
@@ -65,16 +65,30 @@ function report(notice: StorageNotice | null) {
   useStorageStatus.getState().setNotice(notice);
 }
 
+/** What one tab tells the others after it has written to the database. */
+type TabMessage =
+  { from: string; kind: "changes"; changes: ChangeSet } | { from: string; kind: "replace" };
+
+/** Every tab of the app on this device shares this channel. */
+export const TAB_CHANNEL = "lockd-log";
+
 /**
  * Subscribes to the store and writes each change to the repository. Changes made in the same
  * tick share one write; writes are chained so they reach the database in order. A failed write is
  * retried with the next change, because the baseline only advances once a write succeeds.
+ *
+ * Other tabs: after each successful write the change is announced on a `BroadcastChannel`. A tab
+ * that hears it applies the same rows to its own store (or, for a whole-log replace, reloads from
+ * the database) and moves its baseline forward, so it does not write them back.
  */
 function startWriter(repo: LockdRepository) {
   stopWriter?.();
   activeRepo = repo;
   let saved = persistedSlice(useGym.getState());
   let scheduled = false;
+  const tabId = globalThis.crypto?.randomUUID?.() ?? `tab-${Math.random()}`;
+  const channel =
+    typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel(TAB_CHANNEL);
 
   const flush = () => {
     scheduled = false;
@@ -87,10 +101,15 @@ function startWriter(repo: LockdRepository) {
     // log), while clearing and rewriting is not. A change that big (delete everything, restore,
     // taking the cloud copy) is stored as a replace, in one transaction either way.
     const removed = Object.values(changes.remove ?? {}).reduce((n, keys) => n + keys.length, 0);
+    const replace = removed > REPLACE_ABOVE_REMOVALS;
     pendingWrites = pendingWrites
-      .then(() => (removed > REPLACE_ABOVE_REMOVALS ? repo.replaceAll(next) : repo.apply(changes)))
+      .then(() => (replace ? repo.replaceAll(next) : repo.apply(changes)))
       .then(() => {
         if (useStorageStatus.getState().notice?.kind === "write-failed") report(null);
+        const message: TabMessage = replace
+          ? { from: tabId, kind: "replace" }
+          : { from: tabId, kind: "changes", changes };
+        channel?.postMessage(message);
       })
       .catch((error: unknown) => {
         saved = from; // the next change re-sends this one too
@@ -106,8 +125,31 @@ function startWriter(repo: LockdRepository) {
     scheduled = true;
     queueMicrotask(flush);
   });
+
+  /** Takes on state another tab wrote, without writing it back. */
+  const adopt = (slice: PersistedSlice) => {
+    useGym.setState(slice);
+    saved = persistedSlice(useGym.getState());
+  };
+
+  if (channel) {
+    channel.onmessage = (event: MessageEvent<TabMessage>) => {
+      const message = event.data;
+      if (!message || message.from === tabId) return;
+      if (message.kind === "changes") {
+        adopt(applyChangeSet(persistedSlice(useGym.getState()), message.changes));
+      } else {
+        // After this tab's own pending writes, so what it loads includes them.
+        pendingWrites = pendingWrites
+          .then(async () => adopt(await repo.load()))
+          .catch(() => undefined);
+      }
+    };
+  }
+
   stopWriter = () => {
     unsubscribe();
+    channel?.close();
     stopWriter = null;
   };
 }
