@@ -1,3 +1,8 @@
+import {
+  SEED_LIBRARY_VERSION,
+  SEED_LIBRARY_VERSION_UNTRACKED,
+  topUpSeedLibrary,
+} from "@/lib/gym/seed";
 import { freshData, useGym } from "@/lib/gym/store";
 import { getStorageMode, setStorageMode, useStorageStatus, type StorageNotice } from "./backend";
 import { getLockdDb } from "./db";
@@ -202,6 +207,31 @@ export function resetBootForTests() {
   pendingWrites = Promise.resolve();
 }
 
+/**
+ * Catches an existing log up with exercises added to the seed library since it last did (plan
+ * I-36). Best effort: if the rows cannot be stored the log is loaded as it is and the next boot
+ * tries again, because the version is only recorded after they are written.
+ */
+async function withSeedTopUp(
+  repo: LockdRepository,
+  data: PersistedSlice,
+  now: string,
+): Promise<PersistedSlice> {
+  try {
+    const meta = await repo.meta();
+    if ((meta.seedLibraryVersion ?? SEED_LIBRARY_VERSION_UNTRACKED) >= SEED_LIBRARY_VERSION) {
+      return data;
+    }
+    const added = topUpSeedLibrary(data.exercises, meta.seedLibraryVersion, now);
+    if (added.length > 0) await repo.apply({ put: { exercises: added } });
+    await repo.setMeta({ seedLibraryVersion: SEED_LIBRARY_VERSION });
+    return added.length > 0 ? { ...data, exercises: [...data.exercises, ...added] } : data;
+  } catch (error) {
+    console.error("The exercise library could not be updated; it will be tried again.", error);
+    return data;
+  }
+}
+
 async function doBoot(deps: BootDeps): Promise<BootResult> {
   const startedAt = performance.now();
   const hasIdb = deps.hasIndexedDb?.() ?? typeof indexedDB !== "undefined";
@@ -240,7 +270,7 @@ async function doBoot(deps: BootDeps): Promise<BootResult> {
 
     const readMs = Math.round(performance.now() - startedAt);
     setStorageMode("dexie");
-    loadIntoStore(result.data);
+    loadIntoStore(await withSeedTopUp(repo, result.data, now().toISOString()));
     startWriter(repo);
     return { mode: "dexie", readMs };
   } catch (error) {

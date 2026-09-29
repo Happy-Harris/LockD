@@ -25,6 +25,8 @@ function inferMuscle(name: string): MuscleGroup | null {
   if (/\bcrunch\b|\bleg raises?\b|\brussian twist\b|\btorso rotation\b/.test(name)) return "core";
   if (/\bfarmer s walk\b/.test(name)) return "forearms";
   if (/\bwrist\b|\bgrip holds?\b/.test(name)) return "forearms";
+  if (/\bnordic curls?\b/.test(name)) return "hamstrings";
+  if (/\bneck (curls?|extensions?|flexions?)\b/.test(name)) return "neck";
   if (/\bleg curls?\b|\bstanding leg curls?\b|\bglute ham raise\b/.test(name)) return "hamstrings";
   if (/\bshrugs?\b/.test(name)) return "traps";
   if (/\bhip thrust\b|\bglute kickback\b/.test(name)) return "glutes";
@@ -57,6 +59,7 @@ function inferMovement(name: string, muscle: MuscleGroup): MovementPattern {
   if (/\bfarmer s walk\b/.test(name)) return "carry";
   if (muscle === "core") return "core";
   if (muscle === "calves" || muscle === "forearms" || muscle === "abductors") return "isolation";
+  if (/\bnordic curls?\b/.test(name)) return "hinge";
   if (/\bsquats?\b|\bleg press\b/.test(name)) return "squat";
   if (/\blunges?\b|\bstep up\b/.test(name)) return "lunge";
   if (

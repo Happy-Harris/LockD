@@ -127,6 +127,8 @@ export class DexieRepository implements LockdRepository {
     for (const key of ["migratedFrom", "migratedAt", "sourceChecksum"] as const) {
       if (byKey.has(key)) meta[key] = byKey.get(key) as string;
     }
+    const seedVersion = byKey.get("seedLibraryVersion");
+    if (typeof seedVersion === "number") meta.seedLibraryVersion = seedVersion;
     return meta;
   }
 

@@ -23,7 +23,7 @@ describe("suggestExerciseTaxonomy — Lock'd contract", () => {
   });
 
   it("agrees with the seed library's muscle wherever it answers, bar two arguable calls", () => {
-    // Measured on the 66-exercise seed library: 49 names get a suggestion, 47 match the seed's
+    // Measured on the 93-exercise seed library: 68 names get a suggestion, 66 match the seed's
     // muscle. The two that differ are judgement calls, pinned so a change is visible.
     const differ = seedExercises("2026-01-01T00:00:00.000Z")
       .filter((row) => {

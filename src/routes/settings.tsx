@@ -8,7 +8,8 @@ import { type AccentTheme, type AppSettings, type ThemeMode, type UnitSystem, ty
 import { applyBackup, restoreMessage, type RestoreMode } from "@/lib/backup/apply";
 import { parseBackup } from "@/lib/backup/schema";
 import { takeSafetyBackup } from "@/lib/storage/safety";
-import { defaultQuickIncrementG } from "@/domain/units";
+import { defaultQuickIncrementG, lengthUnitFor, weightUnitFor } from "@/domain/units";
+import { csvFiles } from "@/lib/export/csv";
 import { useGym } from "@/lib/gym/store";
 import { describeImport } from "@/lib/import/summary";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
@@ -25,7 +26,6 @@ function SettingsPage() {
   const importStrongCsv = useGym((s) => s.importStrongCsv);
   const importHevyCsv = useGym((s) => s.importHevyCsv);
   const importOtherAppBackup = useGym((s) => s.importOtherAppBackup);
-  const exportSetsCsvText = useGym((s) => s.exportSetsCsvText);
   const resetAll = useGym((s) => s.resetAll);
   const loadDemo = useGym((s) => s.loadDemo);
   const exercises = useGym((s) => s.exercises);
@@ -45,12 +45,19 @@ function SettingsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const downloadCsv = () => {
-    const blob = new Blob([exportSetsCsvText()], { type: "text/csv" });
+  const downloadCsv = (kind: keyof ReturnType<typeof csvFiles>) => {
+    const state = useGym.getState();
+    const file = csvFiles(
+      state,
+      { mass: weightUnitFor(state.settings.unitSystem), length: lengthUnitFor(state.settings.unitSystem) },
+      new Date().toISOString().slice(0, 10),
+    )[kind];
+    // A byte-order mark so Excel reads names with accents correctly; the importer ignores it.
+    const blob = new Blob(["\uFEFF", file.content], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `lockd-sets-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = file.fileName;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -276,9 +283,23 @@ function SettingsPage() {
           <Button className="w-full" variant="secondary" onClick={download}>
             Download JSON backup
           </Button>
-          <Button className="w-full" variant="secondary" onClick={downloadCsv}>
+          <Button className="w-full" variant="secondary" onClick={() => downloadCsv("sets")}>
             Download sets CSV
           </Button>
+          <div className="grid grid-cols-2 gap-2">
+            {(
+              [
+                ["sessions", "Sessions CSV"],
+                ["exercises", "Exercises CSV"],
+                ["routines", "Routines CSV"],
+                ["measurements", "Measurements CSV"],
+              ] as const
+            ).map(([kind, label]) => (
+              <Button key={kind} variant="outline" size="sm" onClick={() => downloadCsv(kind)}>
+                {label}
+              </Button>
+            ))}
+          </div>
           <label className="block">
             <span className="mb-1 block text-xs text-subtle">Add a Lock’d backup to this log</span>
             <input

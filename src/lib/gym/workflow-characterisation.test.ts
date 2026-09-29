@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { applyImportBatch, buildImportBatch } from "@/lib/import/batch";
 import { parseCsv } from "@/lib/import/csv";
 import { analyseStrongCsv, STRONG_PROFILE } from "@/lib/import/strong";
-import { exportSetsCsv } from "./csv";
+import { setsCsv } from "@/lib/export/csv";
 import { applyProgramLoad, exportProgramFile, importProgramFile, installPack, PROGRAM_PACKS } from "./programs";
 import { seedExercises } from "./seed";
 import { useGym } from "./store";
@@ -15,6 +15,7 @@ vi.mock("@/domain/ids", async (importOriginal) => ({
 
 const clock = new Date(2026, 8, 28, 12);
 const library = seedExercises(clock.toISOString());
+const emptyLog = { workouts: [], workoutExercises: [], workoutSets: [], exercises: [], templates: [], templateExercises: [], measurements: [] };
 /** The Strong importer as the app runs it, on an empty log. */
 function importStrong(text: string) {
   const analysis = analyseStrongCsv(text, { unit: "kg" });
@@ -52,8 +53,10 @@ describe("workflow characterisation — present behaviour", () => {
       preview: { workouts: parsed.workouts.length, sets: parsed.batch.job.setsImported, skipped: parsed.analysis.skippedRows },
       workout: parsed.workouts.map((w) => ({ name: w.name, date: w.localDate })),
       sets: parsed.workoutSets.map((s) => ({ type: s.setType, weight: s.weightG, reps: s.reps })),
-      export: exportSetsCsv({ workouts: parsed.workouts, exercises: parsed.workoutExercises,
-        sets: parsed.workoutSets, unit: "kg", formatWeight: (grams) => String(grams / 1000) }),
+      export: setsCsv(
+        { ...emptyLog, workouts: parsed.workouts, workoutExercises: parsed.workoutExercises, workoutSets: parsed.workoutSets, exercises: parsed.exercises },
+        "kg",
+      ),
     }).toMatchSnapshot();
     expect(parseCsv('x\n"a,b","c""d"\n').rows).toEqual([["a,b", 'c"d']]);
   });

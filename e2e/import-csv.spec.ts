@@ -150,3 +150,22 @@ test.describe("importing a vault from another app", () => {
     await expect(page.getByText("Arms (side not recorded)").first()).toBeAttached();
   });
 });
+
+test.describe("exporting and importing back", () => {
+  test("the sets file the app writes is recognised, session for session, when imported again", async ({
+    page,
+  }) => {
+    await openWithSampleLog(page);
+    await goTo(page, "/settings");
+    const before = await readLog(page);
+    const download = page.waitForEvent("download");
+    await page.getByRole("button", { name: "Download sets CSV" }).click();
+    const file = await (await download).path();
+    expect((await download).suggestedFilename()).toMatch(/^lockd-sets-\d{4}-\d{2}-\d{2}\.csv$/);
+
+    await page.getByTestId("strong-csv-input").setInputFiles(file);
+    await expect(page.getByTestId("csv-note")).toContainText("Imported 0 sessions");
+    await expect(page.getByTestId("csv-note")).toContainText("already here and left out");
+    expect((await readLog(page)).workouts).toHaveLength(before.workouts.length);
+  });
+});

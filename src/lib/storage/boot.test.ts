@@ -140,7 +140,7 @@ describe("the writer", () => {
   });
 
   it("reports a failed write, retries it with the next change, and clears the notice", async () => {
-    let failures = 1;
+    let failures = 0; // armed after boot: the library top-up at boot also writes
     const env = await setup(fixture("persist-v3-imperial-custom.json"), (repo) =>
       Object.assign(Object.create(repo), {
         apply: async (changes: Parameters<LockdRepository["apply"]>[0]) => {
@@ -150,6 +150,7 @@ describe("the writer", () => {
       }),
     );
     await env.boot.bootStorage({ repo: env.repo });
+    failures = 1;
     const g = env.useGym.getState;
     const first = g().startEmptyWorkout("First");
     await env.boot.flushWrites();
@@ -164,6 +165,85 @@ describe("the writer", () => {
     expect(status.getState().notice).toBeNull();
     const ids = (await env.dexie.load()).workouts.map((w) => w.id);
     expect(ids).toEqual(expect.arrayContaining([first, second]));
+  });
+});
+
+describe("the exercise library top-up", () => {
+  const count = (exercises: Array<{ isCustom: boolean }>) =>
+    exercises.filter((e) => !e.isCustom).length;
+
+  it("gives an existing install the exercises added since it was made, once, and touches nothing else", async () => {
+    // A log from before the library had versions: 66 seeded exercises, one of the lifter's own.
+    const raw = fixture("persist-v3-imperial-custom.json");
+    const env = await setup(raw);
+    const before = JSON.parse(raw).state.exercises as Array<{
+      id: string;
+      isCustom: boolean;
+      name: string;
+    }>;
+    expect(count(before)).toBe(66);
+
+    await env.boot.bootStorage({ repo: env.repo });
+    const stored = await env.dexie.load();
+    expect(count(stored.exercises)).toBe(93);
+    expect(env.useGym.getState().exercises).toHaveLength(94); // 93 seeded + the lifter's own
+    // Every exercise that was there is still there, unchanged.
+    for (const row of before) {
+      expect(stored.exercises.find((e) => e.id === row.id)).toMatchObject(row);
+    }
+    expect((await env.dexie.meta()).seedLibraryVersion).toBe(3);
+    expect(env.data.get(KEY)).toBe(raw); // the old payload is byte-identical
+
+    // A second page load adds nothing, and the store agrees with the database.
+    const next = await reload(env);
+    await next.boot.bootStorage({ repo: next.repo });
+    expect((await next.repo.load()).exercises).toHaveLength(94);
+    expect(next.useGym.getState().exercises).toHaveLength(94);
+  });
+
+  it("does not bring back an exercise removed after the top-up", async () => {
+    const env = await setup(fixture("persist-v3-imperial-custom.json"));
+    await env.boot.bootStorage({ repo: env.repo });
+    env.useGym.setState({
+      exercises: env.useGym.getState().exercises.filter((e) => e.id !== "seed-rack-pull"),
+    });
+    await env.boot.flushWrites();
+    const next = await reload(env);
+    await next.boot.bootStorage({ repo: next.repo });
+    expect(next.useGym.getState().exercises.some((e) => e.id === "seed-rack-pull")).toBe(false);
+  });
+
+  it("starts a fresh install with the whole library and records that it is current", async () => {
+    const env = await setup(null);
+    await env.boot.bootStorage({ repo: env.repo });
+    expect(env.useGym.getState().exercises).toHaveLength(93);
+    expect((await env.dexie.load()).exercises).toHaveLength(93);
+    expect((await env.dexie.meta()).seedLibraryVersion).toBe(3);
+  });
+
+  it("still opens the app when the top-up cannot be stored, and tries again next time", async () => {
+    let failing = true;
+    const env = await setup(fixture("persist-v3-demo.json"), (repo) =>
+      Object.assign(Object.create(repo), {
+        apply: async (changes: Parameters<LockdRepository["apply"]>[0]) => {
+          if (failing && changes.put?.exercises) throw new Error("QuotaExceededError");
+          return repo.apply(changes);
+        },
+      }),
+    );
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const result = await env.boot.bootStorage({ repo: env.repo });
+    error.mockRestore();
+    expect(result.mode).toBe("dexie");
+    expect(env.useGym.getState().hydrated).toBe(true);
+    expect(env.useGym.getState().exercises).toHaveLength(66); // as it was
+    expect((await env.dexie.meta()).seedLibraryVersion).toBeUndefined();
+
+    failing = false;
+    const next = await reload(env);
+    await next.boot.bootStorage({ repo: next.repo });
+    expect(next.useGym.getState().exercises).toHaveLength(93);
+    expect((await next.repo.meta()).seedLibraryVersion).toBe(3);
   });
 });
 

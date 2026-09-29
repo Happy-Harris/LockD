@@ -30,9 +30,8 @@ import type {
 } from "@/domain/types";
 import { BACKUP_FORMAT, BACKUP_VERSION, PROGRAM_FORMAT } from "@/domain/types";
 import type { CloudGym } from "@/lib/cloud/types";
-import { defaultQuickIncrementG, formatWeight, weightUnitFor } from "@/domain/units";
+import { defaultQuickIncrementG, weightUnitFor } from "@/domain/units";
 import { detectPrsForWorkout, previousSetsForExercise, sliceSessions, type PersonalRecord } from "./analytics";
-import { exportSetsCsv } from "./csv";
 import { applyImportBatch, buildImportBatch, storedFingerprints } from "@/lib/import/batch";
 import type { ImportAnalysis, SourceProfile } from "@/lib/import/engine";
 import { analyseHevyCsv, HEVY_PROFILE } from "@/lib/import/hevy";
@@ -195,7 +194,6 @@ interface GymActions {
   classifyExercises: (items: Classification[]) => number;
   /** A backup file written by a sister app. Adds what is new; never replaces anything. */
   importOtherAppBackup: (text: string, fileName?: string) => ImportOutcome;
-  exportSetsCsvText: () => string;
   setLabLast: (text: string) => void;
   resetAll: () => void;
   loadDemo: () => void;
@@ -1299,18 +1297,6 @@ export const useGym = create<GymState>()(
             notes: result.notes,
           }),
         };
-      },
-
-      exportSetsCsvText: () => {
-        const state = get();
-        const unit = weightUnitFor(state.settings.unitSystem);
-        return exportSetsCsv({
-          workouts: state.workouts,
-          exercises: state.workoutExercises,
-          sets: state.workoutSets,
-          unit,
-          formatWeight: (grams) => formatWeight(grams, unit),
-        });
       },
 
       setLabLast: (text) => set({ labLast: { askedAt: new Date().toISOString(), text } }),

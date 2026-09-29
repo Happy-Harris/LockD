@@ -24,9 +24,10 @@ exports[`workflow characterisation — present behaviour > a European Strong CSV
 
 exports[`workflow characterisation — present behaviour > pins CSV parser, Strong import and exported set columns 1`] = `
 {
-  "export": "Date,Workout Name,Exercise Name,Set Order,Set Type,Weight,Reps,RPE,Seconds,Notes
-2026-02-03,Test,Bench Press,1,working,100,5,,,
-2026-02-03,Test,Bench Press,2,failure,105,3,,,",
+  "export": "Date,Workout Name,Exercise Name,Set Order,Set Type,Weight (kg),Reps,RPE,RIR,Seconds,Distance (m),Notes,Workout Notes,Exercise Notes,Superset,Duration,Primary Muscle
+2026-02-03 12:00:00,Test,Bench Press,1,working,100,5,,,,,,,,,,chest
+2026-02-03 12:00:00,Test,Bench Press,2,failure,105,3,,,,,,,,,,chest
+",
   "preview": {
     "sets": 2,
     "skipped": 0,
