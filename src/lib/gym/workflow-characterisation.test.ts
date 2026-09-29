@@ -1,14 +1,30 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { buildStrongImport, exportSetsCsv, parseCsv } from "./csv";
+import { applyImportBatch, buildImportBatch } from "@/lib/import/batch";
+import { parseCsv } from "@/lib/import/csv";
+import { analyseStrongCsv, STRONG_PROFILE } from "@/lib/import/strong";
+import { exportSetsCsv } from "./csv";
 import { applyProgramLoad, exportProgramFile, importProgramFile, installPack, PROGRAM_PACKS } from "./programs";
 import { seedExercises } from "./seed";
 import { useGym } from "./store";
 
 const ids = vi.hoisted(() => ({ next: 0 }));
-vi.mock("@/domain/ids", () => ({ uuid: () => `fixture-${++ids.next}` }));
+vi.mock("@/domain/ids", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/domain/ids")>()),
+  uuid: () => `fixture-${++ids.next}`,
+}));
 
 const clock = new Date(2026, 8, 28, 12);
 const library = seedExercises(clock.toISOString());
+/** The Strong importer as the app runs it, on an empty log. */
+function importStrong(text: string) {
+  const analysis = analyseStrongCsv(text, { unit: "kg" });
+  const batch = buildImportBatch(analysis, {
+    source: STRONG_PROFILE, fileName: "fixture.csv", existingExercises: library, existingFingerprints: new Set(),
+    now: () => clock, newId: () => `fixture-${++ids.next}`,
+  });
+  const log = applyImportBatch({ exercises: library, workouts: [], workoutExercises: [], workoutSets: [] }, batch);
+  return { analysis, batch, ...log };
+}
 beforeEach(() => {
   ids.next = 0;
   vi.useFakeTimers();
@@ -29,24 +45,24 @@ const euro = [
   '03.02.2026;Euro;Kniebeuge;2;110,0;3;Normal',
 ].join("\n");
 
-describe("workflow characterisation — present behaviour, including import defects", () => {
+describe("workflow characterisation — present behaviour", () => {
   it("pins CSV parser, Strong import and exported set columns", () => {
-    const parsed = buildStrongImport(csv, library, "kg");
+    const parsed = importStrong(csv);
     expect({
-      preview: parsed.preview,
+      preview: { workouts: parsed.workouts.length, sets: parsed.batch.job.setsImported, skipped: parsed.analysis.skippedRows },
       workout: parsed.workouts.map((w) => ({ name: w.name, date: w.localDate })),
       sets: parsed.workoutSets.map((s) => ({ type: s.setType, weight: s.weightG, reps: s.reps })),
       export: exportSetsCsv({ workouts: parsed.workouts, exercises: parsed.workoutExercises,
         sets: parsed.workoutSets, unit: "kg", formatWeight: (grams) => String(grams / 1000) }),
     }).toMatchSnapshot();
-    expect(parseCsv('"a,b","c""d"\n')).toEqual([["a,b", 'c"d']]);
+    expect(parseCsv('x\n"a,b","c""d"\n').rows).toEqual([["a,b", 'c"d']]);
   });
 
-  it("BUG: current European Strong CSV parsing corrupts weights, repetitions and dates", () => {
-    const parsed = buildStrongImport(euro, library, "kg");
-    expect({ preview: parsed.preview, dates: parsed.workouts.map((w) => w.localDate),
+  it("a European Strong CSV (semicolons, decimal commas, day-first dates) is read correctly", () => {
+    const parsed = importStrong(euro);
+    expect({ preview: { workouts: parsed.workouts.length, sets: parsed.batch.job.setsImported }, dates: parsed.workouts.map((w) => w.localDate),
       sets: parsed.workoutSets.map((s) => ({ weightG: s.weightG, reps: s.reps })) }).toMatchSnapshot();
-    expect(parsed.workoutSets.some((set) => set.weightG === undefined)).toBe(true);
+    expect(parsed.workoutSets.map((set) => set.weightG)).toEqual([110_000, 110_000]);
   });
 
   it("pins program install, JSON export/import, load suggestions and pointer", () => {

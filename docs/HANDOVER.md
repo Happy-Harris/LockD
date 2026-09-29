@@ -6,6 +6,34 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 7b: the import pipeline, and the Strong importer rebuilt on it
+
+- **`src/lib/import/`:** `csv.ts` (RFC 4180 parser, delimiter detection, BOM, escaped export cells),
+  `parse.ts` (numbers with decimal commas or thousands marks, durations, day-first and named-month
+  dates; blank or unreadable stays missing, a date that rolls over is refused), `engine.ts` (source
+  profiles, header auto-mapping with hand overrides, weight and distance unit detection, grouping
+  rows into sessions, and the session fingerprint), `batch.ts` (builds an `ImportJob` plus
+  everything to add without writing anything; `applyImportBatch` adds it; `storedFingerprints`
+  recognises sessions already in the log, including ones imported before fingerprints existed;
+  `findExerciseCandidates` is for the wizard), `strong.ts` (the Strong profile).
+- **Rules kept:** blank cells stay missing; the only automatic exercise merge is the exact
+  normalised name; near matches are suggestions only; a name nobody matched becomes a custom
+  `unmapped` exercise (no silent muscle mapping). Re-importing a file adds 0 sessions. The
+  session's wall-clock stamp is stored as read, and `tzOffsetMinutes` keeps its raw sign.
+- **Removed:** the old parser and `buildStrongImport`/`matchExercise` in `src/lib/gym/csv.ts`
+  (`exportSetsCsv` stays; 7f rewrites it). The old fuzzy word-overlap matching that merged different
+  exercises is gone.
+- **Characterisation:** the European-file BUG test now pins the correct reading (2026-02-03,
+  110 kg, 5 and 3 reps). The standard file and export are unchanged in the snapshot.
+- **Tests:** 60 unit tests in `strong.test.ts` (parsers, three fixtures copied from Strong-Pro,
+  mutation-checked), and `e2e/import-csv.spec.ts` (Settings import of the European file, then again
+  adds 0).
+- **Settings:** the note now reports skipped rows, duplicate sessions left out and new exercises to
+  classify. The wizard (mapping screen, Resolve, Bulk Classify) is 7e.
+- **Next:** 7c Hevy on this engine; recheck Hevy's own export docs before shipping.
+- **Not verified:** real Strong exports beyond the three fixtures; a negative weight becomes 0 with
+  a warning (assisted lifts are not inferred).
+
 ### 2026-09-29 — Cleanup: unused files removed (owner request)
 
 - **Removed:** `AGENTS.md` (its content, updated, is now `CLAUDE.md`, the one file Claude Code loads);

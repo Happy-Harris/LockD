@@ -84,11 +84,15 @@ function SettingsPage() {
 
   const onCsv = async (file: File) => {
     const text = await file.text();
-    const preview = importStrongCsv(text);
+    const preview = importStrongCsv(text, file.name);
     setCsvNote(
-      `Imported ${preview.workouts} sessions, ${preview.sets} sets. Skipped ${preview.skipped}.${
-        preview.unmatched.length ? ` Unmapped: ${preview.unmatched.slice(0, 8).join(", ")}.` : ""
-      }`,
+      `Imported ${preview.workouts} sessions, ${preview.sets} sets. Skipped ${preview.skipped} rows.${
+        preview.duplicates ? ` ${preview.duplicates} sessions were already here and were left out.` : ""
+      }${
+        preview.unmatched.length
+          ? ` New exercises to classify: ${preview.unmatched.slice(0, 8).join(", ")}.`
+          : ""
+      }${preview.issues.length ? ` ${preview.issues[0]}` : ""}`,
     );
   };
 
@@ -310,6 +314,7 @@ function SettingsPage() {
             <input
               type="file"
               accept="text/csv,.csv"
+              data-testid="strong-csv-input"
               className="block w-full text-sm text-muted file:mr-3 file:h-11 file:rounded-xl file:border-0 file:bg-raised file:px-4 file:text-sm file:text-ink"
               onChange={(event) => {
                 const file = event.target.files?.[0];
@@ -317,7 +322,11 @@ function SettingsPage() {
               }}
             />
           </label>
-          {csvNote ? <p className="text-xs text-muted">{csvNote}</p> : null}
+          {csvNote ? (
+            <p className="text-xs text-muted" data-testid="csv-note">
+              {csvNote}
+            </p>
+          ) : null}
           <SafetyBackups key={copiesShown} />
           <Button className="w-full" variant="secondary" onClick={loadDemo}>
             Load sample log

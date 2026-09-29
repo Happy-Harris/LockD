@@ -32,7 +32,9 @@ import { BACKUP_FORMAT, BACKUP_VERSION, PROGRAM_FORMAT } from "@/domain/types";
 import type { CloudGym } from "@/lib/cloud/types";
 import { defaultQuickIncrementG, formatWeight, weightUnitFor } from "@/domain/units";
 import { detectPrsForWorkout, previousSetsForExercise, sliceSessions, type PersonalRecord } from "./analytics";
-import { buildStrongImport, exportSetsCsv } from "./csv";
+import { exportSetsCsv } from "./csv";
+import { applyImportBatch, buildImportBatch, storedFingerprints } from "@/lib/import/batch";
+import { analyseStrongCsv, STRONG_PROFILE } from "@/lib/import/strong";
 import { buildDemoLog, emptyStarterPack } from "./demo";
 import {
   advanceProgramPointer,
@@ -91,6 +93,17 @@ export interface GymData {
   clips: ClipMeta[];
 }
 
+export interface StrongImportSummary {
+  workouts: number;
+  sets: number;
+  skipped: number;
+  /** Sessions already in the log, left out. */
+  duplicates: number;
+  issues: string[];
+  /** Exercises created because no exercise here had that name. */
+  unmatched: string[];
+}
+
 interface GymActions {
   hydrated: boolean;
   setHydrated: (value: boolean) => void;
@@ -145,7 +158,7 @@ interface GymActions {
   ensureWarmups: (workoutExerciseId: string) => void;
   exportBackup: () => LockdBackup;
   importBackup: (backup: LockdBackup, mode: "replace" | "merge") => void;
-  importStrongCsv: (csv: string) => ReturnType<typeof buildStrongImport>["preview"];
+  importStrongCsv: (csv: string, fileName?: string) => StrongImportSummary;
   exportSetsCsvText: () => string;
   setLabLast: (text: string) => void;
   resetAll: () => void;
@@ -1156,16 +1169,24 @@ export const useGym = create<GymState>()(
         });
       },
 
-      importStrongCsv: (csv) => {
+      importStrongCsv: (csv, fileName = "strong.csv") => {
         const state = get();
-        const payload = buildStrongImport(csv, state.exercises, weightUnitFor(state.settings.unitSystem));
-        set({
-          exercises: [...state.exercises, ...payload.customExercises],
-          workouts: [...state.workouts, ...payload.workouts],
-          workoutExercises: [...state.workoutExercises, ...payload.workoutExercises],
-          workoutSets: [...state.workoutSets, ...payload.workoutSets],
+        const analysis = analyseStrongCsv(csv, { unit: weightUnitFor(state.settings.unitSystem) });
+        const batch = buildImportBatch(analysis, {
+          source: STRONG_PROFILE,
+          fileName,
+          existingExercises: state.exercises,
+          existingFingerprints: storedFingerprints(state),
         });
-        return payload.preview;
+        if (batch.workouts.length > 0) set(applyImportBatch(state, batch));
+        return {
+          workouts: batch.workouts.length,
+          sets: batch.job.setsImported,
+          skipped: analysis.skippedRows,
+          duplicates: batch.duplicatesSkipped,
+          issues: batch.issues.slice(0, 40).map((issue) => issue.message),
+          unmatched: batch.newExercises.map((exercise) => exercise.name),
+        };
       },
 
       exportSetsCsvText: () => {
