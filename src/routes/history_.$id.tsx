@@ -38,6 +38,7 @@ function HistoryDetailPage() {
   const replay = sessionReplay(
     slice,
     prs.map((row) => row.exerciseId),
+    unit,
   );
   const sessionClips = clips.filter((row) => row.workoutId === id);
 
