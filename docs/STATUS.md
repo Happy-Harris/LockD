@@ -5,7 +5,7 @@ this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HAND
 last PRs did and did not verify). Keep this file current: update the tables in the same PR that
 changes a status.
 
-_Last updated: 2026-09-29, after `LockD#68` merged. Step 11 is done. In flight: Step 13 (dependencies). Step 12 waits on the owner's go-ahead (§ 5)._
+_Last updated: 2026-09-29, after `LockD#69` merged. Steps 1 to 11 and 13 are done. Step 12 waits on the owner's go-ahead (§ 5)._
 
 ## 1. How to read the labels
 
@@ -97,7 +97,7 @@ State: **done**, **in flight**, **not started**. "GitHub" gives the pull request
 | 10 | Visual identity (sub-steps: 10a palette and accent themes retired; 10b the L mark and icons (I-38); 10c typefaces, Big Shoulders Display and Archivo; 10d pure poster and receipt layout with long lift names (I-32); 10e Oxide discipline: the accent marks live, selected and actionable things only): knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | **done, with carried items** (see "Open items carried by Step 10"): 10a `LockD#50`, 10b `LockD#51`, 10c `LockD#52`, 10d `LockD#53`; 10e is in flight | `claude/step10a-palette`, `claude/step10b-mark-icons`, `claude/step10c-typefaces`, `claude/step10d-poster-layout`, `claude/step10e-oxide-discipline` |
 | 11 | Approved improvements, one PR each: I-14, I-15, I-16, I-17/I-18/O2 (eras), I-23, I-24, I-25, I-33, I-34, I-37, I-41 | **done**: I-14 (`LockD#62`), I-15 (`LockD#60`, corrected to decision D6 in `LockD#64`), I-16 (`LockD#61`), I-17/I-18/O2 (`LockD#66`), I-23 (`LockD#58`), I-24 (`LockD#55`), I-25 (`LockD#56`), I-33 (`LockD#57`), I-34 (`LockD#59`), I-37 (`LockD#65`), I-41 (`LockD#63`). I-23 also rounds the demo arm values, and I-25 also fixes "RPE"; both wider than the plan's table says. Open owner decisions from this step are listed in § 5 | (merged) |
 | 12 | Scaffolding removal: Grok scripts and middleware, preview bridge, app-data, multiplayer; the OG tags move into `/s` and `/u` first (needs the owner's go-ahead); auth and cloud behind config (D16 dead-code deletions need the owner's yes) | not started | |
-| 13 | Cleanup: unused dependencies, `README.md` and the root `HANDOFF.md` rewritten from the code, final decisions summary | in progress: 30 unused dependencies removed (this PR, I-40); README, HANDOFF and the decisions summary next | `claude/step13-cleanup` |
+| 13 | Cleanup: unused dependencies, `README.md` and the root `HANDOFF.md` rewritten from the code, final decisions summary | **done** apart from what Step 12 will free: 31 unused dependencies removed (`LockD#69`, this PR), README and HANDOFF rewritten (this PR), decisions summary in § 5 | `claude/step13-readme-handoff` |
 
 Audit items (`I-n`) not listed above as belonging to a step are finished. Done: I-1 to I-3, I-5 to I-10,
 I-12, I-13, I-19, I-22, I-36, I-42 (Steps 2, 4d, 5, 7, 8b to 8d-1). Done: I-4 (the endpoint is gated and capped;
@@ -141,7 +141,7 @@ handover entry says so. The open ones:
 - **OG tags and the Grok middleware** (Step 12): the middleware still injects the share-card tags
   for `/s` and `/u` and a third-party script. Removing it means moving the tags into the routes
   first. Not yet approved.
-- **Root `HANDOFF.md`**: left in place (app-builder era), to be rewritten in Step 13. Delete now?
+- **Root `HANDOFF.md`**: rewritten from the code in Step 13 and kept.
 - **Dead code (D16)**: multiplayer, `counterfactual`, `wouldBePr`, `sessionCountStreak`. Deleting
   needs the owner's yes.
 - **Step 11 numbers that are the owner's to approve** (all named constants, one edit each): the era-detection rules
