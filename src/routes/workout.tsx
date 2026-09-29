@@ -1,5 +1,16 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Check, ChevronLeft, Flame, Minus, Plus, Timer, Trash2, Video, Zap } from "lucide-react";
+import {
+  Check,
+  ChevronLeft,
+  Flame,
+  Link2,
+  Minus,
+  Plus,
+  Timer,
+  Trash2,
+  Video,
+  Zap,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ExercisePicker } from "@/components/app/exercise-picker";
@@ -34,6 +45,7 @@ import {
   intensityValue,
 } from "@/lib/gym/intensity";
 import { useSlices } from "@/lib/gym/hooks";
+import { supersetLabels } from "@/lib/gym/superset";
 import { barbellSnap } from "@/lib/gym/loads";
 import { useGym } from "@/lib/gym/store";
 import { putClipBlob } from "@/lib/gym/vault";
@@ -72,6 +84,7 @@ function ActiveWorkoutPage() {
   const updateWorkout = useGym((s) => s.updateWorkout);
   const ensureWarmups = useGym((s) => s.ensureWarmups);
   const attachClip = useGym((s) => s.attachClip);
+  const setSuperset = useGym((s) => s.setSuperset);
   const slices = useSlices();
   const [picker, setPicker] = useState<"add" | string | null>(null);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -154,6 +167,7 @@ function ActiveWorkoutPage() {
   }, [workout, workoutExercises, templateExercises, exercises, bars, plates, settings, slices]);
 
   if (!workout) return null;
+  const labels = supersetLabels(blocks.map((block) => block.exercise));
 
   const completed = workoutSets.filter(
     (set) => set.workoutId === workout.id && set.isCompleted,
@@ -214,7 +228,11 @@ function ActiveWorkoutPage() {
       ) : null}
 
       <div className="space-y-4">
-        {blocks.map((block) => {
+        {blocks.map((block, blockIndex) => {
+          const nextBlock = blocks[blockIndex + 1];
+          const linkedWithNext =
+            !!block.exercise.supersetGroup &&
+            nextBlock?.exercise.supersetGroup === block.exercise.supersetGroup;
           const tracking = block.exercise.trackingTypeSnapshot;
           const target =
             block.prescription?.targetRepMin && block.prescription.targetRepMax
@@ -228,6 +246,11 @@ function ActiveWorkoutPage() {
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
                   <h2 className="font-display text-2xl font-semibold tracking-tight">
+                    {labels.get(block.exercise.id) ? (
+                      <span className="mr-2 rounded-lg bg-accent px-1.5 py-0.5 align-middle font-mono text-xs text-accent-ink">
+                        {labels.get(block.exercise.id)}
+                      </span>
+                    ) : null}
                     {block.exercise.exerciseNameSnapshot}
                   </h2>
                   <p className="text-xs text-muted">
@@ -237,6 +260,24 @@ function ActiveWorkoutPage() {
                   </p>
                 </div>
                 <div className="flex">
+                  {nextBlock ? (
+                    <button
+                      type="button"
+                      className={cn(
+                        "grid size-11 place-items-center rounded-xl hover:bg-raised",
+                        linkedWithNext ? "text-accent" : "text-subtle",
+                      )}
+                      aria-pressed={linkedWithNext}
+                      aria-label={
+                        linkedWithNext
+                          ? `Unlink ${block.exercise.exerciseNameSnapshot} from the next exercise`
+                          : `Superset ${block.exercise.exerciseNameSnapshot} with the next exercise`
+                      }
+                      onClick={() => setSuperset(block.exercise.id, !linkedWithNext)}
+                    >
+                      <Link2 className="size-4" />
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     className="grid size-11 place-items-center rounded-xl text-subtle hover:bg-raised"
