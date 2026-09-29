@@ -11,7 +11,6 @@ import { EQUIPMENT, METRICS, MOVEMENTS, MUSCLES, TRACKING } from "@/lib/backup/s
 import {
   fingerprintSession,
   type ExerciseHints,
-  type ImportAnalysis,
   type IssueDraft,
   type ParsedExercise,
   type ParsedMeasurement,
@@ -19,6 +18,14 @@ import {
   type ParsedTemplate,
   type ParsedWorkout,
 } from "./engine";
+import {
+  oneOf,
+  parseJsonInput,
+  refusalFrom,
+  wallClock,
+  whole,
+  type ForeignReadResult,
+} from "./foreign";
 
 /**
  * Reads a backup file from a sister app that keeps its log in the same shape (`repforge-backup`,
@@ -39,7 +46,6 @@ export const REPFORGE_SOURCE = { id: "repforge-json", label: "a backup from anot
 
 /** The newest format version this reader understands. */
 const SUPPORTED_VERSION = 1;
-const MAX_TEXT_BYTES = 64 * 1024 * 1024;
 const MAX_ROWS = 500_000;
 
 const id = z.string().min(1).max(200);
@@ -161,43 +167,11 @@ const fileSchema = z.object({
   }),
 });
 
-export type ForeignReadResult =
-  | { ok: false; errors: string[] }
-  | {
-      ok: true;
-      analysis: ImportAnalysis;
-      /** What the file holds and what was left out, one plain line each. */
-      notes: string[];
-    };
-
 export function isRepforgeBackup(value: unknown): boolean {
   return (
     !!value &&
     typeof value === "object" &&
     (value as { format?: unknown }).format === "repforge-backup"
-  );
-}
-
-const oneOf = <T extends string>(list: readonly T[], value: string | undefined): T | undefined =>
-  list.find((entry) => entry === value);
-
-/** A whole, non-negative number, or undefined when the source's value cannot be one. */
-function whole(value: number | undefined): number | undefined {
-  if (value === undefined || !Number.isFinite(value) || value < 0) return undefined;
-  return Math.round(value);
-}
-
-function wallClock(startedAt: string, tzRaw: number): string {
-  const local = new Date(Date.parse(startedAt) - tzRaw * 60_000);
-  const pad = (n: number, w = 2) => String(n).padStart(w, "0");
-  return `${pad(local.getUTCFullYear(), 4)}-${pad(local.getUTCMonth() + 1)}-${pad(local.getUTCDate())} ${pad(local.getUTCHours())}:${pad(local.getUTCMinutes())}:${pad(local.getUTCSeconds())}`;
-}
-
-function describePath(path: PropertyKey[]): string {
-  return path.reduce<string>(
-    (out, part) =>
-      typeof part === "number" ? `${out}[${part}]` : out ? `${out}.${String(part)}` : String(part),
-    "",
   );
 }
 
@@ -240,17 +214,9 @@ function hintsFor(
 }
 
 export function readRepforgeBackup(input: unknown): ForeignReadResult {
-  let value = input;
-  if (typeof input === "string") {
-    if (input.length > MAX_TEXT_BYTES) {
-      return { ok: false, errors: ["That file is too large to be a backup."] };
-    }
-    try {
-      value = JSON.parse(input);
-    } catch {
-      return { ok: false, errors: ["That file is not valid JSON, so it can’t be a backup."] };
-    }
-  }
+  const json = parseJsonInput(input);
+  if (!json.ok) return json;
+  const value = json.value;
   if (!isRepforgeBackup(value)) {
     return { ok: false, errors: ["That file is not a backup this app can read."] };
   }
@@ -264,14 +230,7 @@ export function readRepforgeBackup(input: unknown): ForeignReadResult {
     };
   }
   const parsed = fileSchema.safeParse(value);
-  if (!parsed.success) {
-    const issues = parsed.error.issues;
-    const shown = issues
-      .slice(0, 8)
-      .map((issue) => `${describePath(issue.path)}: ${issue.message}`);
-    const more = issues.length - shown.length;
-    return { ok: false, errors: more > 0 ? [...shown, `…and ${more} more problems.`] : shown };
-  }
+  if (!parsed.success) return refusalFrom(parsed.error.issues);
   const data = parsed.data.data;
 
   const issues: IssueDraft[] = [];

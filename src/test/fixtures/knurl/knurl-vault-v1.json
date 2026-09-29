@@ -1,0 +1,552 @@
+{
+ "schemaVersion": 1,
+ "exportedAt": "2026-09-28T12:00:00.000Z",
+ "brand": "knurl-os",
+ "exercises": [
+  {
+   "id": "ex-squat-0001",
+   "name": "Back Squat",
+   "primaryMuscleGroup": "quadriceps",
+   "secondaryMuscleGroups": [
+    "glutes",
+    "adductors"
+   ],
+   "equipmentType": "barbell",
+   "movementPattern": "squat",
+   "trackingType": "weight_reps",
+   "isCustom": false,
+   "isArchived": false,
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "ex-bench-0001",
+   "name": "Bench Press",
+   "primaryMuscleGroup": "chest",
+   "secondaryMuscleGroups": [
+    "front_delts",
+    "triceps"
+   ],
+   "equipmentType": "barbell",
+   "movementPattern": "push",
+   "trackingType": "weight_reps",
+   "isCustom": false,
+   "isArchived": false,
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "ex-row-00001",
+   "name": "Chest Supported Row",
+   "primaryMuscleGroup": "upper_back",
+   "secondaryMuscleGroups": [
+    "rear_delts",
+    "biceps"
+   ],
+   "equipmentType": "machine",
+   "movementPattern": "pull",
+   "trackingType": "weight_reps",
+   "isCustom": false,
+   "isArchived": false,
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "ex-ssb-00001",
+   "name": "Safety Bar Squat",
+   "primaryMuscleGroup": "quadriceps",
+   "secondaryMuscleGroups": [
+    "spinal_erectors"
+   ],
+   "equipmentType": "specialty_bar",
+   "movementPattern": "squat",
+   "trackingType": "weight_reps",
+   "isCustom": false,
+   "isArchived": false,
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "ex-plank-001",
+   "name": "Plank",
+   "primaryMuscleGroup": "abdominals",
+   "secondaryMuscleGroups": [
+    "obliques"
+   ],
+   "equipmentType": "bodyweight",
+   "movementPattern": "isolation",
+   "trackingType": "duration",
+   "isCustom": false,
+   "isArchived": false,
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "ex-carry-001",
+   "name": "Farmer Carry",
+   "primaryMuscleGroup": "forearms",
+   "secondaryMuscleGroups": [
+    "traps"
+   ],
+   "equipmentType": "dumbbell",
+   "movementPattern": "carry",
+   "trackingType": "distance_time",
+   "isCustom": false,
+   "isArchived": false,
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  }
+ ],
+ "templates": [
+  {
+   "id": "tp-000001",
+   "name": "Lower A",
+   "notes": "",
+   "isArchived": false,
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  }
+ ],
+ "templateExercises": [
+  {
+   "id": "te-000001",
+   "templateId": "tp-000001",
+   "exerciseId": "ex-squat-0001",
+   "order": 0,
+   "supersetId": null,
+   "targetSets": 4,
+   "repMin": 5,
+   "repMax": 8,
+   "targetRpe": 8,
+   "targetRir": null,
+   "restSeconds": 180,
+   "includeWarmup": true,
+   "notes": "Belt"
+  },
+  {
+   "id": "te-000002",
+   "templateId": "tp-000001",
+   "exerciseId": "ex-plank-001",
+   "order": 1,
+   "supersetId": "ss-9",
+   "targetSets": 3,
+   "repMin": 1,
+   "repMax": 1,
+   "targetRpe": null,
+   "targetRir": 2,
+   "restSeconds": 60,
+   "includeWarmup": false,
+   "notes": ""
+  }
+ ],
+ "workouts": [
+  {
+   "id": "wk-000001",
+   "templateId": null,
+   "name": "Lower",
+   "status": "completed",
+   "startedAt": "2026-02-03T17:30:00.000Z",
+   "completedAt": "2026-02-03T18:40:00.000Z",
+   "durationSeconds": 4200,
+   "timezoneOffsetMinutes": -60,
+   "notes": "Heavy",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "wk-000002",
+   "templateId": null,
+   "name": "Upper",
+   "status": "completed",
+   "startedAt": "2026-02-05T07:00:00.000Z",
+   "completedAt": "2026-02-05T07:50:00.000Z",
+   "durationSeconds": 3000,
+   "timezoneOffsetMinutes": 300,
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "wk-000003",
+   "templateId": null,
+   "name": "Started, not finished",
+   "status": "active",
+   "startedAt": "2026-02-07T10:00:00.000Z",
+   "completedAt": null,
+   "durationSeconds": null,
+   "timezoneOffsetMinutes": 0,
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "wk-000004",
+   "templateId": null,
+   "name": "Dropped",
+   "status": "discarded",
+   "startedAt": "2026-02-08T10:00:00.000Z",
+   "completedAt": null,
+   "durationSeconds": null,
+   "timezoneOffsetMinutes": 0,
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z",
+   "updatedAt": "2026-02-01T09:00:00.000Z"
+  }
+ ],
+ "workoutExercises": [
+  {
+   "id": "we-000001",
+   "workoutId": "wk-000001",
+   "exerciseId": "ex-squat-0001",
+   "order": 0,
+   "supersetId": null,
+   "snapshotName": "Back Squat",
+   "snapshotPrimary": "quadriceps",
+   "snapshotSecondary": [
+    "glutes",
+    "adductors"
+   ],
+   "snapshotEquipment": "barbell",
+   "snapshotPattern": "squat",
+   "snapshotTracking": "weight_reps",
+   "restSeconds": 120,
+   "includeWarmup": false,
+   "notes": ""
+  },
+  {
+   "id": "we-000002",
+   "workoutId": "wk-000001",
+   "exerciseId": "ex-ssb-00001",
+   "order": 1,
+   "supersetId": null,
+   "snapshotName": "Safety Bar Squat",
+   "snapshotPrimary": "quadriceps",
+   "snapshotSecondary": [
+    "spinal_erectors"
+   ],
+   "snapshotEquipment": "specialty_bar",
+   "snapshotPattern": "squat",
+   "snapshotTracking": "weight_reps",
+   "restSeconds": 120,
+   "includeWarmup": false,
+   "notes": ""
+  },
+  {
+   "id": "we-000003",
+   "workoutId": "wk-000001",
+   "exerciseId": "ex-plank-001",
+   "order": 2,
+   "supersetId": null,
+   "snapshotName": "Plank",
+   "snapshotPrimary": "abdominals",
+   "snapshotSecondary": [
+    "obliques"
+   ],
+   "snapshotEquipment": "bodyweight",
+   "snapshotPattern": "isolation",
+   "snapshotTracking": "duration",
+   "restSeconds": 120,
+   "includeWarmup": false,
+   "notes": ""
+  },
+  {
+   "id": "we-000004",
+   "workoutId": "wk-000002",
+   "exerciseId": "ex-bench-0001",
+   "order": 0,
+   "supersetId": "ss-1",
+   "snapshotName": "Bench Press",
+   "snapshotPrimary": "chest",
+   "snapshotSecondary": [
+    "front_delts",
+    "triceps"
+   ],
+   "snapshotEquipment": "barbell",
+   "snapshotPattern": "push",
+   "snapshotTracking": "weight_reps",
+   "restSeconds": 120,
+   "includeWarmup": false,
+   "notes": "Pause reps"
+  },
+  {
+   "id": "we-000005",
+   "workoutId": "wk-000002",
+   "exerciseId": "ex-row-00001",
+   "order": 1,
+   "supersetId": "ss-1",
+   "snapshotName": "Chest Supported Row",
+   "snapshotPrimary": "upper_back",
+   "snapshotSecondary": [
+    "rear_delts",
+    "biceps"
+   ],
+   "snapshotEquipment": "machine",
+   "snapshotPattern": "pull",
+   "snapshotTracking": "weight_reps",
+   "restSeconds": 120,
+   "includeWarmup": false,
+   "notes": ""
+  },
+  {
+   "id": "we-000006",
+   "workoutId": "wk-000002",
+   "exerciseId": "ex-carry-001",
+   "order": 2,
+   "supersetId": null,
+   "snapshotName": "Farmer Carry",
+   "snapshotPrimary": "forearms",
+   "snapshotSecondary": [
+    "traps"
+   ],
+   "snapshotEquipment": "dumbbell",
+   "snapshotPattern": "carry",
+   "snapshotTracking": "distance_time",
+   "restSeconds": 120,
+   "includeWarmup": false,
+   "notes": ""
+  },
+  {
+   "id": "we-000007",
+   "workoutId": "wk-000003",
+   "exerciseId": "ex-squat-0001",
+   "order": 0,
+   "supersetId": null,
+   "snapshotName": "Back Squat",
+   "snapshotPrimary": "quadriceps",
+   "snapshotSecondary": [],
+   "snapshotEquipment": "barbell",
+   "snapshotPattern": "squat",
+   "snapshotTracking": "weight_reps",
+   "restSeconds": 120,
+   "includeWarmup": false,
+   "notes": ""
+  }
+ ],
+ "workoutSets": [
+  {
+   "id": "st-000001",
+   "workoutExerciseId": "we-000001",
+   "setIndex": 0,
+   "classification": "warmup",
+   "weightKg": 60,
+   "reps": 8,
+   "durationSeconds": null,
+   "distanceMeters": null,
+   "rpe": null,
+   "rir": null,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  },
+  {
+   "id": "st-000002",
+   "workoutExerciseId": "we-000001",
+   "setIndex": 1,
+   "classification": "working",
+   "weightKg": 100.5,
+   "reps": 5,
+   "durationSeconds": null,
+   "distanceMeters": null,
+   "rpe": 8,
+   "rir": 2,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  },
+  {
+   "id": "st-000003",
+   "workoutExerciseId": "we-000001",
+   "setIndex": 2,
+   "classification": "failure",
+   "weightKg": 100.5,
+   "reps": 3,
+   "durationSeconds": null,
+   "distanceMeters": null,
+   "rpe": null,
+   "rir": null,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  },
+  {
+   "id": "st-000004",
+   "workoutExerciseId": "we-000001",
+   "setIndex": 3,
+   "classification": "working",
+   "weightKg": 100.5,
+   "reps": 5,
+   "durationSeconds": null,
+   "distanceMeters": null,
+   "rpe": null,
+   "rir": null,
+   "completedAt": null,
+   "isCompleted": false
+  },
+  {
+   "id": "st-000005",
+   "workoutExerciseId": "we-000002",
+   "setIndex": 0,
+   "classification": "working",
+   "weightKg": 90,
+   "reps": 6,
+   "durationSeconds": null,
+   "distanceMeters": null,
+   "rpe": null,
+   "rir": null,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  },
+  {
+   "id": "st-000006",
+   "workoutExerciseId": "we-000003",
+   "setIndex": 0,
+   "classification": "working",
+   "weightKg": null,
+   "reps": null,
+   "durationSeconds": 60,
+   "distanceMeters": null,
+   "rpe": null,
+   "rir": null,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  },
+  {
+   "id": "st-000007",
+   "workoutExerciseId": "we-000004",
+   "setIndex": 0,
+   "classification": "working",
+   "weightKg": 82.5,
+   "reps": 5,
+   "durationSeconds": null,
+   "distanceMeters": null,
+   "rpe": null,
+   "rir": null,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  },
+  {
+   "id": "st-000008",
+   "workoutExerciseId": "we-000004",
+   "setIndex": 1,
+   "classification": "drop",
+   "weightKg": 70,
+   "reps": 8,
+   "durationSeconds": null,
+   "distanceMeters": null,
+   "rpe": null,
+   "rir": null,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  },
+  {
+   "id": "st-000009",
+   "workoutExerciseId": "we-000005",
+   "setIndex": 0,
+   "classification": "working",
+   "weightKg": 55,
+   "reps": 10,
+   "durationSeconds": null,
+   "distanceMeters": null,
+   "rpe": 7.5,
+   "rir": null,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  },
+  {
+   "id": "st-000010",
+   "workoutExerciseId": "we-000006",
+   "setIndex": 0,
+   "classification": "working",
+   "weightKg": 32,
+   "reps": null,
+   "durationSeconds": 40,
+   "distanceMeters": 50.5,
+   "rpe": null,
+   "rir": null,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  },
+  {
+   "id": "st-000011",
+   "workoutExerciseId": "we-000007",
+   "setIndex": 0,
+   "classification": "working",
+   "weightKg": 60,
+   "reps": 5,
+   "durationSeconds": null,
+   "distanceMeters": null,
+   "rpe": null,
+   "rir": null,
+   "completedAt": "2026-02-01T09:00:00.000Z",
+   "isCompleted": true
+  }
+ ],
+ "bodyMeasurements": [
+  {
+   "id": "bm-000001",
+   "metric": "bodyweight",
+   "valueCanonical": 82.35,
+   "measuredAt": "2026-02-03T08:00:00.000Z",
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "bm-000002",
+   "metric": "arms",
+   "valueCanonical": 34.8,
+   "measuredAt": "2026-02-03T08:05:00.000Z",
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "bm-000003",
+   "metric": "thighs",
+   "valueCanonical": 58.25,
+   "measuredAt": "2026-02-03T08:06:00.000Z",
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z"
+  },
+  {
+   "id": "bm-000004",
+   "metric": "waist",
+   "valueCanonical": 84,
+   "measuredAt": "2026-02-03T08:07:00.000Z",
+   "notes": "",
+   "createdAt": "2026-02-01T09:00:00.000Z"
+  }
+ ],
+ "equipmentProfile": {
+  "id": "default",
+  "bars": [
+   {
+    "id": "bar-00001",
+    "name": "Olympic",
+    "weightKg": 20,
+    "kind": "olympic_20"
+   }
+  ],
+  "plates": [
+   {
+    "denominationKg": 20,
+    "count": 4
+   }
+  ],
+  "collarWeightKg": 0,
+  "activeBarId": "bar-00001"
+ },
+ "prefs": {
+  "id": "singleton",
+  "units": "kg",
+  "theme": "mill",
+  "oneRmFormula": "epley",
+  "secondaryVolumeFactor": 0.5,
+  "appIcon": "mark",
+  "restBeep": true,
+  "restVibrate": false,
+  "onboardingDone": true,
+  "updatedAt": "2026-02-01T09:00:00.000Z"
+ }
+}

@@ -6,6 +6,35 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 7d-2: import a vault from the other sister app (knurl-os v1), and unsided girths
+
+- **`src/lib/import/knurl.ts`:** reads a vault export (`brand: "knurl-os"`, schema version 1) through
+  the same pipeline as 7d-1. Shared helpers moved to `foreign.ts` (JSON parsing, refusal text with
+  paths, wall-clock stamp, `whole`, `oneOf`). The Settings input "Import a backup from another app
+  (JSON)" now recognises either format; a file that is neither is refused.
+- **Units:** kilograms and metres arrive as decimals and become whole grams and metres
+  (100.5 kg → 100,500 g). Measurements: kilograms → grams, centimetres → millimetres.
+- **Time zone:** that app already uses raw `getTimezoneOffset()`, so the offset is carried as it is
+  (no negation, unlike 7d-1). The local date comes from the wall clock at that offset.
+- **Vocabulary, stated not smoothed:** same names and plain renamings map directly (`quadriceps` →
+  quads, `abdominals` → core, `distance_time` → distance and duration). Groups this app holds inside
+  a wider one map to it (three delts → shoulders, upper back and spinal erectors → back, obliques →
+  core) and the summary lists which. `specialty_bar` → barbell (said). **`push`/`pull` are not
+  guessed as horizontal or vertical**: those exercises keep the placeholder pattern every
+  unclassified exercise has, and the summary tells the lifter to classify them (Bulk Classify, 7e).
+  A muscle value the app does not know leaves the exercise unmapped.
+- **Unsided girths (plan D13, approved):** `MeasurementMetric` gains `arms`, `thighs` and `calves`,
+  labelled "… (side not recorded)". A girth recorded without a side is never split into left and
+  right. Additive: `lockd-backup` files without them read as before, and the backup schema lists them.
+  The Body screen offers them because it lists every metric.
+- **Summary fix (also affects 7d-1):** "New exercises to classify" now lists only exercises with no
+  muscle group, not exercises a backup classified; the import note pluralises correctly.
+- **Tests:** 20 in `knurl.test.ts` (synthetic fixture `src/test/fixtures/knurl/`, mutation-checked:
+  sign, both unit conversions, push guessed, arms split, merged-muscle report, backup enum, display
+  unit) and an e2e case. The e2e for 7d-1 now finds its sessions by start time; the two sessions in
+  that fixture share a name and the log's order is not chronological.
+- **Not verified:** a real vault export from the other app.
+
 ### 2026-09-29 — Plan PR 7d-1: import a backup from the sister app (`repforge-backup` v1)
 
 Plan PR 7d is split. **7d-1 (this):** the `repforge-backup` reader and the engine changes it needs.

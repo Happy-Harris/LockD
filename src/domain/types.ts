@@ -194,7 +194,11 @@ export type MeasurementMetric =
   | "thigh_left"
   | "thigh_right"
   | "calf_left"
-  | "calf_right";
+  | "calf_right"
+  /** Girths a source recorded without saying which side. Never split into left and right. */
+  | "arms"
+  | "thighs"
+  | "calves";
 
 export interface BodyMeasurement {
   id: UUID;
@@ -368,7 +372,7 @@ export interface AppSettings {
 export type ImportJobStatus = "pending" | "completed" | "failed" | "cancelled";
 
 /** Where an import came from. Provisional until the importers land (plan PR 7). */
-export type ImportSource = "strong-csv" | "hevy-csv" | "generic-csv" | "repforge-json";
+export type ImportSource = "strong-csv" | "hevy-csv" | "generic-csv" | "repforge-json" | "knurl-json";
 
 export interface ImportJob {
   id: UUID;

@@ -29,6 +29,7 @@ const HISTORY_SURFACES = [
   "src/lib/import/strong.ts",
   "src/lib/import/hevy.ts",
   "src/lib/import/repforge.ts",
+  "src/lib/import/knurl.ts",
   "src/lib/import/batch.ts",
   "src/lib/gym/store.ts",
 ];
