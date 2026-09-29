@@ -6,6 +6,24 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 4d: `records` (I-12, first-exposure PRs)
+
+- **Fixed I-12:** the first time a lift is on file is its baseline, never a PR. Before, the demo
+  log's first session reported 4 PRs (one per lift) and every imported lift would have opened with
+  a fake PR. Applied in both places that stamp PRs: `detectPrsForWorkout` (session receipt, history
+  detail, finish toast) and the Chronicle's running e1RM stamps (PR runs).
+- **Reviewable snapshot diff** (`engine-characterisation`): the longest PR run goes from 156 stamps
+  starting 2025-10-06 to 143 starting 2025-10-13, and the Feb 2026 run from 81 to 80. Nothing else
+  moved. `records.test.ts` pins the rule; its first commit pinned the old behaviour as `BUG:`.
+- `src/domain/records.ts` is Strong-Pro's module (weight, e1RM, set-volume and rep-bracket
+  records) with the same first-exposure rule, plus one more fix: a rep record now respects earlier
+  sets in the same session (Strong-Pro compared only against history). 8 tests, none ported
+  (Strong-Pro had none). Lockd's engines still use their own e1RM-only detection; moving them onto
+  this module is plan PR 8.
+- **Not fixed, noted:** `completeSet` calls `detectPrsForWorkout`, but the workout is still `active`
+  and `sliceSessions` only holds completed sessions, so the mid-workout PR toast never fires. The
+  domain `findNewRecords` is built for that; wiring it in belongs with the logging work (plan PR 9).
+
 ### 2026-09-29 — Plan PR 4c: `volume`
 
 - `src/domain/volume.ts` is Strong-Pro's module (tracking-aware tonnage, `totalsForGroups`,

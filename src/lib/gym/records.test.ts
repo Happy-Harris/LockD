@@ -20,16 +20,25 @@ function sample() {
   return { log, slices };
 }
 
-describe("personal records — current behaviour, including the first-exposure defect", () => {
-  it("BUG: the first session on file reports a PR for every lift in it", () => {
+describe("personal records — first exposure", () => {
+  it("the first session on file for a lift is the baseline, not a PR", () => {
     const { slices } = sample();
     const first = slices[0]!;
     const hits = detectPrsForWorkout(first.workout.id, slices, "epley");
-    expect(hits).toHaveLength(4); // BUG (I-12): nothing earlier exists to beat, yet each lift is flagged.
-    expect(hits.map((row) => row.exerciseName)).toMatchSnapshot();
+    expect(hits).toEqual([]);
   });
 
-  it("pins the Chronicle's PR runs, which count those first stamps", () => {
+  it("only lifts with an earlier session can be flagged", () => {
+    const { slices } = sample();
+    const seen = new Set<string>();
+    for (const slice of slices) {
+      const hits = detectPrsForWorkout(slice.workout.id, slices, "epley");
+      for (const hit of hits) expect(seen.has(hit.exerciseId)).toBe(true);
+      for (const exercise of slice.exercises) seen.add(exercise.exerciseId);
+    }
+  });
+
+  it("the Chronicle's PR runs are built from the same rule", () => {
     const { log, slices } = sample();
     const chronicle = buildChronicle(slices, "epley", goals, log.eraNames);
     const runs = chronicle.events.filter((row) => row.kind === "pr_run");

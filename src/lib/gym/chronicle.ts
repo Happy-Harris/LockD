@@ -246,14 +246,16 @@ export function buildChronicle(
 
   const records = computeRecords(slices, formula, true).filter((row) => row.kind === "e1rm");
   const prsByDate = new Map<string, PersonalRecord[]>();
-  const firsts = new Map<string, PersonalRecord>();
   const running = new Map<string, number>();
   for (const slice of slices) {
     for (const exercise of slice.exercises) {
       const seriesPoint = e1rmSeries(exercise.exerciseId, [slice], formula)[0];
       if (!seriesPoint) continue;
-      const prev = running.get(exercise.exerciseId) ?? 0;
-      if (seriesPoint.value > prev) {
+      const prev = running.get(exercise.exerciseId);
+      if (prev === undefined) {
+        // First time on file is the baseline, not a PR.
+        running.set(exercise.exerciseId, seriesPoint.value);
+      } else if (seriesPoint.value > prev) {
         const pr: PersonalRecord = {
           exerciseId: exercise.exerciseId,
           exerciseName: exercise.exerciseNameSnapshot,
@@ -265,7 +267,6 @@ export function buildChronicle(
         const list = prsByDate.get(slice.workout.localDate) ?? [];
         list.push(pr);
         prsByDate.set(slice.workout.localDate, list);
-        if (!firsts.has(exercise.exerciseId)) firsts.set(exercise.exerciseId, pr);
         running.set(exercise.exerciseId, seriesPoint.value);
       }
     }
