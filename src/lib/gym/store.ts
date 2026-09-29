@@ -148,7 +148,7 @@ interface GymActions {
 
 export type GymState = GymData & GymActions;
 
-function freshData(): GymData {
+export function freshData(): GymData {
   const stamp = new Date().toISOString();
   return {
     exercises: seedExercises(stamp),

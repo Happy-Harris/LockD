@@ -6,6 +6,34 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 5c: the migration runner
+
+- **Still not wired.** `src/lib/storage/migration.ts` is `runMigration({ repo, storage, freshData })`;
+  5d calls it from `GymGate`. It only ever **reads** `localStorage['lockd-v1']` (tests hand it a
+  storage that throws on anything but `getItem`) and never deletes it.
+- **The order is the safety story** (PLAN § 4): already migrated → load from the database; no old
+  payload → seed a fresh log; unreadable payload → **do nothing at all**; keep the raw string in
+  `safetyBackups` (`pre-migration`, `format: "raw-localstorage"`) before any row is written; write
+  every collection in one transaction; read it back and compare a checksum (counts per collection,
+  plus a hash over each set's `(id, weightG, reps, durationSeconds, distanceM, isCompleted)` and
+  each workout's `(id, status, localDate)`); only then record `meta.migratedFrom`,
+  `migratedAt`, `sourceChecksum`. A crash before that last step re-runs safely.
+- **Outcomes** (`MigrationResult`): `already-migrated`, `fresh`, `migrated`, `corrupt` (carries the
+  raw string so Settings can offer "download raw data"), `verify-failed` (new tables emptied; keep
+  running from `localStorage`). It runs under `navigator.locks` (`lockd-migrate`), so two tabs
+  migrate once; without the Locks API it still works, just not serialised across tabs.
+- **Both 5a findings are handled:** a corrupt payload is left exactly as it was (no seed, no write,
+  no meta), and collections an old payload lacks come from fresh data (`withFreshDefaults`), the
+  same way zustand's merge does today.
+- The port gained `rawSafetyCopy`. `freshData()` is now exported from the store (no change).
+- **38 tests**, run on both repositories and all six persisted fixtures, including the 137-session
+  sample log; corrupt variants; two tabs at once; a crash before the meta; a lossy copy. Four
+  mutations (skip the raw copy, skip verification, seed over a corrupt payload, write meta before
+  verifying) each fail the suite.
+- **Not covered here:** the Settings restore ("restore the copy taken before the move") and the
+  "download the copy" link are 5d. Deleting the old key is a separate later PR (30 days and three
+  successful boots).
+
 ### 2026-09-29 — Plan PR 5b: Dexie schema v2 and the `LockdRepository` port
 
 - **Nothing reads or writes the new tables yet.** The app still persists to `localStorage`; this

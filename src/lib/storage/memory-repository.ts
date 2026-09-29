@@ -77,6 +77,24 @@ export class MemoryRepository implements LockdRepository {
     return row;
   }
 
+  async rawSafetyCopy(
+    reason: SafetyReason,
+    raw: string,
+    sessions: number,
+    createdAt: string,
+  ): Promise<SafetyBackup> {
+    const row: SafetyBackup = {
+      id: `${createdAt}-${reason}`,
+      createdAt,
+      reason,
+      sessions,
+      json: raw,
+      format: "raw-localstorage",
+    };
+    this.safety.push(row);
+    return row;
+  }
+
   async meta(): Promise<RepoMeta> {
     return { schemaVersion: 2, ...this.metaRows };
   }
