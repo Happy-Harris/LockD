@@ -16,6 +16,7 @@ import { applyBackup, restoreMessage, type RestoreMode } from "@/lib/backup/appl
 import { parseBackup } from "@/lib/backup/schema";
 import { takeSafetyBackup } from "@/lib/storage/safety";
 import { defaultQuickIncrementG, lengthUnitFor, weightUnitFor } from "@/domain/units";
+import { EquipmentEditor } from "@/components/app/equipment-editor";
 import { GoalLiftPicker } from "@/components/app/goal-lift-picker";
 import { csvFiles } from "@/lib/export/csv";
 import { useGym } from "@/lib/gym/store";
@@ -200,6 +201,9 @@ function SettingsPage() {
           RPE and RIR are stored separately and never converted. Switching hides the other; nothing
           is deleted.
         </p>
+      </Section>
+      <Section title="Equipment">
+        <EquipmentEditor />
       </Section>
       <Section title="Rest timer">
         <Segment
