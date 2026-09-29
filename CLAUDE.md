@@ -1,7 +1,8 @@
 # Lock'd — project guide
 
-Read this before changing anything, then read [docs/HANDOVER.md](docs/HANDOVER.md) for current
-state (what shipped, most recent first).
+Read this before changing anything, then [docs/STATUS.md](docs/STATUS.md) (the map: what every
+Step, Opp and PR label means, what is done and what is next), then the top of
+[docs/HANDOVER.md](docs/HANDOVER.md) (what shipped, most recent first).
 
 ## What Lock'd is
 
@@ -40,6 +41,7 @@ understand their own record?*
 | `src/components/app/` | Shell, receipts, posters, rest timer, onboarding, command palette |
 | `e2e/` | Playwright specs (phone 390 px, desktop 1024 px) |
 | `docs/consolidation/` | The approved plan, feature matrix, addendum and baseline screenshots |
+| `docs/STATUS.md` | The map: label scheme, Step and Opp status, decisions, terms |
 | `docs/HANDOVER.md` | Handover log: what shipped, most recent first |
 
 Some app-builder scaffolding is still in the tree (`scripts/grok-*` and `server/middleware/grok-pwa.ts`,
@@ -60,6 +62,8 @@ npm run test:legacy  # old scaffolding suites, not part of verify
 ## How work lands
 
 - Follow the PR order in `docs/consolidation/PLAN.md` § 3 (as amended by `PLAN-ADDENDUM.md`).
+  Label work as in `docs/STATUS.md` § 1: `Step 8d-2: …` or `Opp 2: …` in PR titles, and keep the
+  status tables there current in the same PR.
 - One area per PR, its own branch from `main`, tests with the code, `verify` and e2e green in CI.
 - Every PR targets `main`. If stacking is necessary, tell the owner and do not merge until retargeted.
 - Characterise before you change: an engine gets fixture tests pinning current behaviour before

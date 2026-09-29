@@ -1,0 +1,177 @@
+# Lock'd — where the project stands
+
+**This file is the map.** If you are a new engineer or a new AI model picking this project up, read
+this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HANDOVER.md` (what the
+last PRs did and did not verify). Keep this file current: update the tables in the same PR that
+changes a status.
+
+_Last updated: 2026-09-29, after `LockD#33` merged. In flight: Step 8d-2._
+
+## 1. How to read the labels
+
+Several numbering systems were in use while this was built. They are different things. Use these
+forms, and only these, in PR titles, branch names, commits and docs.
+
+| Form | Means | Defined in | Example |
+|---|---|---|---|
+| **Step 7b** | One step of the consolidation plan (Steps 1 to 13). A letter is a slice of a step that was too big to review as one diff. Older text says "Plan PR 7b" or "PR 7b": it is the same thing. | `docs/consolidation/PLAN.md` § 3, sliced in § 3 below | `Step 8c-1` |
+| **Opp 4** | One of the owner's 11 opportunities in the document *Lock'd — Where It Can Win* (`Lock_D_Upgrades.md`, held by the owner, not in this repo). Phase 3 work is labelled this way. | § 4 below | `Opp 2: web receipt` |
+| **LockD#23** | A GitHub pull request number in `Happy-Harris/LockD`. Always write the repo, because the `motivatedc-creator` account also has PRs numbered from 1. | GitHub | `LockD#23` |
+| **I-20** | An improvement found in the audit. | `PLAN.md` § 7 | `I-19` |
+| **D5** | A decision the plan asked the owner to make. | `PLAN.md` § 8 | `D13` |
+| **O2** | An override: a place the plan departs from an earlier doc, with a reason. | `PLAN.md` § 7 | `O1` |
+
+Going forward:
+
+- **PR title:** `Step 8d-2: <what changed>` for plan steps, `Opp 2: <what>` for Phase 3, `Fix: <what>`
+  or `Docs: <what>` for anything else.
+- **Branch:** `claude/step8d2-<slug>` or `claude/opp2-<slug>`.
+- **Handover entry** (in `docs/HANDOVER.md`, newest first): `### YYYY-MM-DD — Step 8d-2: <title>`.
+- **Phases:** Phase 1 = the plan. Phase 2 = Steps 1 to 13. Phase 3 = the Opp items. Phase 4 = design
+  docs only for the native items (Opp 7, Opp 10, and the lock-screen part of Opp 6).
+
+## 2. Read this first (for a new agent)
+
+1. `CLAUDE.md`: principles, commands, how work lands, live identifiers.
+2. This file.
+3. `docs/HANDOVER.md`: newest 5 entries. Each says what shipped, what changed for the user, and
+   what was **not** verified.
+4. `docs/consolidation/PLAN.md` (the plan), `PLAN-ADDENDUM.md` (owner decisions), `FEATURE-MATRIX.md`
+   (where every feature came from), `HEVY-IMPORT.md` (the Hevy contract).
+5. Then the code. `src/domain/` is pure maths, `src/lib/gym/` the engines and store,
+   `src/lib/import/` and `src/lib/export/` portability, `src/lib/storage/` durable storage.
+
+Standing rules (from the owner; `CLAUDE.md` has the full text):
+
+- Every PR targets `main`. Donor repos are read-only.
+- `verify` and e2e green on the current head, no unresolved review comments, no conflicts, before a
+  merge. Never force-push `main`. Ask before deleting a Lock'd feature.
+- Characterise before changing an engine. Any stored-data change ships a migration, a test and an
+  old-format fixture.
+- Live identifiers are never renamed (`lockd-v1`, IndexedDB `lockd` and `lockd-vault`, backup formats
+  `lockd-backup` and `lockd-program`, URLs `/s/$id` and `/u/$handle`, the `lockd_*` tables).
+- The repo is **public**: no secrets, keys, deployment URLs or private data in code, tests,
+  fixtures or PR text.
+- Brand: Lock'd. Never RepForge, Strong-Pro, Certified, Knurl or Grok in user-facing copy (Strong
+  only as an import source). Say "a backup from another app".
+- History, charts and export are never paywalled (guard test).
+- Number honesty: no silent muscle mapping, missing stays missing, every number explainable.
+- The owner wants short summaries ("TLDR"), and merges are authorised for this session once both
+  checks are green.
+
+Repos: the product is `Happy-Harris/LockD`. `Happy-Harris/Lock-D` holds only the planning docs.
+Donors (`motivatedc-creator/Strong-Pro`, `knurl-os`) are read-only. A few early PRs (the privacy
+migration and the characterisation tests) were written by another agent and landed via the
+`motivatedc-creator` account.
+
+## 3. The plan: Steps 1 to 13
+
+State: **done**, **in flight**, **not started**. "GitHub" gives the pull request(s).
+
+| Step | What | State | GitHub |
+|---|---|---|---|
+| 1 | Guardrails: verify, CI, tests, brand check, history promise | done | LockD#2 |
+| 2 | Critical fixes (Train crash, unreachable screens, discard and undo, safe sign-in, Lab endpoint) | done | LockD#3, landed by LockD#4 |
+| (privacy) | Private lockers by default, prerequisite for Step 3 | done | motivatedc-creator PR 1 |
+| 3 | Characterisation tests for the engines and store | done | motivatedc-creator PR 2 |
+| 3+ | Test suite pinned to UTC | done | LockD#5 |
+| 4a to 4g | Domain layer: tests, time, volume, records, taxonomy, types, evidence catalog | done | LockD#6 to #12 |
+| 4+ | History "Sets" counts every set after warm-up | done | LockD#13 |
+| 5a to 5e | Durable storage: fixtures, Dexie schema and port, migration, live wiring, cross-tab sync | done | LockD#14 to #18 |
+| 6a, 6b | Offline: fonts, manifest, icons; the service worker | done | LockD#19, #20 |
+| 7a | Backup validation and safe restore | done | LockD#21 |
+| (cleanup) | Unused files removed (AGENTS.md folded into CLAUDE.md, `.grok/`, sandbox tooling) | done | LockD#22 |
+| 7b | Import pipeline; Strong CSV rebuilt on it | done | LockD#23 |
+| 7c | Hevy CSV importer | done | LockD#24 |
+| 7d-1, 7d-2 | Importers for the two sister apps' backups; unsided girth metrics | done | LockD#25, #26 |
+| 7e | Import wizard and Bulk Classify | done | LockD#27 |
+| 7f | CSV export rewrite; seed library 66 to 93 with a versioned top-up | done | LockD#28 |
+| 8a | Analytics engines ported and tested, not wired | done | LockD#29 |
+| 8b | Weekly verdict and change flags on screen | done | LockD#30 |
+| 8c-1 | Muscle sets and personal targets replace MEV/MAV/MRV | done | LockD#31 |
+| 8c-2 | "Last trained" replaces recovery states; standards bands become a ratio | done | LockD#32 |
+| 8d-1 | Goal lifts are the lifter's own, with pickers; est. 1RM labelled and rounded | done | LockD#33 |
+| 8d-2 | Progression merge (I-20): windowed stall with a layoff guard, loads on the increment grid or buildable with the lifter's plates, program `linear` rule fixed | **in flight** | branch `claude/pr8d2-progression` |
+| 8d-3 | Deterministic Ask the Lab, so guests get an answer that cites the log (I-4, D3) | not started | |
+| 9 | Logging details: per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | not started | |
+| 10 | Visual identity: knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | not started | |
+| 11 | Approved improvements, one PR each: I-14, I-15, I-16, I-17/I-18/O2 (eras), I-23, I-24, I-25, I-33, I-34, I-37, I-41 | not started | |
+| 12 | Scaffolding removal: Grok scripts and middleware, preview bridge, app-data, multiplayer; the OG tags move into `/s` and `/u` first (needs the owner's go-ahead); auth and cloud behind config (D16 dead-code deletions need the owner's yes) | not started | |
+| 13 | Cleanup: unused dependencies, `README.md` and the root `HANDOFF.md` rewritten from the code, final decisions summary | not started | |
+
+Audit items (`I-n`) not listed above as belonging to a step are finished. Done: I-1 to I-3, I-5 to I-10,
+I-12, I-13, I-19, I-22, I-36, I-42 (Steps 2, 4d, 5, 7, 8b to 8d-1). Partly done: I-4 (the endpoint is gated and capped;
+the deterministic guest Lab is 8d-3), I-11 (bands gone; the Today "relative" block wording is
+open), I-40 (lockfile done in Step 1; unused dependencies in Step 13). In flight: I-20.
+
+## 4. The owner's opportunities (Phase 3 and 4)
+
+From *Lock'd — Where It Can Win*. Labelled **Opp n**. Opportunity 5 is a promise, kept; 1, 4 and 5
+are the ones the Step 4 to 8 work has been building underneath.
+
+| Opp | What | State | Done by / next |
+|---|---|---|---|
+| 1 | Import-first Chronicle: Hevy and generic CSV beside Strong with mapping review; then build Chronicle straight after an import | **import done**, Chronicle-after-import not started | Steps 7b to 7f. Next: `Opp 1: Chronicle after import` |
+| 2 | Web receipt with no account: drop an export on the site, processed on the device, get a training receipt | not started | needs the wizard (done) and a receipt view |
+| 3 | Explained progression: a deterministic next target with a "why" that cites the sessions behind it; handles missed sessions, failed reps, swaps | not started | Step 8d-2 is the engine fix underneath; the "why" and swaps are the Opp |
+| 4 | Numbers show their working: tap any e1RM, volume, PR or trend for the formula, the sets used, what was excluded; stall with stated confidence | **partly done** | verdict, flags and muscle sets each open a receipt (Steps 8b, 8c-1). Not done: e1RM, PR and trend tap-through, stated confidence on stalls |
+| 5 | History never paywalled: a public promise, full history, charts and export free forever; a read-only API or MCP connector later | **done** except the connector | promise in Settings, guard test `src/test/history-never-paywalled.test.ts`, CSV export (Step 7f) |
+| 6 | In-set speed parity: separate warm-up and working rest timers, lock-screen rest timer, repeat last session, typed values win | not started | Step 9. "Repeat last session" already exists. Lock-screen timer needs native code (Phase 4 doc) |
+| 7 | Watch companion (native SwiftUI, then Wear OS) | design doc only | Phase 4 |
+| 8 | Comeback mode: detect layoffs, suggest re-entry loads, PRs "since comeback" | not started | |
+| 9 | Shareable receipts: private by default, a share card, a read-only link | not started as new work (share cards already existed) | |
+| 10 | Health context: bodyweight, sleep, HRV overlays in Chronicle, no readiness score | design doc only | Phase 4 |
+| 11 | Program from text: paste a program or spreadsheet, get a routine with progression | not started | |
+
+The owner's document sets the order: stabilise first (Steps 1 to 13), then Opp 1's Chronicle,
+Opp 2, 8, 9, 3, then the native items. It says: finish the stabilise-and-QA work before adding any
+item except 5 and the import work.
+
+## 5. Decisions and open questions
+
+Plan decisions D1 to D18 are in `PLAN.md` § 8. The owner said "start phase 2" once the plan was
+delivered, and confirmed D4, D5 and D6 explicitly on 2026-09-29 ("replace as planned"); the others proceeded
+on the plan's recommendation. Where a step made a product call the plan did not settle, its
+handover entry says so. The open ones:
+
+- **Lens to verdict wording** (Step 8a): strength → "strength", hybrid → "maintain", the rest →
+  "build". One function, `verdictFraming` in `src/lib/gym/lenses.ts`.
+- **Default goal lifts** (Step 8d-1): a new log starts with bench, squat and deadlift, which the
+  verdict calls "chosen". Whether that default should be empty is the owner's call.
+- **OG tags and the Grok middleware** (Step 12): the middleware still injects the share-card tags
+  for `/s` and `/u` and a third-party script. Removing it means moving the tags into the routes
+  first. Not yet approved.
+- **Root `HANDOFF.md`**: left in place (app-builder era), to be rewritten in Step 13. Delete now?
+- **Dead code (D16)**: multiplayer, `counterfactual`, `wouldBePr`, `sessionCountStreak`. Deleting
+  needs the owner's yes.
+- **Real-file validation**: the Hevy, sister-app and Strong importers are verified against
+  synthetic or donor fixtures only. Say so if you extend them.
+
+## 6. Where things are checked
+
+- `npm run verify` (lint, typecheck, unit tests, build) and Playwright e2e (390 px and 1024 px) run
+  in CI on every PR. `npm run test:e2e:offline` runs the offline suite against a build.
+- Tests run with `TZ=UTC` pinned (a few tests set another zone deliberately).
+- Locally, `CHROMIUM_PATH=/path/to/chrome npx playwright test` reuses an installed browser.
+- Characterisation snapshots live beside their tests. A behaviour change should show up as a
+  reviewed snapshot diff explained in the PR and its handover entry.
+
+## 7. Terms
+
+- **Receipt**: the working behind a number (the sets, the formula, the limits). Also the shareable
+  card. The handover entry says which sense when it matters.
+- **Lab**: Ask the Lab. **Data Lab**: the `/analytics` screen. **Chronicle**: eras, PR runs, layoffs,
+  strongest periods.
+- **Lens**: one of six presets (Powerbuilding, Strength, Hypertrophy, Calisthenics, Hybrid,
+  General). It chooses which blocks the home screen shows and how the verdict is worded. It never
+  changes a number or which lifts are tracked.
+- **Goal lifts**: up to three lifts the lifter picks. Tracked by the verdict, flags and progression.
+- **Hard set / credited set**: a completed working set. A secondary muscle gets a fractional credit
+  (0.5 by default).
+- **e1RM**: estimated one-rep max, with its source set. A snapshot (of a logged exercise) is the
+  name, muscle and equipment it had when it was logged; it is not a test snapshot.
+- **Fingerprint**: the hash of an imported session, so re-importing adds nothing.
+- **Sister apps** (donors): the two earlier apps whose backups Lock'd can import. Never named in
+  the UI.
+- **Characterisation**: tests that pin what the code does now, bugs included, before changing it.
+- **Unmapped**: an exercise with no muscle group yet. Never treated as low, never invented.
