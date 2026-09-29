@@ -121,3 +121,15 @@ describe("formatDuration", () => {
     expect(formatDuration(-10)).toBe("0:00");
   });
 });
+
+describe("rounding an estimate", () => {
+  it("rounds to half a kilogram, or a whole pound", async () => {
+    const { roundEstimateG } = await import("./units");
+    expect(roundEstimateG(132_710, "kg")).toBe(132_500);
+    expect(roundEstimateG(132_760, "kg")).toBe(133_000);
+    expect(roundEstimateG(100_000, "kg")).toBe(100_000);
+    // 60 kg is 132.28 lb: a whole pound is 132 lb = 59,874 g
+    expect(roundEstimateG(60_000, "lb")).toBe(59_874);
+    expect(roundEstimateG(0, "kg")).toBe(0);
+  });
+});

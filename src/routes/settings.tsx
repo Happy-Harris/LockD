@@ -9,6 +9,7 @@ import { applyBackup, restoreMessage, type RestoreMode } from "@/lib/backup/appl
 import { parseBackup } from "@/lib/backup/schema";
 import { takeSafetyBackup } from "@/lib/storage/safety";
 import { defaultQuickIncrementG, lengthUnitFor, weightUnitFor } from "@/domain/units";
+import { GoalLiftPicker } from "@/components/app/goal-lift-picker";
 import { csvFiles } from "@/lib/export/csv";
 import { useGym } from "@/lib/gym/store";
 import { describeImport } from "@/lib/import/summary";
@@ -30,6 +31,7 @@ function SettingsPage() {
   const loadDemo = useGym((s) => s.loadDemo);
   const exercises = useGym((s) => s.exercises);
   const [csvNote, setCsvNote] = useState<string | null>(null);
+  const [pickingGoalLifts, setPickingGoalLifts] = useState(false);
   const [backupProblems, setBackupProblems] = useState<string[] | null>(null);
   // Bumped after a restore so the Safety copies list shows the copy that was just taken.
   const [copiesShown, setCopiesShown] = useState(0);
@@ -109,19 +111,6 @@ function SettingsPage() {
     }
     setCsvNote(describeImport(outcome.summary));
   };
-
-  const toggleGoal = (id: string) => {
-    const current = settings.goalLiftIds;
-    const next = current.includes(id) ? current.filter((item) => item !== id) : [...current, id].slice(0, 3);
-    updateSettings({ goalLiftIds: next });
-  };
-
-  const goalPool = exercises.filter(
-    (row) =>
-      ["seed-bench-press", "seed-back-squat", "seed-conventional-deadlift", "seed-overhead-press", "seed-barbell-row", "seed-front-squat"].includes(
-        row.id,
-      ) || settings.goalLiftIds.includes(row.id),
-  );
 
   return (
     <Page>
@@ -248,26 +237,27 @@ function SettingsPage() {
       </Section>
 
       <Section title="Goal lifts">
-        <p className="mb-2 text-xs text-subtle">Weekly verdict tracks up to three. Tap to toggle.</p>
-        <div className="flex flex-wrap gap-2">
-          {goalPool.map((exercise) => {
-            const on = settings.goalLiftIds.includes(exercise.id);
-            return (
-              <button
-                key={exercise.id}
-                type="button"
-                onClick={() => toggleGoal(exercise.id)}
-                className={
-                  on
-                    ? "h-10 rounded-full bg-accent px-3 text-sm text-accent-ink"
-                    : "h-10 rounded-full bg-raised px-3 text-sm text-ink hairline"
-                }
-              >
-                {exercise.name}
-              </button>
-            );
-          })}
-        </div>
+        <p className="mb-2 text-xs text-subtle">
+          The weekly verdict and stall flags track up to three. Pick none and your most-trained lifts are used, labelled
+          as a guess.
+        </p>
+        <p className="text-sm text-ink" data-testid="goal-lifts-summary">
+          {settings.goalLiftIds.length
+            ? settings.goalLiftIds
+                .map((id) => exercises.find((row) => row.id === id)?.name ?? "A lift no longer in the library")
+                .join(", ")
+            : "None picked: using your most-trained lifts."}
+        </p>
+        <Button className="mt-3" variant="secondary" size="sm" onClick={() => setPickingGoalLifts(true)}>
+          Choose goal lifts
+        </Button>
+        <GoalLiftPicker
+          open={pickingGoalLifts}
+          onClose={() => setPickingGoalLifts(false)}
+          exercises={exercises}
+          goalLiftIds={settings.goalLiftIds}
+          onChange={(goalLiftIds) => updateSettings({ goalLiftIds })}
+        />
       </Section>
 
       <Section title="Data">

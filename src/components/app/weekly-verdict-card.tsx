@@ -13,6 +13,9 @@ import {
 import type { WeightUnit } from "@/domain/units";
 import { formatDateRange } from "@/domain/analytics/weeklyVerdict.util";
 import { stampWord } from "@/lib/gym/verdict-stamp";
+import type { Exercise, GoalLens } from "@/domain/types";
+import { GoalLensSheet } from "./goal-lens-sheet";
+import { GoalLiftPicker } from "./goal-lift-picker";
 import { VerdictEvidenceSheet } from "./verdict-evidence-sheet";
 
 /**
@@ -26,6 +29,11 @@ export function WeeklyVerdictCard({
   lensLabel,
   stamp = false,
   muscleBalance = null,
+  exercises,
+  goalLiftIds,
+  onGoalLiftIdsChange,
+  lensId,
+  onLensChange,
 }: {
   verdict: WeeklyVerdict;
   weightUnit: WeightUnit;
@@ -35,7 +43,15 @@ export function WeeklyVerdictCard({
   stamp?: boolean;
   /** Last completed week's muscle-band balance (`muscleBandBalance`), when the screen has it. */
   muscleBalance?: MuscleBandBalance | null;
+  /** With these, "Choose" and "Edit" open the goal-lift picker and "Change" the lens sheet. */
+  exercises?: readonly Exercise[];
+  goalLiftIds?: readonly string[];
+  onGoalLiftIdsChange?: (ids: string[]) => void;
+  lensId?: GoalLens;
+  onLensChange?: (lens: GoalLens) => void;
 }) {
+  const [pickingLifts, setPickingLifts] = useState(false);
+  const [pickingLens, setPickingLens] = useState(false);
   const word = stamp ? stampWord(verdict) : null;
   const [evidenceKey, setEvidenceKey] = useState<VerdictEvidenceKey | null>(null);
   const copy = weeklyVerdictCopy(verdict, weightUnit, muscleBalance, lens);
@@ -105,15 +121,36 @@ export function WeeklyVerdictCard({
               : liftNames
                 ? `Based on your top lifts: ${liftNames}.`
                 : "You haven’t set goal lifts yet."}{" "}
-            <Link
-              to="/settings"
-              className="font-semibold text-accent underline decoration-accent/50 underline-offset-2"
-            >
-              {verdict.goalLiftSource === "chosen" ? "Edit" : "Choose"}
-            </Link>
+            {onGoalLiftIdsChange && exercises ? (
+              <button
+                type="button"
+                className="min-h-11 font-semibold text-accent underline decoration-accent/50 underline-offset-2"
+                onClick={() => setPickingLifts(true)}
+              >
+                {verdict.goalLiftSource === "chosen" ? "Edit" : "Choose"}
+              </button>
+            ) : (
+              <Link
+                to="/settings"
+                className="font-semibold text-accent underline decoration-accent/50 underline-offset-2"
+              >
+                {verdict.goalLiftSource === "chosen" ? "Edit" : "Choose"}
+              </Link>
+            )}
           </p>
         ) : null}
-        <p className="mt-1 px-1 text-xs text-subtle">Wording follows your lens: {lensLabel}.</p>
+        <p className="mt-1 px-1 text-xs text-subtle">
+          Wording follows your lens: {lensLabel}.{" "}
+          {onLensChange && lensId ? (
+            <button
+              type="button"
+              className="min-h-11 font-semibold text-accent underline decoration-accent/50 underline-offset-2"
+              onClick={() => setPickingLens(true)}
+            >
+              Change
+            </button>
+          ) : null}
+        </p>
       </Card>
 
       <VerdictEvidenceSheet
@@ -124,6 +161,25 @@ export function WeeklyVerdictCard({
         focusKey={evidenceKey ?? undefined}
         muscleBalance={muscleBalance}
       />
+
+      {onGoalLiftIdsChange && exercises ? (
+        <GoalLiftPicker
+          open={pickingLifts}
+          onClose={() => setPickingLifts(false)}
+          exercises={exercises}
+          goalLiftIds={goalLiftIds}
+          onChange={onGoalLiftIdsChange}
+          baselineWeeks={verdict.baseline.weeks}
+        />
+      ) : null}
+      {onLensChange && lensId ? (
+        <GoalLensSheet
+          open={pickingLens}
+          onClose={() => setPickingLens(false)}
+          lens={lensId}
+          onChange={onLensChange}
+        />
+      ) : null}
     </section>
   );
 }

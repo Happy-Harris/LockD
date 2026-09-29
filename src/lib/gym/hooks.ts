@@ -110,8 +110,10 @@ export function useGymDerived() {
     })();
 
     const lens = lensDef(settings.goalLens);
+    // The lifts tracked are the lifter's own goal lifts, or their most-trained if they picked none.
+    // The lens chooses which blocks show; it never swaps the lifts for its own (I-19).
     const trackedIds = (
-      lens.skillIds.length ? lens.skillIds : settings.goalLiftIds.length ? settings.goalLiftIds : records.slice(0, 3).map((row) => row.exerciseId)
+      settings.goalLiftIds.length ? settings.goalLiftIds : records.slice(0, 3).map((row) => row.exerciseId)
     ).filter((id, index, list) => list.indexOf(id) === index);
 
     const board = progressBoard(

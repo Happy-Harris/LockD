@@ -121,6 +121,14 @@ export function roundGramsToIncrement(
   return Math.round(steps * incrementG);
 }
 
+/**
+ * An estimate (an estimated 1RM) rounded to a step people can act on: half a kilogram, or a whole
+ * pound. An estimate is not a measurement, so it is never shown to the gram.
+ */
+export function roundEstimateG(grams: number, unit: WeightUnit): number {
+  return roundGramsToIncrement(grams, unit === "kg" ? GRAMS_PER_KG / 2 : GRAMS_PER_LB);
+}
+
 /** Default quick-adjust step: 2.5 kg for metric, 5 lb for imperial. */
 export function defaultQuickIncrementG(system: UnitSystem): number {
   return system === "metric" ? toGrams(2.5, "kg") : toGrams(5, "lb");
