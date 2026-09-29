@@ -9,6 +9,42 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 10b: the mark draws an L, and the icons are redrawn (I-38)
+
+- **Mark:** `StampMark` (which drew an R) is now `LockdMark`, an L on an Oxide tile in the theme's accent and accent ink, at
+  all 9 places it is used. It is the same shape as the favicon and app icons on three grids (32, 16, 512);
+  `brand.test.ts` checks all three carry the same path and that the R path and the old name are gone.
+- **Icons:** `scripts/make-icons.mjs` redraws `icon-192`, `icon-512`, `icon-maskable-512` and `apple-touch-icon` from the
+  palette module (read from `src/lib/brand.ts`, so they cannot drift), through the preinstalled Chromium:
+  `CHROMIUM_PATH=/opt/pw-browsers/chromium node scripts/make-icons.mjs`. The maskable one keeps its art inside the
+  central 80%. The favicon's L is now Mill ink like the mark. Tests check the four sizes and that every icon the manifest names exists.
+- **Corrections to the plan's I-38 line:** the fonts were already self-hosted (`@fontsource`, an earlier PR), and the manifest
+  already pointed at real icons, so neither needed work. `npm run check:brand` reports 0 findings. The `public/__grok/`
+  assets are scaffolding and go with Step 12.
+- **Looked at:** the regenerated icons (512 and maskable) and the sidebar mark in the running app at 1024 px. **Not done:** the
+  mark at 390 px, on the light theme, or in the posters and receipt (they draw with the same component but were not opened).
+- **Not done (next slices):** the typefaces (Big Shoulders Display and Archivo, 10c), poster layout (10d), receipt motifs (10e).
+- Merge note: this branch conflicted with 10a in `receipt.tsx` and `moment-poster.tsx` (import lines and one paragraph); both were
+  resolved by keeping the rename and the palette import.
+
+### 2026-09-29 — Step 10a: Oxide replaces vermillion, accent themes retired (D9, O3)
+
+- **Palette:** one module, `src/lib/brand.ts` (Mill `#0E0E0C`, Oxide `#C45C32`, Chalk `#E8E2D4`, Steel `#9A9588`, Verdigris
+  `#6E8B74`). `styles.css` holds the same values as tokens; posters, receipts, the rest-timer art, the plates tool, the
+  manifest, favicon, OG card and page theme-color read from it. `brand.test.ts` (9) fails if any drift, if a `data-accent`
+  selector returns, or if the old `#C24A32` / `#0C0B0A` reappears in the CSS, manifest, favicon, OG data or root.
+- **Accent themes retired (approved with D9):** the four accents and their Settings picker are gone; `accentTheme` is still
+  stored and backed up so old backups load, and nothing reads it. No migration; the old-format backup fixtures still load.
+- **Contrast (plan O3), checked in code:** Oxide on Mill is 4.53:1 (AA for small text; the old vermillion was 4.04). Light
+  ink on Oxide is 3.99:1 and would have been worse than before (4.55), so buttons and chips on the accent now use Mill ink
+  (4.53). Plain Oxide on Chalk is 3.3:1, so the light theme uses a darker Oxide (`#A04C2A`, 4.6:1 or better on every light surface).
+  **Known limit:** small Oxide text on the dark card surfaces is 4.0 to 4.35:1 (under AA), better than before; use it for
+  large text and controls there.
+- **Looked at in the running app:** Today at 1024 px against `baseline/1024-today.webp` (warmer accent, layout unchanged), and
+  Settings without the Accent row. **Not done:** every screen at both widths against the baseline; the light theme.
+- **Not done (next slices):** the sidebar mark still draws an "R" and the PNG icons are the old colour (10b), fonts still
+  load from a CDN (10b), the Chalk light theme and receipt motifs (10d), Graphite (no value in the plan).
+
 ### 2026-09-29 — Step 9 closes: logging-speed e2e (principle 1)
 
 - **`e2e/logging-speed.spec.ts` (4 tests, run at 390 and 1024 px, 8 in all):** a whole repeated workout is logged with exactly one

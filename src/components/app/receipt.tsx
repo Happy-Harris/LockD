@@ -3,6 +3,7 @@ import { formatDuration, formatWeightWithUnit, type WeightUnit } from "@/domain/
 import type { PersonalRecord, SessionSlice } from "@/lib/gym/analytics";
 import { hardSetCount } from "@/domain/volume";
 import { LockdMark } from "./mark";
+import { BRAND } from "@/lib/brand";
 
 export function SessionReceipt({
   slice,
@@ -17,31 +18,46 @@ export function SessionReceipt({
   duration: number;
   tonnage: number;
 }) {
-  const serial = slice.workout.id.replace(/[^a-z0-9]/gi, "").slice(-6).toUpperCase();
+  const serial = slice.workout.id
+    .replace(/[^a-z0-9]/gi, "")
+    .slice(-6)
+    .toUpperCase();
   return (
     <article className="receipt px-5 py-6">
       <header className="flex items-start justify-between gap-3 border-b border-dashed border-current/20 pb-4">
         <div>
           <p className="stamp text-3xl leading-none tracking-tight">LOCKD</p>
-          <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.22em] opacity-60">Keep the receipt.</p>
+          <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.22em] opacity-60">
+            Keep the receipt.
+          </p>
         </div>
         <LockdMark className="size-9" />
       </header>
-      <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.18em] opacity-55">Session #{serial}</p>
-      <h2 className="mt-1 font-display text-3xl font-semibold tracking-tight">{slice.workout.name}</h2>
+      <p className="mt-4 text-[10px] font-medium uppercase tracking-[0.18em] opacity-55">
+        Session #{serial}
+      </p>
+      <h2 className="mt-1 font-display text-3xl font-semibold tracking-tight">
+        {slice.workout.name}
+      </h2>
       <p className="mt-1 text-sm opacity-70">{formatLocalDate(slice.workout.localDate)}</p>
       <dl className="mt-5 grid grid-cols-3 gap-2 border-y border-dashed border-current/20 py-4">
         <div>
           <dt className="text-[10px] uppercase tracking-[0.16em] opacity-55">Time</dt>
-          <dd className="mt-1 font-display text-xl font-semibold tabular">{formatDuration(duration)}</dd>
+          <dd className="mt-1 font-display text-xl font-semibold tabular">
+            {formatDuration(duration)}
+          </dd>
         </div>
         <div>
           <dt className="text-[10px] uppercase tracking-[0.16em] opacity-55">Hard sets</dt>
-          <dd className="mt-1 font-display text-xl font-semibold tabular">{hardSetCount(slice.sets)}</dd>
+          <dd className="mt-1 font-display text-xl font-semibold tabular">
+            {hardSetCount(slice.sets)}
+          </dd>
         </div>
         <div>
           <dt className="text-[10px] uppercase tracking-[0.16em] opacity-55">Tonnage</dt>
-          <dd className="mt-1 font-display text-xl font-semibold tabular">{formatWeightWithUnit(tonnage, unit)}</dd>
+          <dd className="mt-1 font-display text-xl font-semibold tabular">
+            {formatWeightWithUnit(tonnage, unit)}
+          </dd>
         </div>
       </dl>
       <ul className="mt-4 space-y-3">
@@ -55,7 +71,11 @@ export function SessionReceipt({
               <div className="min-w-0">
                 <p className="text-sm font-medium">
                   {exercise.exerciseNameSnapshot}
-                  {isPr ? <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">PR</span> : null}
+                  {isPr ? (
+                    <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">
+                      PR
+                    </span>
+                  ) : null}
                 </p>
                 <p className="mt-0.5 font-mono text-xs tabular opacity-70">
                   {sets
@@ -76,7 +96,9 @@ export function SessionReceipt({
           {prs.length} new estimated 1RM stamp{prs.length === 1 ? "" : "s"} on file.
         </p>
       ) : (
-        <p className="mt-5 border-t border-dashed border-current/20 pt-4 text-xs opacity-55">No new estimated 1RM this session.</p>
+        <p className="mt-5 border-t border-dashed border-current/20 pt-4 text-xs opacity-55">
+          No new estimated 1RM this session.
+        </p>
       )}
     </article>
   );
@@ -90,18 +112,18 @@ export function downloadReceiptPng(node: HTMLElement, filename: string) {
   canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
-  ctx.fillStyle = "#efe6d4";
+  ctx.fillStyle = BRAND.chalk;
   ctx.fillRect(0, 0, width, height);
-  ctx.fillStyle = "#c24a32";
+  ctx.fillStyle = BRAND.oxide;
   ctx.fillRect(0, 0, width, 8);
-  ctx.fillStyle = "#1a1612";
+  ctx.fillStyle = BRAND.ink;
   ctx.font = "800 64px Barlow Condensed, Arial Narrow, sans-serif";
   ctx.fillText("LOCKD", 48, 96);
   ctx.font = "500 16px Barlow, sans-serif";
   ctx.fillStyle = "#5c564c";
   ctx.fillText("KEEP THE RECEIPT.", 48, 124);
   const text = node.innerText;
-  ctx.fillStyle = "#1a1612";
+  ctx.fillStyle = BRAND.ink;
   ctx.font = "400 22px Barlow, sans-serif";
   const lines = wrapCanvasText(ctx, text, width - 96);
   let y = 180;

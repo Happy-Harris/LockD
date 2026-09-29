@@ -236,6 +236,7 @@ export interface BarProfile {
 export type OneRepMaxFormula = "epley" | "brzycki";
 export type IntensityMode = "rpe" | "rir" | "none";
 export type ThemeMode = "light" | "dark" | "system";
+/** Retired (plan D9: Oxide is the one accent). Still stored and backed up so old backups load; nothing reads it. */
 export type AccentTheme = "stamp" | "ember" | "glacier" | "moss";
 export type GoalLens = "powerbuilding" | "hypertrophy" | "strength" | "calisthenics" | "hybrid" | "general";
 export type PresentationMode = "loud" | "calm";

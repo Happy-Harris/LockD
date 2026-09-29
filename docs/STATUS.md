@@ -5,7 +5,7 @@ this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HAND
 last PRs did and did not verify). Keep this file current: update the tables in the same PR that
 changes a status.
 
-_Last updated: 2026-09-29, after `LockD#48` merged. In flight: the Step 9 logging-speed e2e, which closes Step 9; next Step 10 (visual identity), after the owner's answers on the open items below._
+_Last updated: 2026-09-29, after `LockD#50` merged. In flight: Step 10b (the mark and icons); next 10c (typefaces), 10d (poster layout, I-32), 10e (receipt motifs and Oxide discipline)._
 
 ## 1. How to read the labels
 
@@ -93,8 +93,8 @@ State: **done**, **in flight**, **not started**. "GitHub" gives the pull request
 | 8d-1 | Goal lifts are the lifter's own, with pickers; est. 1RM labelled and rounded | done | LockD#33 |
 | 8d-2 | Progression merge (I-20): windowed stall with a layoff guard, loads on the increment grid or buildable with the lifter's plates, program `linear` rule fixed | **done** | branch `claude/step8d2-progression` |
 | 8d-3 | Deterministic Ask the Lab, so guests get an answer that cites the log (I-4, D3) | **done** | branch `claude/step8d3-ask-lab` |
-| 9 | Logging details (sub-steps: 9a input fixes I-27 to I-30; 9b rest timers I-21 and notification/vibrate; 9c intensity pick and RIR I-31; 9d workout-page speed I-26; 9e equipment editor I-35; 9f per-set targets, supersets, unilateral): per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | **done, with carried items** (see "Open items carried by Step 9"): 9a `LockD#38`, 9b `LockD#40`, 9c `LockD#41`, 9d `LockD#42`, 9e `LockD#43`, 9f-1 supersets `LockD#44`, 9f-2a `LockD#45`, 9f-2b `LockD#46`, 9f-2c `LockD#47`, 9f-3 `LockD#48`; the logging-speed e2e is in flight | `claude/step9a-input-fixes`, `claude/step9b-rest-timers`, `claude/step9c-intensity`, `claude/step9d-workout-speed`, `claude/step9e-equipment`, `claude/step9f1-supersets`, `claude/step9f2-unilateral`, `claude/step9f2b-pair-counting`, `claude/step9f2c-unilateral-logging`, `claude/step9f3-effort-targets`, `claude/step9-timed-e2e` |
-| 10 | Visual identity: knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | not started | |
+| 9 | Logging details (sub-steps: 9a input fixes I-27 to I-30; 9b rest timers I-21 and notification/vibrate; 9c intensity pick and RIR I-31; 9d workout-page speed I-26; 9e equipment editor I-35; 9f per-set targets, supersets, unilateral): per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | **done, with carried items** (see "Open items carried by Step 9"); the logging-speed e2e is `LockD#49`: 9a `LockD#38`, 9b `LockD#40`, 9c `LockD#41`, 9d `LockD#42`, 9e `LockD#43`, 9f-1 supersets `LockD#44`, 9f-2a `LockD#45`, 9f-2b `LockD#46`, 9f-2c `LockD#47`, 9f-3 `LockD#48` | `claude/step9a-input-fixes`, `claude/step9b-rest-timers`, `claude/step9c-intensity`, `claude/step9d-workout-speed`, `claude/step9e-equipment`, `claude/step9f1-supersets`, `claude/step9f2-unilateral`, `claude/step9f2b-pair-counting`, `claude/step9f2c-unilateral-logging`, `claude/step9f3-effort-targets`, `claude/step9-timed-e2e` |
+| 10 | Visual identity (sub-steps: 10a palette and accent themes retired; 10b the L mark and icons (I-38); 10c typefaces, Big Shoulders Display and Archivo; 10d pure poster layout with long lift names (I-32); 10e receipt and perforation motifs, Oxide discipline on the rest): knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | in progress: 10a done (`LockD#50`), 10b in flight | `claude/step10a-palette`, `claude/step10b-mark-icons` |
 | 11 | Approved improvements, one PR each: I-14, I-15, I-16, I-17/I-18/O2 (eras), I-23, I-24, I-25, I-33, I-34, I-37, I-41 | not started | |
 | 12 | Scaffolding removal: Grok scripts and middleware, preview bridge, app-data, multiplayer; the OG tags move into `/s` and `/u` first (needs the owner's go-ahead); auth and cloud behind config (D16 dead-code deletions need the owner's yes) | not started | |
 | 13 | Cleanup: unused dependencies, `README.md` and the root `HANDOFF.md` rewritten from the code, final decisions summary | not started | |
@@ -191,3 +191,13 @@ handover entry says so. The open ones:
 - **Unilateral counting rule (owner can reverse):** the donor (Strong-Pro) is not reachable, so its rule was not ported.
   9f-2b chose one set per left/right pair. If the owner prefers two, revert `setCountKey` use in `volume.ts`,
   `weeklyVerdict.metrics.ts` and `muscleSets.ts`; `unilateral-counting.test.ts` shows the exact numbers.
+
+## Open items carried by Step 10 (added 2026-09-29)
+
+- **Graphite has no value in the plan,** so 10a left the card surfaces (`--rf-surface`, `--rf-raised`) as they were. Give the
+  owner's value, or accept the current ones.
+- **Light theme background** is still `#F4EFE6`, not the Chalk field `#E8E2D4` the plan mentions. Moving it darkens the whole light theme and
+  needs a re-check of every muted and subtle text pair; not done in 10a. The light accent is a derived darker Oxide
+  (`#A04C2A`, 4.6:1 or better on every light surface) because plain Oxide on Chalk is 3.3:1.
+- **Oxide as small text on dark cards** is 4.0 to 4.35:1 (under AA 4.5:1; better than the vermillion it replaces). Use it for
+  large text and controls there. `brand.test.ts` pins this.

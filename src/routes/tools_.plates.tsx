@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { calculatePlates } from "@/domain/plateCalculator";
 import { formatWeight, parseWeightInput, weightUnitFor } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
+import { BRAND } from "@/lib/brand";
 
 export const Route = createFileRoute("/tools_/plates")({ component: PlatesPage });
 
@@ -36,14 +37,18 @@ function PlatesPage() {
         {bar?.name}. Inventory: {inventory?.name}. Loads in pairs.
       </p>
       <label className="mt-5 block">
-        <span className="mb-1.5 block text-xs uppercase tracking-[0.14em] text-subtle">Target ({unit})</span>
+        <span className="mb-1.5 block text-xs uppercase tracking-[0.14em] text-subtle">
+          Target ({unit})
+        </span>
         <Input inputMode="decimal" value={raw} onChange={(event) => setRaw(event.target.value)} />
       </label>
 
       {result ? (
         <>
           <Card className="mt-5">
-            <p className="text-xs uppercase tracking-[0.16em] text-subtle">{result.status.replaceAll("_", " ")}</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-subtle">
+              {result.status.replaceAll("_", " ")}
+            </p>
             <p className="mt-1 font-display text-3xl font-semibold tabular">
               {formatWeight(result.achievedTotalG, unit)} {unit}
             </p>
@@ -52,14 +57,17 @@ function PlatesPage() {
           <BarbellVisual perSide={result.perSide} unit={unit} />
           <ul className="mt-4 space-y-2">
             {result.perSide.map((item) => (
-              <li key={item.weightG} className="flex justify-between rounded-xl bg-surface px-4 py-3 text-sm hairline">
-                <span>{formatWeight(item.weightG, unit)} {unit}</span>
+              <li
+                key={item.weightG}
+                className="flex justify-between rounded-xl bg-surface px-4 py-3 text-sm hairline"
+              >
+                <span>
+                  {formatWeight(item.weightG, unit)} {unit}
+                </span>
                 <span className="tabular text-muted">{item.countPerSide} per side</span>
               </li>
             ))}
-            {result.perSide.length === 0 ? (
-              <li className="text-sm text-muted">Bare bar.</li>
-            ) : null}
+            {result.perSide.length === 0 ? <li className="text-sm text-muted">Bare bar.</li> : null}
           </ul>
         </>
       ) : null}
@@ -74,7 +82,15 @@ function BarbellVisual({
   perSide: Array<{ weightG: number; countPerSide: number }>;
   unit: "kg" | "lb";
 }) {
-  const colors = ["#c24a32", "#8cbacc", "#6eb084", "#d7a04a", "#b8b0a2", "#7e776c", "#f6f1e8"];
+  const colors = [
+    BRAND.oxide,
+    "#8cbacc",
+    BRAND.verdigris,
+    "#d7a04a",
+    "#b8b0a2",
+    BRAND.steel,
+    BRAND.inkOnDark,
+  ];
   const plates: Array<{ label: string; h: number; color: string }> = [];
   perSide.forEach((item, index) => {
     const display = Number(formatWeight(item.weightG, unit));
