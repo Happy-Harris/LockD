@@ -5,6 +5,14 @@ import { uuid } from "@/domain/ids";
 import { defaultSettings } from "@/lib/gym/store";
 import { buildLockerCard } from "./card";
 import { asJson, slugHandle, vaultHasLog } from "./payload";
+import {
+  validateHandleInput,
+  validateIdInput,
+  validateProfileInput,
+  validatePullInput,
+  validatePushInput,
+  validateShareInput,
+} from "./validate";
 import type { CloudGym, CloudProfile, LabHistoryNote, LockerCard, PublicShare, ShareKind, SharePayload } from "./types";
 
 async function requireCloudOwner(userId: string): Promise<void> {
@@ -82,7 +90,7 @@ async function refreshCard(
 
 export const pullVault = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { displayName?: string } | undefined) => input)
+  .validator(validatePullInput)
   .handler(async ({ context, data }) => {
     await requireCloudOwner(context.userId);
     const sql = await getSql();
@@ -109,7 +117,7 @@ export const pullVault = createServerFn({ method: "POST" })
 
 export const pushVault = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { payload: CloudGym; displayName?: string }) => input)
+  .validator(validatePushInput)
   .handler(async ({ context, data }) => {
     await requireCloudOwner(context.userId);
     const sql = await getSql();
@@ -138,7 +146,7 @@ export const pushVault = createServerFn({ method: "POST" })
 
 export const saveProfile = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { handle: string; displayName: string; bio: string; isPublic: boolean }) => input)
+  .validator(validateProfileInput)
   .handler(async ({ context, data }) => {
     await requireCloudOwner(context.userId);
     if (typeof data.isPublic !== "boolean") throw new Error("Choose whether your locker is public.");
@@ -193,7 +201,7 @@ export const acknowledgePrivacyNotice = createServerFn({ method: "POST" })
 
 export const unpublishShare = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { id: string }) => input)
+  .validator(validateIdInput)
   .handler(async ({ context, data }) => {
     await requireCloudOwner(context.userId);
     const sql = await getSql();
@@ -203,7 +211,7 @@ export const unpublishShare = createServerFn({ method: "POST" })
   });
 
 export const getLocker = createServerFn({ method: "GET" })
-  .validator((input: { handle: string }) => input)
+  .validator(validateHandleInput)
   .handler(async ({ data }) => {
     const sql = await getSql();
     const rows = await sql<{
@@ -245,7 +253,7 @@ export const getLocker = createServerFn({ method: "GET" })
 
 export const publishShare = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator((input: { kind: ShareKind; title: string; payload: SharePayload }) => input)
+  .validator(validateShareInput)
   .handler(async ({ context, data }) => {
     await requireCloudOwner(context.userId);
     const sql = await getSql();
@@ -261,7 +269,7 @@ export const publishShare = createServerFn({ method: "POST" })
   });
 
 export const getShare = createServerFn({ method: "GET" })
-  .validator((input: { id: string }) => input)
+  .validator(validateIdInput)
   .handler(async ({ data }) => {
     const sql = await getSql();
     const rows = await sql<{

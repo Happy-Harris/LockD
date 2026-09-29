@@ -9,6 +9,20 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 11 (I-37): the cloud server functions check what they are sent
+
+- **The bug (plan I-37):** every cloud server function declared its input type and returned the input as it came (`.validator((input: T) => input)`), so the server trusted whatever a client sent: a vault of any size or shape,
+  a share with any kind and payload, a share id that was not an id. A bad vault would have thrown deep inside `vaultHasLog`; a huge one would have been written to the database.
+- **The fix:** `src/lib/cloud/validate.ts`, one pure function per server function, wired into `api.ts` and the Lab endpoint. Each throws a plain sentence ("That vault is not valid: … (workouts)"). Vault: an object with the four
+  collections the server reads as arrays of objects, `settings` as an object, the newer collections optional so an older app's vault still syncs, and a size cap. Shares: the kind must be one of four, the payload must match that kind
+  (the payload's own `kind` must agree), and public pages are capped. Ids must be UUIDs, handles non-empty strings, the profile's `isPublic` a boolean, text fields bounded.
+- **Owner decision — the caps are mine:** vault 64 MB (`MAX_VAULT_BYTES`), public share 256 KB (`MAX_SHARE_BYTES`), title 200, bio 2,000, Lab question 2,000 characters. The vault cap is set far above any real history so it cannot
+  block someone's record; the refusal message says the log on the device is untouched. Say if you want other numbers. **Not checked:** the host's own request-body limit (some hosts refuse well under 64 MB); a large vault may fail before it reaches this check.
+- **Deliberately not done:** the vault is checked for structure, not row by row. A strict per-row schema here could refuse a real history from an older app and stop it syncing (history is the record); row-level checking stays with the backup schema on the client. If you want it on the server too, it needs its own PR with old-format fixtures.
+- **Tests:** `validate.test.ts` (20): a real demo vault passes untouched; an older vault without the newer collections passes; nothing, a string, missing or wrongly typed collections, and long names are refused; a 70 MB vault is refused with the untouched-log sentence; each share the app builds
+  (moment, receipt, wrapped, program) passes; a payload whose kind disagrees, an unknown kind, an over-long title, an oversize share and a non-Lock'd program file are refused; ids must be UUIDs.
+- **Checked:** `npm run verify`. **Not checked:** a real sign-in, push and share round trip against a database (this environment has no Supabase); the validators run before the handlers, and the handlers are unchanged.
+
 ### 2026-09-29 — Step 11 (I-14): ghost deltas, search, replay and milestones follow the lifter's unit
 
 - **The bug (plan I-14):** a pounds lifter saw "+2.5 kg" style ghost deltas, "above 225" searched for 225 kg, the session replay printed weights as kilograms with no unit, and the milestone ladder
