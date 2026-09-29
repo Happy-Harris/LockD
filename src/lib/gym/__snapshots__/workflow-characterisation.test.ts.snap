@@ -98,7 +98,7 @@ exports[`workflow characterisation — present behaviour, including import defec
 {
   "backupFormat": "lockd-backup",
   "completed": {
-    "at": "2026-09-28T18:00:00.000Z",
+    "at": "2026-09-28T12:00:00.000Z",
     "reps": 6,
     "type": "warmup",
     "weight": 100000,

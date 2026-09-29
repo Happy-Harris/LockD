@@ -20,6 +20,7 @@ export default defineConfig({
       "src/lib/auth/gate-identity.test.ts",
       "src/lib/auth/sign-in-gate.test.ts",
     ],
+    globalSetup: ["./src/test/global-setup.ts"],
     setupFiles: ["./src/test/setup.ts"],
   },
 });
