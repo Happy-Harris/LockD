@@ -27,6 +27,8 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 - **Not verified:** the poster, receipt and lock-screen canvases with the new faces. They draw with the family names, but a canvas can draw before
   its font loads (already true with Barlow); the fix is 10d.
 - Merge note: this branch conflicted with 10b in `receipt.tsx` (import lines) and `brand.test.ts` (two new test groups); both kept.
+- **CI caught a test I missed:** `e2e/offline-basics.spec.ts` asserted that the loaded fonts were Barlow. It now asserts the app's own Big Shoulders
+  Display and Archivo are loaded and in use, with the same "no request to another origin" check. Lesson: search `e2e/` for a face by name when swapping it.
 
 ### 2026-09-29 — Step 10b: the mark draws an L, and the icons are redrawn (I-38)
 
