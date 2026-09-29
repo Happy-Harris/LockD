@@ -5,7 +5,7 @@ this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HAND
 last PRs did and did not verify). Keep this file current: update the tables in the same PR that
 changes a status.
 
-_Last updated: 2026-09-29, after `LockD#49` merged (Step 9 closed). In flight: Step 10a (palette); next 10b (mark, fonts, icons), 10c (poster layout), 10d (receipt motifs)._
+_Last updated: 2026-09-29, after `LockD#50` merged. In flight: Step 10b (the mark and icons); next 10c (typefaces), 10d (poster layout, I-32), 10e (receipt motifs and Oxide discipline)._
 
 ## 1. How to read the labels
 
@@ -94,7 +94,7 @@ State: **done**, **in flight**, **not started**. "GitHub" gives the pull request
 | 8d-2 | Progression merge (I-20): windowed stall with a layoff guard, loads on the increment grid or buildable with the lifter's plates, program `linear` rule fixed | **done** | branch `claude/step8d2-progression` |
 | 8d-3 | Deterministic Ask the Lab, so guests get an answer that cites the log (I-4, D3) | **done** | branch `claude/step8d3-ask-lab` |
 | 9 | Logging details (sub-steps: 9a input fixes I-27 to I-30; 9b rest timers I-21 and notification/vibrate; 9c intensity pick and RIR I-31; 9d workout-page speed I-26; 9e equipment editor I-35; 9f per-set targets, supersets, unilateral): per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | **done, with carried items** (see "Open items carried by Step 9"); the logging-speed e2e is `LockD#49`: 9a `LockD#38`, 9b `LockD#40`, 9c `LockD#41`, 9d `LockD#42`, 9e `LockD#43`, 9f-1 supersets `LockD#44`, 9f-2a `LockD#45`, 9f-2b `LockD#46`, 9f-2c `LockD#47`, 9f-3 `LockD#48` | `claude/step9a-input-fixes`, `claude/step9b-rest-timers`, `claude/step9c-intensity`, `claude/step9d-workout-speed`, `claude/step9e-equipment`, `claude/step9f1-supersets`, `claude/step9f2-unilateral`, `claude/step9f2b-pair-counting`, `claude/step9f2c-unilateral-logging`, `claude/step9f3-effort-targets`, `claude/step9-timed-e2e` |
-| 10 | Visual identity (sub-steps: 10a palette and accent themes retired; 10b the mark, self-hosted fonts, icons, manifest (I-38); 10c pure poster layout with long lift names (I-32); 10d receipt and perforation motifs, Oxide discipline on the rest): knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | in progress: 10a in flight | `claude/step10a-palette` |
+| 10 | Visual identity (sub-steps: 10a palette and accent themes retired; 10b the L mark and icons (I-38); 10c typefaces, Big Shoulders Display and Archivo; 10d pure poster layout with long lift names (I-32); 10e receipt and perforation motifs, Oxide discipline on the rest): knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | in progress: 10a done (`LockD#50`), 10b in flight | `claude/step10a-palette`, `claude/step10b-mark-icons` |
 | 11 | Approved improvements, one PR each: I-14, I-15, I-16, I-17/I-18/O2 (eras), I-23, I-24, I-25, I-33, I-34, I-37, I-41 | not started | |
 | 12 | Scaffolding removal: Grok scripts and middleware, preview bridge, app-data, multiplayer; the OG tags move into `/s` and `/u` first (needs the owner's go-ahead); auth and cloud behind config (D16 dead-code deletions need the owner's yes) | not started | |
 | 13 | Cleanup: unused dependencies, `README.md` and the root `HANDOFF.md` rewritten from the code, final decisions summary | not started | |

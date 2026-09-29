@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { formatWeightWithUnit, weightUnitFor } from "@/domain/units";
 import { useGymDerived } from "@/lib/gym/hooks";
 import { availableYears, buildYearReceipt } from "@/lib/gym/wrapped";
-import { StampMark } from "@/components/app/mark";
+import { LockdMark } from "@/components/app/mark";
 import { PublishButton } from "@/components/app/publish-button";
 import { wrappedShare } from "@/lib/cloud/shares";
 
@@ -46,7 +46,7 @@ function WrappedPage() {
             <p className="stamp text-4xl leading-none">LOCKD</p>
             <p className="mt-1 text-[10px] uppercase tracking-[0.22em] opacity-60">Training receipt {receipt.year}</p>
           </div>
-          <StampMark className="size-9" />
+          <LockdMark className="size-9" />
         </header>
         <dl className="mt-5 grid grid-cols-2 gap-4 border-b border-dashed border-current/20 pb-5">
           <div>

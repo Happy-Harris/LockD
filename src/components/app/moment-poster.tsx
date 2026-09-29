@@ -1,4 +1,4 @@
-import { StampMark } from "@/components/app/mark";
+import { LockdMark } from "@/components/app/mark";
 import { formatLocalDate } from "@/domain/time";
 import { formatWeightWithUnit, type WeightUnit } from "@/domain/units";
 import type { TrainingMoment } from "@/lib/gym/moments";
@@ -21,7 +21,7 @@ export function MomentPoster({
         <p className="text-[10px] font-medium uppercase tracking-[0.28em] opacity-55">
           {moment.kicker}
         </p>
-        <StampMark className="size-8 opacity-80" />
+        <LockdMark className="size-8 opacity-80" />
       </div>
       <p className="mt-8 stamp text-6xl leading-[0.85] tracking-tight">{moment.title}</p>
       {value ? <p className="mt-5 font-display text-3xl font-semibold tabular">{value}</p> : null}

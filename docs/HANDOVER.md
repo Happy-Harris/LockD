@@ -9,6 +9,24 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 10b: the mark draws an L, and the icons are redrawn (I-38)
+
+- **Mark:** `StampMark` (which drew an R) is now `LockdMark`, an L on an Oxide tile in the theme's accent and accent ink, at
+  all 9 places it is used. It is the same shape as the favicon and app icons on three grids (32, 16, 512);
+  `brand.test.ts` checks all three carry the same path and that the R path and the old name are gone.
+- **Icons:** `scripts/make-icons.mjs` redraws `icon-192`, `icon-512`, `icon-maskable-512` and `apple-touch-icon` from the
+  palette module (read from `src/lib/brand.ts`, so they cannot drift), through the preinstalled Chromium:
+  `CHROMIUM_PATH=/opt/pw-browsers/chromium node scripts/make-icons.mjs`. The maskable one keeps its art inside the
+  central 80%. The favicon's L is now Mill ink like the mark. Tests check the four sizes and that every icon the manifest names exists.
+- **Corrections to the plan's I-38 line:** the fonts were already self-hosted (`@fontsource`, an earlier PR), and the manifest
+  already pointed at real icons, so neither needed work. `npm run check:brand` reports 0 findings. The `public/__grok/`
+  assets are scaffolding and go with Step 12.
+- **Looked at:** the regenerated icons (512 and maskable) and the sidebar mark in the running app at 1024 px. **Not done:** the
+  mark at 390 px, on the light theme, or in the posters and receipt (they draw with the same component but were not opened).
+- **Not done (next slices):** the typefaces (Big Shoulders Display and Archivo, 10c), poster layout (10d), receipt motifs (10e).
+- Merge note: this branch conflicted with 10a in `receipt.tsx` and `moment-poster.tsx` (import lines and one paragraph); both were
+  resolved by keeping the rename and the palette import.
+
 ### 2026-09-29 — Step 10a: Oxide replaces vermillion, accent themes retired (D9, O3)
 
 - **Palette:** one module, `src/lib/brand.ts` (Mill `#0E0E0C`, Oxide `#C45C32`, Chalk `#E8E2D4`, Steel `#9A9588`, Verdigris
