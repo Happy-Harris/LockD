@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSlices } from "@/lib/gym/hooks";
 import { searchSessions } from "@/lib/gym/search";
 import { useGym } from "@/lib/gym/store";
+import { weightUnitFor } from "@/domain/units";
 import { cn } from "@/lib/utils";
 
 interface CommandItem {
@@ -14,6 +15,7 @@ interface CommandItem {
 
 export function CommandPalette() {
   const navigate = useNavigate();
+  const unit = useGym((s) => weightUnitFor(s.settings.unitSystem));
   const templates = useGym((s) => s.templates);
   const startFromTemplate = useGym((s) => s.startFromTemplate);
   const startEmptyWorkout = useGym((s) => s.startEmptyWorkout);
@@ -92,7 +94,7 @@ export function CommandPalette() {
     const jumps = q
       ? list.filter((item) => item.label.toLowerCase().includes(q) || item.hint?.toLowerCase().includes(q))
       : list;
-    const hits = q.length >= 2 ? searchSessions(query, slices) : [];
+    const hits = q.length >= 2 ? searchSessions(query, slices, unit) : [];
     const sessionItems: CommandItem[] = hits.map((hit) => ({
       id: `s-${hit.workoutId}`,
       label: `${hit.name} · ${hit.date}`,

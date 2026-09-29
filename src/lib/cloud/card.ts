@@ -1,3 +1,4 @@
+import { weightUnitFor } from "@/domain/units";
 import { computeRecords, sliceSessions, streakDays } from "@/lib/gym/analytics";
 import { buildChronicle } from "@/lib/gym/chronicle";
 import { buildIntelligence } from "@/lib/gym/intelligence";
@@ -14,7 +15,7 @@ export function buildLockerCard(
   const slices = sliceSessions(payload.workouts, payload.workoutExercises, payload.workoutSets);
   const records = computeRecords(slices, settings.oneRepMaxFormula, settings.excludeWarmupsFromAnalytics);
   const chronicle = buildChronicle(slices, settings.oneRepMaxFormula, settings.goalLiftIds, payload.eraNames ?? []);
-  const moments = buildMoments(slices, records, chronicle.eras, payload.measurements);
+  const moments = buildMoments(slices, records, chronicle.eras, payload.measurements, weightUnitFor(settings.unitSystem));
   const tracked = (settings.goalLiftIds.length ? settings.goalLiftIds : records.slice(0, 3).map((row) => row.exerciseId)).slice(0, 3);
   const board = progressBoard(
     tracked.map((id) => {

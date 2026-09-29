@@ -369,7 +369,7 @@ function ActiveWorkoutPage() {
                           const prs = completeSet(set.id);
                           if (prs.length)
                             toast(`${prs.map((pr) => pr.exerciseName).join(", ")} — new e1RM`);
-                          const cmp = compareSet(set, ghost);
+                          const cmp = compareSet(set, ghost, unit);
                           if (cmp.verdict === "beat") toast(`Beat last time · ${cmp.label}`);
                           if (cmp.verdict === "tie") toast("Tied last time");
                         }
@@ -546,7 +546,7 @@ function SetRow({
       : null;
 
   const typeLabel = SET_TYPES.find((entry) => entry.value === set.setType)?.short || "WK";
-  const cmp = set.isCompleted ? compareSet(set, ghost) : null;
+  const cmp = set.isCompleted ? compareSet(set, ghost, unit) : null;
   const grindOrder: GrindFeel[] = ["easy", "normal", "grind"];
 
   return (
