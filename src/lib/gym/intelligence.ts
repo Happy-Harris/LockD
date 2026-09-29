@@ -33,11 +33,14 @@ export interface IntelligenceReport {
   relative: RelativeLift[];
 }
 
-/** Smallest week-to-week e1RM difference between high and low volume weeks worth calling a pattern (2.5 kg, one plate step). */
-export const VOLUME_RESPONSE_MIN_EFFECT_G = 2500;
-/** Week pairs needed before volume is read against progress, and needed in each of the high and low groups. */
-export const VOLUME_RESPONSE_MIN_PAIRS = 6;
-export const VOLUME_RESPONSE_MIN_GROUP = 3;
+/**
+ * The product rule for thin-evidence insights (plan D6, confirmed by the owner): at least 8 observations, at least 3 in
+ * each of the two groups compared, and a difference of at least 3%. Below that the insight says nothing (or "no clear
+ * link"); above it, it always shows n. Listed in the evidence catalog as `thin-evidence-insight-gate`.
+ */
+export const THIN_EVIDENCE_MIN_N = 8;
+export const THIN_EVIDENCE_MIN_GROUP = 3;
+export const THIN_EVIDENCE_MIN_DIFFERENCE = 0.03;
 
 function mean(values: number[]): number {
   if (values.length === 0) return 0;
@@ -47,26 +50,28 @@ function mean(values: number[]): number {
 /**
  * Reads weekly hard sets against the next exposure's e1RM change. Null below the minimum number of week pairs (the caller keeps
  * its "not enough weeks" line). A pattern is only claimed when both the high and low groups have enough weeks and the gap
- * is at least VOLUME_RESPONSE_MIN_EFFECT_G; otherwise it says there is no clear link, with n.
+ * is at least THIN_EVIDENCE_MIN_DIFFERENCE of the lift's e1RM; otherwise it says there is no clear link, with n.
  */
 export function readVolumeResponse(
-  pairs: Array<{ volume: number; next: number }>,
+  pairs: Array<{ volume: number; next: number; base: number }>,
 ): { text: string; pattern: boolean } | null {
-  if (pairs.length < VOLUME_RESPONSE_MIN_PAIRS) return null;
+  if (pairs.length < THIN_EVIDENCE_MIN_N) return null;
   const n = `from ${pairs.length} weeks`;
   const avgVolume = mean(pairs.map((item) => item.volume));
   const high = pairs.filter((row) => row.volume >= avgVolume);
   const low = pairs.filter((row) => row.volume < avgVolume);
-  if (high.length >= VOLUME_RESPONSE_MIN_GROUP && low.length >= VOLUME_RESPONSE_MIN_GROUP) {
+  if (high.length >= THIN_EVIDENCE_MIN_GROUP && low.length >= THIN_EVIDENCE_MIN_GROUP) {
     const highDelta = mean(high.map((row) => row.next));
     const lowDelta = mean(low.map((row) => row.next));
-    if (highDelta - lowDelta >= VOLUME_RESPONSE_MIN_EFFECT_G) {
+    // The gap is judged against the lift's own estimated 1RM, so 3% means the same for a 60 kg and a 200 kg lift.
+    const effect = (highDelta - lowDelta) / mean(pairs.map((item) => item.base));
+    if (effect >= THIN_EVIDENCE_MIN_DIFFERENCE) {
       return {
         text: `Higher-volume weeks have been followed by better estimated 1RM on the main lift (${n}).`,
         pattern: true,
       };
     }
-    if (lowDelta - highDelta >= VOLUME_RESPONSE_MIN_EFFECT_G) {
+    if (-effect >= THIN_EVIDENCE_MIN_DIFFERENCE) {
       return {
         text: `The main lift has tended to move more after quieter volume weeks (${n}).`,
         pattern: true,
@@ -146,10 +151,14 @@ export function buildIntelligence(opts: {
     }
     const tight = byGap.filter((row) => row.gap < 72);
     const roomy = byGap.filter((row) => row.gap >= 96);
-    if (tight.length >= 3 && roomy.length >= 3) {
+    if (
+      tight.length + roomy.length >= THIN_EVIDENCE_MIN_N &&
+      tight.length >= THIN_EVIDENCE_MIN_GROUP &&
+      roomy.length >= THIN_EVIDENCE_MIN_GROUP
+    ) {
       const tightMean = mean(tight.map((row) => row.e1rm));
       const roomyMean = mean(roomy.map((row) => row.e1rm));
-      if (roomyMean > 0 && tightMean < roomyMean * 0.97) {
+      if (roomyMean > 0 && tightMean < roomyMean * (1 - THIN_EVIDENCE_MIN_DIFFERENCE)) {
         const note = `${call.exerciseName} is usually stronger with 4+ days since the last exposure (${tight.length} short and ${roomy.length} long gaps).`;
         fatigue.push({ name: call.exerciseName, note });
         insights.push(note);
@@ -160,7 +169,7 @@ export function buildIntelligence(opts: {
   const weeks = weeklySeries(slices, opts.weekStartDay);
   let volumeResponse = "Not enough weeks to read volume against progress.";
   if (weeks.length >= 6 && goalIds[0]) {
-    const pairs: Array<{ volume: number; next: number }> = [];
+    const pairs: Array<{ volume: number; next: number; base: number }> = [];
     const series = collectExposures(goalIds[0], slices, formula, true);
     for (let i = 0; i < weeks.length - 1; i += 1) {
       const week = weeks[i]!;
@@ -173,6 +182,7 @@ export function buildIntelligence(opts: {
       pairs.push({
         volume: week.hardSets,
         next: there[0]!.bestE1rm - here[here.length - 1]!.bestE1rm,
+        base: here[here.length - 1]!.bestE1rm,
       });
     }
     const read = readVolumeResponse(pairs);
@@ -201,10 +211,14 @@ export function buildIntelligence(opts: {
       else restMisses.push(avg);
     }
   }
-  if (restHits.length >= 4 && restMisses.length >= 3) {
+  if (
+    restHits.length + restMisses.length >= THIN_EVIDENCE_MIN_N &&
+    restHits.length >= THIN_EVIDENCE_MIN_GROUP &&
+    restMisses.length >= THIN_EVIDENCE_MIN_GROUP
+  ) {
     const hitRest = mean(restHits);
     const missRest = mean(restMisses);
-    if (hitRest > missRest + 15) {
+    if (hitRest > missRest + 15 && hitRest >= missRest * (1 + THIN_EVIDENCE_MIN_DIFFERENCE)) {
       restNote = `Hits cluster around ${Math.round(hitRest)}s rest. Misses are closer to ${Math.round(missRest)}s (${restHits.length} hit and ${restMisses.length} missed exercises).`;
       insights.push(restNote);
     } else {
