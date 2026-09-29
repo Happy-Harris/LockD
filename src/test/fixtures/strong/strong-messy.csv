@@ -1,0 +1,8 @@
+"Date","Workout Name","Exercise Name","Set Order","Weight (lbs)","Reps","Notes"
+"2026-02-01 07:15:00","Morning, quick","Back Squat","1","135","5","=SUM(A1:A2)"
+"2026-02-01 07:15:00","Morning, quick","Back Squat","2","225","3",""
+"2026-02-01 07:15:00","Morning, quick","Back Squat","Rest Timer","","",""
+"not a date","Morning, quick","Back Squat","3","245","1",""
+"2026-02-01 07:15:00","Morning, quick","","4","245","1",""
+"2026-02-03 07:15:00","Squat day","Back Squat","1","135","5","multi
+line note"

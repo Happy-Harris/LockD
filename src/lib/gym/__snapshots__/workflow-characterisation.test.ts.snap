@@ -1,42 +1,35 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`workflow characterisation — present behaviour, including import defects > BUG: current European Strong CSV parsing corrupts weights, repetitions and dates 1`] = `
+exports[`workflow characterisation — present behaviour > a European Strong CSV (semicolons, decimal commas, day-first dates) is read correctly 1`] = `
 {
   "dates": [
-    "2026-03-02",
+    "2026-02-03",
   ],
   "preview": {
-    "issues": [],
     "sets": 2,
-    "skipped": 0,
-    "unmatched": [
-      "Kniebeuge",
-    ],
     "workouts": 1,
   },
   "sets": [
     {
-      "reps": 0,
-      "weightG": undefined,
+      "reps": 5,
+      "weightG": 110000,
     },
     {
-      "reps": 0,
-      "weightG": undefined,
+      "reps": 3,
+      "weightG": 110000,
     },
   ],
 }
 `;
 
-exports[`workflow characterisation — present behaviour, including import defects > pins CSV parser, Strong import and exported set columns 1`] = `
+exports[`workflow characterisation — present behaviour > pins CSV parser, Strong import and exported set columns 1`] = `
 {
   "export": "Date,Workout Name,Exercise Name,Set Order,Set Type,Weight,Reps,RPE,Seconds,Notes
 2026-02-03,Test,Bench Press,1,working,100,5,,,
 2026-02-03,Test,Bench Press,2,failure,105,3,,,",
   "preview": {
-    "issues": [],
     "sets": 2,
     "skipped": 0,
-    "unmatched": [],
     "workouts": 1,
   },
   "sets": [
@@ -60,7 +53,7 @@ exports[`workflow characterisation — present behaviour, including import defec
 }
 `;
 
-exports[`workflow characterisation — present behaviour, including import defects > pins program install, JSON export/import, load suggestions and pointer 1`] = `
+exports[`workflow characterisation — present behaviour > pins program install, JSON export/import, load suggestions and pointer 1`] = `
 {
   "counts": [
     8,
@@ -94,7 +87,7 @@ exports[`workflow characterisation — present behaviour, including import defec
 }
 `;
 
-exports[`workflow characterisation — present behaviour, including import defects > pins template start, set completion, finish, discard and backup merge 1`] = `
+exports[`workflow characterisation — present behaviour > pins template start, set completion, finish, discard and backup merge 1`] = `
 {
   "backupFormat": "lockd-backup",
   "completed": {

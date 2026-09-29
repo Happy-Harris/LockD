@@ -1,0 +1,8 @@
+Date,Workout Name,Duration,Exercise Name,Set Order,Weight (kg),Reps,Distance (m),Seconds,Notes,Workout Notes,RPE
+2026-01-05 18:30:00,Push A,1h 5m,Bench Press,1,60,5,,,"Felt easy",Good session,7
+2026-01-05 18:30:00,Push A,1h 5m,Bench Press,2,80,5,,,,Good session,8
+2026-01-05 18:30:00,Push A,1h 5m,Bench Press,3,90,3,,,"Grinder, last rep slow",Good session,9.5
+2026-01-05 18:30:00,Push A,1h 5m,Overhead Press,1,40,8,,,,Good session,
+2026-01-07 19:00:00,Pull A,55m,Barbell Row,1,70,8,,,,,
+2026-01-07 19:00:00,Pull A,55m,Pull-Up,1,0,10,,,"Bodyweight",,
+2026-01-07 19:00:00,Pull A,55m,Rowing Machine,1,,,2000,480,,,
