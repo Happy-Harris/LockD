@@ -4,7 +4,22 @@ State, most recent first. Read at the start of a session. Append an entry at the
 what shipped, what it means for the next session, and anything not verified. This is a log, not a
 doc to rewrite.
 
+Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing); see
+`docs/STATUS.md` § 1 for the scheme, and for what is done and what is next.
+
 ## Log
+
+### 2026-09-29 — Docs: STATUS.md, one label scheme for handing the project on
+
+- Added `docs/STATUS.md`: what "Step 7b", "Opp 4", "LockD#23", "I-20", "D5" and "O2" each mean, every
+  Step and every one of the owner's 11 opportunities with its state and the pull requests that did
+  it, the open questions, and the terms. `CLAUDE.md` points to it, and it must be updated in the
+  same PR as any status change.
+- The naming had drifted: early PR titles said "PR 4a:", later ones "Plan PR 7b:", and two number
+  systems overlapped (the plan's steps and the owner's opportunities). Past titles and entries are
+  left as written (rewriting history helps nobody); from now on: `Step n[x]: …`, `Opp n: …`,
+  branch `claude/step<n><x>-<slug>` or `claude/opp<n>-<slug>`.
+- Nothing in the app changed.
 
 ### 2026-09-29 — Plan PR 8d-1: goal lifts are the lifter's own (I-19), with pickers; est. 1RM labelled and rounded (I-13)
 
