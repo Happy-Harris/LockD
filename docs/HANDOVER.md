@@ -6,6 +6,25 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Fix: test suite pinned to UTC
+
+- `verify` was red on `main`: `workflow-characterisation` snapshotted an absolute instant
+  (`18:00Z`) for a "local noon" fixture, so it passed only in UTC−6 zones (checked: Denver and
+  Mexico City pass; UTC, London, Chicago, Dubai and Auckland fail) and would fail on GitHub's UTC
+  runners. Vitest now pins `TZ=UTC` in `src/test/global-setup.ts`, a guard test
+  (`src/test/timezone.test.ts`) fails clearly if that config regresses, and the one affected
+  snapshot line is updated (`18:00Z` → `12:00Z`). The full suite gives identical results in five
+  machine timezones.
+- Review of the privacy and characterisation work (Codex, 29 Sep) found it sound. Follow-ups, not
+  fixed here: `saveProfile` doesn't clear `privacy_notice_pending`, so the "your locker is now
+  private" notice stays after the owner deliberately publishes; `LockerPage` is exported from a
+  route file, so TanStack warns it can't be code-split (move it to a component); the locker has
+  no e2e or screenshots (Codex's sandbox couldn't launch a browser).
+- The Hevy importer is **not built**: only two synthetic fixtures and the contract in
+  `docs/consolidation/HEVY-IMPORT.md`. It is plan PR 7.
+- Product repo: Codex worked in `motivatedc-creator/Lockd`; this session can't push there. Its
+  `main` was fast-forwarded into `Happy-Harris/LockD` (no new code) so work continues here.
+
 ### 2026-09-29 — Plan PR 3: Engine characterisation
 
 - Characterisation fixtures now pin the existing behaviour of Chronicle, Ghost,
