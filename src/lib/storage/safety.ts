@@ -16,19 +16,7 @@ export type { SafetyBackup, SafetyReason };
 /** Oldest copies beyond this are pruned so repeated sign-ins can't fill the device. */
 export const SAFETY_BACKUPS_KEPT = 5;
 
-export async function takeSafetyBackup(
-  reason: SafetyReason,
-  backup: LockdBackup,
-  db: LockdDatabase = getLockdDb(),
-): Promise<SafetyBackup> {
-  const row: SafetyBackup = {
-    id: `${backup.exportedAt}-${reason}`,
-    createdAt: backup.exportedAt,
-    reason,
-    sessions: backup.workouts.filter((w) => w.status === "completed" || w.status === "active")
-      .length,
-    json: JSON.stringify(backup),
-  };
+async function saveAndPrune(row: SafetyBackup, db: LockdDatabase): Promise<SafetyBackup> {
   await db.transaction("rw", db.safetyBackups, async () => {
     await db.safetyBackups.put(row);
     const all = await db.safetyBackups.orderBy("createdAt").reverse().primaryKeys();
@@ -36,6 +24,45 @@ export async function takeSafetyBackup(
     if (stale.length) await db.safetyBackups.bulkDelete(stale);
   });
   return row;
+}
+
+export function takeSafetyBackup(
+  reason: SafetyReason,
+  backup: LockdBackup,
+  db: LockdDatabase = getLockdDb(),
+): Promise<SafetyBackup> {
+  return saveAndPrune(
+    {
+      id: `${backup.exportedAt}-${reason}`,
+      createdAt: backup.exportedAt,
+      reason,
+      sessions: backup.workouts.filter((w) => w.status === "completed" || w.status === "active")
+        .length,
+      json: JSON.stringify(backup),
+    },
+    db,
+  );
+}
+
+/** Keeps the untouched `localStorage` string, byte for byte, before the log is copied out of it. */
+export function takeRawSafetyCopy(
+  reason: SafetyReason,
+  raw: string,
+  sessions: number,
+  createdAt: string,
+  db: LockdDatabase = getLockdDb(),
+): Promise<SafetyBackup> {
+  return saveAndPrune(
+    {
+      id: `${createdAt}-${reason}`,
+      createdAt,
+      reason,
+      sessions,
+      json: raw,
+      format: "raw-localstorage",
+    },
+    db,
+  );
 }
 
 export async function listSafetyBackups(): Promise<SafetyBackup[]> {

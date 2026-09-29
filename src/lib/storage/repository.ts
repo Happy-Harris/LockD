@@ -79,6 +79,13 @@ export interface LockdRepository {
   /** Adds rows in bulk, in batches inside one transaction (an import of years of history). */
   importBatch(rows: PutRows): Promise<void>;
   safetyBackup(reason: SafetyReason, backup: LockdBackup): Promise<SafetyBackup>;
+  /** Keeps the untouched `localStorage` string before the log is copied out of it. */
+  rawSafetyCopy(
+    reason: SafetyReason,
+    raw: string,
+    sessions: number,
+    createdAt: string,
+  ): Promise<SafetyBackup>;
   meta(): Promise<RepoMeta>;
   setMeta(patch: Partial<RepoMeta>): Promise<void>;
 }

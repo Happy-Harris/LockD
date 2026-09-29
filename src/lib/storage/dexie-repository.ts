@@ -15,7 +15,7 @@ import {
   ROW_COLLECTIONS,
   keyOf,
 } from "./repository";
-import { takeSafetyBackup } from "./safety";
+import { takeRawSafetyCopy, takeSafetyBackup } from "./safety";
 
 const SCHEMA_VERSION = 2;
 
@@ -107,6 +107,15 @@ export class DexieRepository implements LockdRepository {
 
   safetyBackup(reason: SafetyReason, backup: LockdBackup): Promise<SafetyBackup> {
     return takeSafetyBackup(reason, backup, this.db);
+  }
+
+  rawSafetyCopy(
+    reason: SafetyReason,
+    raw: string,
+    sessions: number,
+    createdAt: string,
+  ): Promise<SafetyBackup> {
+    return takeRawSafetyCopy(reason, raw, sessions, createdAt, this.db);
   }
 
   async meta(): Promise<RepoMeta> {
