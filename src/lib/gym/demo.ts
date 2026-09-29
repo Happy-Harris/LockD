@@ -216,8 +216,6 @@ export function buildDemoLog(exercises: Exercise[], now = new Date()): DemoLog {
 
   let weekCursor = 0;
   for (const era of ERAS) {
-    const eraStart = addDays(firstMonday, weekCursor * 7);
-    eraNames.push({ startDate: localDateOf(eraStart), name: era.name });
     for (let w = 0; w < era.weeks; w += 1) {
       const globalWeek = weekCursor + w;
       const weekStart = addDays(firstMonday, globalWeek * 7);
