@@ -58,6 +58,13 @@ export type TrackingType =
   | "distance_duration"
   | "assisted_weight";
 
+export interface MuscleTargetBand {
+  min: number;
+  max: number;
+}
+
+export type PersonalMuscleTargets = Partial<Record<MuscleGroup, MuscleTargetBand>>;
+
 export interface Exercise {
   id: UUID;
   name: string;
@@ -87,6 +94,8 @@ export interface TemplateExercise {
   targetRepMin?: number;
   targetRepMax?: number;
   targetRpe?: number;
+  /** Reps in reserve the routine asks for. Used when `intensityMode` is `rir`. */
+  targetRir?: number;
   restSeconds: number;
   defaultSetType: SetType;
   includeWarmup: boolean;
@@ -113,6 +122,8 @@ export interface WorkoutSet {
   weightG?: number;
   reps?: number;
   rpe?: number;
+  /** Reps in reserve. Stored as entered; 0 = nothing left. */
+  rir?: number;
   durationSeconds?: number;
   distanceM?: number;
   isCompleted: boolean;
@@ -120,6 +131,10 @@ export interface WorkoutSet {
   notes?: string;
   grind?: GrindFeel;
   clipId?: UUID;
+  /** Undefined = bilateral row (unchanged meaning). Set for unilateral exercises. */
+  side?: "left" | "right";
+  /** UI-lookup-only key linking the left and right row of one set number. Never indexed. */
+  pairId?: string;
 }
 
 export interface WorkoutExercise {
@@ -134,7 +149,8 @@ export interface WorkoutExercise {
   trackingTypeSnapshot: TrackingType;
   restSeconds: number;
   notes?: string;
-  supersetGroup?: string;
+  supersetGroup?: string;  /** Snapshotted when the exercise is added, so a mid-workout edit can't change how it logs. */
+  unilateralSnapshot?: boolean;
 }
 
 export type WorkoutStatus = "active" | "completed" | "discarded";
@@ -159,6 +175,9 @@ export interface Workout {
   pausedSeconds: number;
   notes?: string;
   beatWorkoutId?: UUID;
+  /** Stable fingerprint of the source rows when imported, used to skip duplicates on re-import. */
+  importFingerprint?: string;
+  importJobId?: UUID;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
 }
@@ -211,7 +230,7 @@ export interface BarProfile {
 }
 
 export type OneRepMaxFormula = "epley" | "brzycki";
-export type IntensityMode = "rpe" | "none";
+export type IntensityMode = "rpe" | "rir" | "none";
 export type ThemeMode = "light" | "dark" | "system";
 export type AccentTheme = "stamp" | "ember" | "glacier" | "moss";
 export type GoalLens = "powerbuilding" | "hypertrophy" | "strength" | "calisthenics" | "hybrid" | "general";
@@ -328,6 +347,12 @@ export interface AppSettings {
   restTimerSound: boolean;
   excludeWarmupsFromAnalytics: boolean;
   secondaryMuscleCredit: number;
+  /** Optional per-muscle weekly set targets. Missing entries use the research default. */
+  personalMuscleTargets?: PersonalMuscleTargets;
+  /** Missing means off. */
+  restTimerVibrate?: boolean;
+  /** Missing means off. */
+  restTimerNotification?: boolean;
   goalLiftIds: UUID[];
   defaultBarProfileId: UUID;
   defaultPlateInventoryId: UUID;
@@ -338,6 +363,34 @@ export interface AppSettings {
   activeProgramId?: UUID;
   onboardingCompletedAt?: ISODateTime;
   demoLoaded: boolean;
+}
+
+export type ImportJobStatus = "pending" | "completed" | "failed" | "cancelled";
+
+/** Where an import came from. Provisional until the importers land (plan PR 7). */
+export type ImportSource = "strong-csv" | "hevy-csv" | "generic-csv" | "repforge-json";
+
+export interface ImportJob {
+  id: UUID;
+  source: ImportSource;
+  fileName: string;
+  startedAt: ISODateTime;
+  finishedAt?: ISODateTime;
+  status: ImportJobStatus;
+  workoutsImported: number;
+  setsImported: number;
+  exercisesCreated: number;
+  rowsSkipped: number;
+  /** Non-sensitive, human-readable summary lines. */
+  messages: string[];
+}
+
+export interface ImportIssue {
+  id: UUID;
+  jobId: UUID;
+  row: number;
+  severity: "warning" | "error";
+  message: string;
 }
 
 export interface TimerState {
