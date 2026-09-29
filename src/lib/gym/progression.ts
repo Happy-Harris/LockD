@@ -1,4 +1,13 @@
 import { bestOneRepMax } from "@/domain/oneRepMax";
+import {
+  computeStallComparison,
+  STALL_WINDOW_DAYS,
+  stepDownG,
+  stepUpG,
+  type ExerciseSession,
+  type LoadSnap,
+} from "@/domain/progression";
+import { shiftLocalDate } from "@/domain/analytics/trainingWeeks";
 import type { OneRepMaxFormula, TrackingType } from "@/domain/types";
 import type { SessionSlice } from "./analytics";
 
@@ -26,10 +35,16 @@ export interface ProgressionCall {
   why: string;
   hitRate: number;
   missStreak: number;
+  /**
+   * Sessions in the trailing 28 days when this lift is stalled (best e1RM flat or down against the
+   * same number of sessions before them, with no layoff between), otherwise 0.
+   */
   stallSessions: number;
   exposuresAtLoad: number;
   typicalExposuresToProgress?: number;
   lastDate?: string;
+  /** The heaviest working load of the last session, in grams. */
+  lastWeightG?: number;
 }
 
 export interface EasierWeekCall {
@@ -110,13 +125,35 @@ export function typicalExposuresToProgress(exposures: Exposure[]): number | unde
   return Math.round(runs.reduce((sum, value) => sum + value, 0) / runs.length);
 }
 
-function stallLength(exposures: Exposure[]): number {
-  if (exposures.length < 3) return 0;
-  const peak = Math.max(...exposures.map((row) => row.bestE1rm));
-  if (peak <= 0) return 0;
-  const lastPeak = [...exposures].reverse().find((row) => row.bestE1rm >= peak * 0.995);
-  if (!lastPeak) return 0;
-  return exposures.length - 1 - exposures.indexOf(lastPeak);
+/**
+ * Whether this lift is stalled, by the one rule the app uses everywhere (`computeStallComparison`):
+ * best e1RM across at least three sessions in the trailing 28 days against the same number of
+ * sessions before them. It used to be measured against the lift's all-time peak, which made every
+ * comeback look stalled. A break longer than 28 days between the two windows is a layoff, not a stall.
+ */
+function stallLength(
+  slices: SessionSlice[],
+  exerciseId: string,
+  formula: OneRepMaxFormula,
+  lastDate: string | undefined,
+): number {
+  if (!lastDate) return 0;
+  const sessions: ExerciseSession[] = [];
+  for (const slice of slices) {
+    const row = slice.exercises.find((exercise) => exercise.exerciseId === exerciseId);
+    if (!row) continue;
+    sessions.push({
+      localDate: slice.workout.localDate,
+      sets: slice.sets.filter((set) => set.workoutExerciseId === row.id),
+    });
+  }
+  const comparison = computeStallComparison(
+    sessions,
+    formula,
+    shiftLocalDate(lastDate, -(STALL_WINDOW_DAYS - 1)),
+    lastDate,
+  );
+  return comparison.state === "stalled" ? comparison.sessionsInWindow : 0;
 }
 
 function exposuresAtCurrentLoad(exposures: Exposure[]): number {
@@ -141,6 +178,8 @@ export function progressExercise(opts: {
   slices: SessionSlice[];
   formula: OneRepMaxFormula;
   excludeWarmups: boolean;
+  /** Rounds a load to one that can be built (barbell work with the lifter's bar and plates). */
+  snap?: LoadSnap;
 }): ProgressionCall {
   const exposures = collectExposures(
     opts.exerciseId,
@@ -157,7 +196,8 @@ export function progressExercise(opts: {
     if (exposures[i]!.hit) break;
     missStreak += 1;
   }
-  const stallSessions = stallLength(exposures);
+  const lastExposure = exposures[exposures.length - 1];
+  const stallSessions = stallLength(opts.slices, opts.exerciseId, opts.formula, lastExposure?.date);
   const typical = typicalExposuresToProgress(exposures);
   const atLoad = exposuresAtCurrentLoad(exposures);
   const last = exposures[exposures.length - 1];
@@ -174,6 +214,7 @@ export function progressExercise(opts: {
     exposuresAtLoad: atLoad,
     typicalExposuresToProgress: typical,
     lastDate: last?.date,
+    lastWeightG: last?.bestWeightG || undefined,
     suggestedSets: opts.targetSets,
   };
 
@@ -193,12 +234,12 @@ export function progressExercise(opts: {
     return {
       ...base,
       action: "easier_week",
-      suggestedWeightG: bodyweight ? undefined : Math.round(lastLoad * 0.9),
+      suggestedWeightG: bodyweight ? undefined : stepDownG(lastLoad, 0.9, increment, opts.snap),
       suggestedReps: last.working[0]?.reps,
       why:
         missStreak >= 3
           ? `Missed the target ${missStreak} sessions in a row. Drop about 10% and rebuild the hit.`
-          : `Four sessions with no estimated 1RM progress and a ${Math.round(hitRate * 100)}% hit rate. Call an easier week.`,
+          : `${stallSessions} sessions in the last ${STALL_WINDOW_DAYS} days with no estimated 1RM progress against the sessions before them, and a ${Math.round(hitRate * 100)}% hit rate. Call an easier week.`,
     };
   }
 
@@ -206,7 +247,7 @@ export function progressExercise(opts: {
     return {
       ...base,
       action: "deload",
-      suggestedWeightG: bodyweight ? undefined : Math.round(lastLoad * 0.95),
+      suggestedWeightG: bodyweight ? undefined : stepDownG(lastLoad, 0.95, increment, opts.snap),
       suggestedReps: opts.targetRepMin ?? last.working[0]?.reps,
       why: "Missed the target twice at this load. Small drop, same range, then retry.",
     };
@@ -216,7 +257,7 @@ export function progressExercise(opts: {
     return {
       ...base,
       action: "add_load",
-      suggestedWeightG: lastLoad + increment,
+      suggestedWeightG: stepUpG(lastLoad, increment, opts.snap),
       suggestedReps: opts.targetRepMin ?? last.working[0]?.reps,
       why: `You usually progress after ${typical} exposures at a load. This is exposure ${atLoad}. Add one increment.`,
     };
@@ -234,7 +275,7 @@ export function progressExercise(opts: {
     return {
       ...base,
       action: "add_load",
-      suggestedWeightG: lastLoad + increment,
+      suggestedWeightG: stepUpG(lastLoad, increment, opts.snap),
       suggestedReps: opts.targetRepMin ?? last.working[0]?.reps,
       why:
         atLoad >= 2
@@ -282,6 +323,7 @@ export function progressBoard(
     targetRepMin?: number;
     targetRepMax?: number;
     targetSets?: number;
+    snap?: LoadSnap;
   }>,
   slices: SessionSlice[],
   formula: OneRepMaxFormula,

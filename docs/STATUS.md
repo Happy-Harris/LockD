@@ -5,7 +5,7 @@ this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HAND
 last PRs did and did not verify). Keep this file current: update the tables in the same PR that
 changes a status.
 
-_Last updated: 2026-09-29, after `LockD#33` merged. In flight: Step 8d-2._
+_Last updated: 2026-09-29, after `LockD#34` merged. In flight: Step 8d-2 (PR pending); next Step 8d-3._
 
 ## 1. How to read the labels
 
@@ -91,7 +91,7 @@ State: **done**, **in flight**, **not started**. "GitHub" gives the pull request
 | 8c-1 | Muscle sets and personal targets replace MEV/MAV/MRV | done | LockD#31 |
 | 8c-2 | "Last trained" replaces recovery states; standards bands become a ratio | done | LockD#32 |
 | 8d-1 | Goal lifts are the lifter's own, with pickers; est. 1RM labelled and rounded | done | LockD#33 |
-| 8d-2 | Progression merge (I-20): windowed stall with a layoff guard, loads on the increment grid or buildable with the lifter's plates, program `linear` rule fixed | **in flight** | branch `claude/pr8d2-progression` |
+| 8d-2 | Progression merge (I-20): windowed stall with a layoff guard, loads on the increment grid or buildable with the lifter's plates, program `linear` rule fixed | **done** | branch `claude/step8d2-progression` |
 | 8d-3 | Deterministic Ask the Lab, so guests get an answer that cites the log (I-4, D3) | not started | |
 | 9 | Logging details: per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | not started | |
 | 10 | Visual identity: knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | not started | |

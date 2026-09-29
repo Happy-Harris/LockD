@@ -30,6 +30,13 @@ import type { OneRepMaxFormula, WorkoutSet } from "./types";
 export const STALL_WINDOW_DAYS = 28;
 export const STALL_MIN_SESSIONS = 3;
 
+/**
+ * A comparison across a longer break than this is not a stall. The prior sessions must end within
+ * this many days of the window's first session, otherwise the drop is a layoff, not a plateau
+ * (every comeback would look stalled otherwise).
+ */
+export const STALL_MAX_GAP_DAYS = 28;
+
 export const PROGRESSION_CLAIM_ID = "progression-double-progression" as const;
 
 /**
@@ -107,6 +114,7 @@ export function computeStallComparison(
   }
 
   const bestE1rmInWindowG = bestE1rmForSessions(windowSessions, formula);
+  const firstInWindow = windowSessions.map((s) => s.localDate).sort()[0]!;
   const priorSessions = sessions
     .filter((session) => session.localDate < windowStartDate)
     .sort((a, b) => a.localDate.localeCompare(b.localDate));
@@ -115,8 +123,13 @@ export function computeStallComparison(
   let comparisonSource: StallComparison["comparisonSource"] = null;
   if (priorSessions.length >= sessionsInWindow) {
     const equalPriorSessions = priorSessions.slice(-sessionsInWindow);
-    comparisonBestE1rmG = bestE1rmForSessions(equalPriorSessions, formula);
-    comparisonSource = "prior_equal_window";
+    const lastPrior = equalPriorSessions[equalPriorSessions.length - 1]!.localDate;
+    const gapDays = daysBetweenLocalDates(lastPrior, firstInWindow);
+    // Across a layoff there is nothing honest to compare: leave the prior window out.
+    if (gapDays <= STALL_MAX_GAP_DAYS) {
+      comparisonBestE1rmG = bestE1rmForSessions(equalPriorSessions, formula);
+      comparisonSource = "prior_equal_window";
+    }
   }
 
   if (bestE1rmInWindowG === null || comparisonBestE1rmG === null) {
@@ -182,8 +195,52 @@ export interface ProgressionSuggestion {
  * greater than `currentG`. Rounding to nearest satisfies neither when `currentG` is off the
  * grid — which happens with imported history and odd fixed-weight equipment.
  */
-function nextLoadG(currentG: number, incrementG: number): number {
+export function nextLoadG(currentG: number, incrementG: number): number {
   return roundGramsToIncrement(currentG, incrementG, "down") + incrementG;
+}
+
+/**
+ * Rounds a load to something that can be built. Given for barbell work with a bar and plates, it
+ * returns a total those plates can make; without it, loads round to the increment grid.
+ */
+export type LoadSnap = (grams: number, mode: "down" | "up" | "nearest") => number;
+
+/** The next load up: at least one increment above `currentG`, on the grid or buildable. */
+export function stepUpG(currentG: number, incrementG: number, snap?: LoadSnap): number {
+  if (snap) {
+    const up = snap(currentG + incrementG, "up");
+    if (up > currentG) return up;
+  }
+  return nextLoadG(currentG, incrementG);
+}
+
+/**
+ * A lighter load about `fraction` of `currentG` (0.9 is "about 10% off"), always below `currentG`,
+ * on the grid or buildable, never negative.
+ */
+export function stepDownG(
+  currentG: number,
+  fraction: number,
+  incrementG: number,
+  snap?: LoadSnap,
+): number {
+  const target = currentG * fraction;
+  const snapped = snap
+    ? snap(target, "nearest")
+    : roundGramsToIncrement(target, incrementG, "nearest");
+  if (snapped < currentG) return Math.max(0, snapped);
+  const below = snap
+    ? snap(currentG - 1, "down")
+    : roundGramsToIncrement(currentG - incrementG, incrementG, "nearest");
+  return Math.max(0, Math.min(below, currentG - 1));
+}
+
+function daysBetweenLocalDates(from: string, to: string): number {
+  const parse = (value: string) => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    return match ? Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : Number.NaN;
+  };
+  return Math.round((parse(to) - parse(from)) / 86_400_000);
 }
 
 /** Local-date-only day arithmetic (domain modules can't import the feature-layer helper). */

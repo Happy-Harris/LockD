@@ -64,7 +64,7 @@ exports[`workflow characterisation — present behaviour > pins program install,
   "deload": {
     "reps": undefined,
     "sets": 3,
-    "weightG": 101150,
+    "weightG": 87500,
   },
   "identity": {
     "format": "lockd-program",
@@ -73,7 +73,7 @@ exports[`workflow characterisation — present behaviour > pins program install,
   "normal": {
     "reps": 6,
     "sets": 4,
-    "weightG": 105000,
+    "weightG": 102500,
   },
   "roundTrip": [
     8,

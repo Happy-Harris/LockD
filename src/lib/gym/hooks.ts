@@ -13,6 +13,7 @@ import { buildChronicle } from "./chronicle";
 import { buildLiftDna } from "./dna";
 import { buildIntelligence } from "./intelligence";
 import { lensDef, verdictFraming } from "./lenses";
+import { barbellSnap } from "./loads";
 import { loggedEntriesOf } from "./entries";
 import { buildMoments } from "./moments";
 import { nextProgramSession } from "./programs";
@@ -47,6 +48,8 @@ export function useGymDerived() {
   const programSessions = useGym((s) => s.programSessions);
   const programExercises = useGym((s) => s.programExercises);
   const eraNames = useGym((s) => s.eraNames);
+  const bars = useGym((s) => s.bars);
+  const plates = useGym((s) => s.plates);
 
   return useMemo(() => {
     const records = computeRecords(slices, settings.oneRepMaxFormula, settings.excludeWarmupsFromAnalytics);
@@ -128,6 +131,7 @@ export function useGymDerived() {
           targetRepMin: templateRow?.targetRepMin,
           targetRepMax: templateRow?.targetRepMax,
           targetSets: templateRow?.targetSets,
+          snap: barbellSnap(exercise, bars, plates, settings),
         };
       }),
       slices,
@@ -222,6 +226,8 @@ export function useGymDerived() {
     programSessions,
     programExercises,
     eraNames,
+    bars,
+    plates,
   ]);
 }
 
