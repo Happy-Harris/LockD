@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Play, RotateCcw } from "lucide-react";
 import { Page } from "@/components/app/shell";
+import { WeeklyVerdictCard } from "@/components/app/weekly-verdict-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, Stat } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { formatLocalDate, formatWeekday } from "@/domain/time";
 import type { GoalLens } from "@/domain/types";
 import { titleCase } from "@/domain/taxonomy";
@@ -30,6 +31,7 @@ function TodayPage() {
   const derived = useGymDerived();
   const {
     verdict,
+    verdictLens,
     heat,
     streak,
     nextTemplate,
@@ -62,7 +64,6 @@ function TodayPage() {
     void navigate({ to: "/workout" });
   };
   const visibleRoutines = templates.filter((row) => !row.isArchived).slice(0, 4);
-  const directionWord = verdict.direction === "up" ? "UP" : verdict.direction === "down" ? "DOWN" : "HOLD";
   const notableFirsts = moments.filter((row) => row.kind === "first");
   const firsts = (
     notableFirsts.filter((row) => /100 kg bench|140 kg squat|180 kg deadlift/.test(row.title)).length
@@ -154,23 +155,15 @@ function TodayPage() {
       ) : null}
 
       {lensShows(settings.goalLens, "verdict") ? (
-        <section className="relative mb-6 overflow-hidden rounded-[28px] bg-surface p-5 hairline">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Weekly verdict</p>
-              <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight text-ink">{verdict.headline}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{verdict.detail}</p>
-            </div>
-            <div className="verdict-stamp grid size-20 shrink-0 place-items-center rounded-md text-sm font-extrabold">
-              {directionWord}
-            </div>
-          </div>
-          <div className="mt-5 grid grid-cols-3 gap-2">
-            <Stat label="Sessions" value={slices.length} hint="on file" />
-            <Stat label="Last week" value={verdict.lastHardSets} hint="hard sets" />
-            <Stat label="Hit rate" value={`${Math.round(intelligence.hitRate * 100)}%`} hint="tracked lifts" />
-          </div>
-        </section>
+        <div className="mb-6">
+          <WeeklyVerdictCard
+            verdict={verdict}
+            weightUnit={unit}
+            lens={verdictLens}
+            lensLabel={lens.label}
+            stamp
+          />
+        </div>
       ) : null}
 
       {queue.length > 0 ? (

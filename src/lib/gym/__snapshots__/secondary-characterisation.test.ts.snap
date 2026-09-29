@@ -466,7 +466,7 @@ exports[`secondary engine characterisation — current outcomes, including known
 ]
 `;
 
-exports[`secondary engine characterisation — current outcomes, including known defects > pins intelligence and the app's current weekly verdict from the dated demo > intelligence 1`] = `
+exports[`secondary engine characterisation — current outcomes, including known defects > pins intelligence and the weekly verdict from the dated demo > intelligence 1`] = `
 {
   "easierWeek": true,
   "exposuresToProgress": [],
@@ -514,38 +514,80 @@ exports[`secondary engine characterisation — current outcomes, including known
 }
 `;
 
-exports[`secondary engine characterisation — current outcomes, including known defects > pins intelligence and the app's current weekly verdict from the dated demo > no history 1`] = `
+exports[`secondary engine characterisation — current outcomes, including known defects > pins intelligence and the weekly verdict from the dated demo > no history 1`] = `
 {
-  "baselineHardSets": 0,
-  "baselineSessions": 0,
-  "baselineWeeks": 0,
-  "detail": "Weekly direction needs three completed training weeks before it will call a trend.",
-  "direction": "hold",
-  "headline": "Not enough weeks on file.",
-  "lastHardSets": 0,
-  "lastSessions": 0,
-  "lastTonnageG": 0,
-  "lastWeekEnd": "2026-09-27",
-  "lastWeekStart": "2026-09-21",
-  "state": "insufficient",
+  "direction": null,
+  "state": "not_enough_history",
+  "words": [
+    "Needs 3 more training weeks before comparing your training honestly.",
+  ],
 }
 `;
 
-exports[`secondary engine characterisation — current outcomes, including known defects > pins intelligence and the app's current weekly verdict from the dated demo > weekly verdict 1`] = `
+exports[`secondary engine characterisation — current outcomes, including known defects > pins intelligence and the weekly verdict from the dated demo > weekly verdict 1`] = `
 {
-  "baselineHardSets": 54,
-  "baselineSessions": 3,
-  "baselineWeeks": 4,
-  "detail": "54 working sets across 3 sessions, against a 4-week mean of 54.",
-  "direction": "hold",
-  "headline": "Hard sets held last week.",
-  "lastHardSets": 54,
-  "lastSessions": 3,
-  "lastTonnageG": 31351750,
-  "lastWeekEnd": "2026-09-27",
-  "lastWeekStart": "2026-09-21",
-  "pulse": undefined,
-  "state": "ok",
+  "baseline": {
+    "metrics": {
+      "hardSets": 54,
+      "sessions": 3,
+      "tonnageG": 31125500,
+    },
+    "weeks": [
+      {
+        "end": "2026-08-30",
+        "sessions": 3,
+        "start": "2026-08-24",
+      },
+      {
+        "end": "2026-09-06",
+        "sessions": 3,
+        "start": "2026-08-31",
+      },
+      {
+        "end": "2026-09-13",
+        "sessions": 3,
+        "start": "2026-09-07",
+      },
+      {
+        "end": "2026-09-20",
+        "sessions": 3,
+        "start": "2026-09-14",
+      },
+    ],
+  },
+  "direction": {
+    "band": "steady",
+    "changePercent": 0,
+    "id": "direction_steady",
+  },
+  "goalLifts": [
+    "Back Squat",
+    "Barbell Curl",
+    "Bench Press",
+  ],
+  "pulse": null,
+  "standout": {
+    "id": "standout_new_e1rm_best",
+    "text": "Bench Press|131250",
+  },
+  "state": "full",
+  "subject": {
+    "endDate": "2026-09-27",
+    "metrics": {
+      "hardSets": 54,
+      "sessions": 3,
+      "tonnageG": 31351750,
+    },
+    "startDate": "2026-09-21",
+  },
+  "watchout": {
+    "id": "watchout_none",
+  },
+  "words": [
+    "54 hard sets, in line with your 4-week average.",
+    "Bench Press hit a new best estimate of 131.3 kg.",
+    "Nothing to fix — repeat it.",
+  ],
 }
 `;
 

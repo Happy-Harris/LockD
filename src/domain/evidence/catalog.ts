@@ -9,10 +9,9 @@ export const RESEARCH_WEEKLY_SET_BAND: Readonly<MuscleTargetBand> = { min: 10, m
  * Crossref (and the PMID against PubMed) when it was added. Do not add a source from memory.
  * Sources with no DOI are pre-1990 practitioner material.
  *
- * Claims are only listed for behaviour Lock’d has today. Strong-Pro's claims for behaviour Lock’d
- * has not built (a 10–20 weekly band, deload and spike flags, a stall flag, personal muscle
- * targets, double progression) come across with the feature that needs them, not before, so this
- * layer never describes something the app does not do.
+ * Claims are only listed for behaviour Lock’d has today. Claims for behaviour that is not built
+ * yet (a 10–20 weekly band, personal muscle targets, double progression) come across with the
+ * feature that needs them, not before, so this layer never describes something the app does not do.
  *
  * Last reviewed: 2026-09-29.
  */
@@ -171,15 +170,57 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
   {
     id: "weekly-verdict-direction",
     statement:
-      "The weekly verdict calls last week's hard sets up or down when they are at least 10% away from the mean of the three to four weeks before it.",
+      "The weekly verdict compares last week's hard sets with the mean of the three to four training weeks before it: up from +10%, a big jump above +50%, down from −10%, well down at −30% or worse, steady in between.",
     kind: "implementation_heuristic",
     behaviors: ["weekly_verdict"],
     sourceIds: [],
     support: "context",
     interpretation:
-      "A product rule that turns the log into a plain direction. It needs three completed training weeks before it will say anything, and it pauses after three weeks away.",
+      "A product rule that turns the log into a plain direction. The baseline is up to four weeks in which something was logged, found within the eight weeks before last week; it needs three of them before it will say anything, and it pauses after three weeks away.",
     limitations:
-      "The 10% band and the window lengths are product choices, not sports-science criteria. A direction is not advice to change training.",
+      "The percentage bands and the window lengths are product choices, not sports-science criteria. A direction is not advice to change training.",
+    lastReviewed: "2026-09-29",
+  },
+  {
+    id: "weekly-verdict-deload-shape",
+    statement:
+      "The weekly verdict treats a week as deload-shaped when hard sets fall below 60% of the baseline mean while the number of sessions stays at least the baseline's rounded mean.",
+    kind: "implementation_heuristic",
+    behaviors: ["weekly_verdict_deload"],
+    sourceIds: [],
+    support: "context",
+    interpretation:
+      "A product rule so a lighter planned week reads as recovery rather than a failed week. Under the Strength framing, a week whose goal-lift estimated 1RM held or rose is called an intensity block instead.",
+    limitations:
+      "The 60% threshold and the session floor are heuristics. They are not sports-science diagnostic criteria and not a deload protocol.",
+    lastReviewed: "2026-09-29",
+  },
+  {
+    id: "weekly-verdict-spike-flag",
+    statement:
+      "A spike flag appears when last week's hard sets are more than 50% above the baseline mean.",
+    kind: "implementation_heuristic",
+    behaviors: ["weekly_verdict_spike", "training_change_flags"],
+    sourceIds: [],
+    support: "context",
+    interpretation:
+      "The flag reuses the weekly verdict's big-jump band, so the same logged work gives the same answer everywhere it is shown.",
+    limitations:
+      "The 50% threshold is a product attention rule. It is not a sports-science danger threshold or a recommendation to change training.",
+    lastReviewed: "2026-09-29",
+  },
+  {
+    id: "training-stall-flag",
+    statement:
+      "A stall flag compares the best valid estimated 1RM across at least three sessions in the last 28 local days with the same number of sessions before them.",
+    kind: "implementation_heuristic",
+    behaviors: ["training_stall_flag", "training_change_flags"],
+    sourceIds: [],
+    support: "context",
+    interpretation:
+      "The check uses the app's capped estimated 1RM and calls a stall only when the recent best is flat or lower. It is recomputed from logged sets each time.",
+    limitations:
+      "The 28-day window, the three-session minimum and the equal-count comparison are product heuristics. A flag is not a diagnosis, a program, or proof that adaptation has stopped.",
     lastReviewed: "2026-09-29",
   },
 ];

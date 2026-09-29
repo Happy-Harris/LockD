@@ -6,6 +6,43 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 8b: the weekly verdict and change flags on screen
+
+- **Replaced:** Lock'd's old verdict (`buildWeeklyVerdict`, a ±10% call on hard sets) is gone.
+  Today (when the lens shows a verdict: Strength, Hypertrophy, Hybrid, General) and Data Lab now show
+  the ported **weekly verdict** card, and Data Lab also shows the **change flags** card (deload, spike
+  and stall, each with a receipt). `src/lib/gym/entries.ts` (`loggedEntriesOf`) hands the finished log
+  to the engines; `useGymDerived` returns `verdict`, `verdictLens` and `flags`.
+- **What the lifter sees:** last week against the mean of the three to four training weeks before it,
+  in sentences whose numbers are buttons. Each opens a sheet with the logged weeks and the arithmetic.
+  A week can now be called deload-shaped (or, under Strength, an intensity block), a big jump is
+  named, and a sentence says which goal lifts it drew on with a link to Settings to change them.
+  "Not enough history" and "welcome back" say so in words.
+- **The stamp on Today is now honest:** it reads UP, HOLD or DOWN only when the log backs a direction,
+  LIGHT for a deload-shaped week, and is not drawn at all with too little history. Before, the old
+  code stamped HOLD on a log with no baseline.
+- **Numbers that changed** (reviewed in the `secondary-characterisation` snapshot, which now pins the
+  verdict's figures and words rather than its inputs): direction is by the new bands (big jump
+  above +50%, up from +10%, down from −10%, well down at −30% or worse); the baseline is up to four
+  weeks with something logged, found within eight. On the dated demo: last week 54 hard sets, three
+  sessions, steady, tonnage 31,351,750 gram-reps: the same figures as before, with a standout
+  ("Bench Press hit a new best estimate of 131.3 kg") the old verdict never produced.
+- **Removed from screens:** the old Data Lab header stat "Hit rate" and the Today verdict's stat row
+  (the hit rate is still on the Lab screen and each lift's page). Nothing stored changed.
+- **Evidence catalog:** `weekly-verdict-direction` rewritten to match the new rule; added
+  `weekly-verdict-deload-shape`, `weekly-verdict-spike-flag`, `training-stall-flag`, each checked
+  against the engine's constants (60% and the session floor, 50%, 28 days and three sessions). All
+  are `implementation_heuristic` with no source, said so in the sheet ("a product rule").
+- **New UI pieces:** `Sheet` (a Radix dialog that rises from the bottom on a phone), the claim sheet,
+  the verdict evidence sheet, the flags card. The donor's card tests came across as React Testing
+  Library tests (`weekly-verdict-card.test.tsx`, `change-flags-card.test.tsx`), plus `entries.test.ts`.
+  `e2e/verdict.spec.ts` covers Today (Strength lens), the sheet, and Data Lab.
+- **Left for later slices:** the muscle-balance sentence (needs muscle sets, 8c; the copy already has
+  a slot and receives `null`), pickers for goal lifts and lens (8d; Settings edits them meanwhile), a
+  fix for the default goal lifts being three seeded lifts that read as "chosen".
+- **Not verified:** the wording of every state on a phone by eye; only the states in the donor's
+  golden fixtures and the sample log are exercised.
+
 ### 2026-09-29 — Plan PR 8a: the analytics engines (ported, tested, not wired yet)
 
 Plan PR 8 is split, as the plan allows. The owner confirmed "replace as planned" (Lock'd's verdict,

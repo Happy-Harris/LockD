@@ -1,18 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ChangeFlagsCard } from "@/components/app/change-flags-card";
 import { Page } from "@/components/app/shell";
-import { Badge } from "@/components/ui/badge";
-import { Card, Stat } from "@/components/ui/card";
+import { WeeklyVerdictCard } from "@/components/app/weekly-verdict-card";
+import { Card } from "@/components/ui/card";
 import { HEATMAP_MUSCLES, titleCase } from "@/domain/taxonomy";
-import { formatLocalDate } from "@/domain/time";
 import { formatWeight, formatWeightWithUnit, fromGrams, weightUnitFor } from "@/domain/units";
 import { e1rmSeries } from "@/lib/gym/analytics";
 import { useGymDerived } from "@/lib/gym/hooks";
+import { lensDef } from "@/lib/gym/lenses";
 
 export const Route = createFileRoute("/analytics")({ component: AnalyticsPage });
 
 function AnalyticsPage() {
-  const { verdict, weeks, muscles, records, settings, slices, heat, exercises, intelligence } = useGymDerived();
+  const { verdict, verdictLens, flags, weeks, muscles, records, settings, slices, heat, exercises, intelligence } = useGymDerived();
   const unit = weightUnitFor(settings.unitSystem);
   const maxMuscle = Math.max(1, ...Object.values(muscles));
   const chartData = weeks.slice(-12).map((week) => ({
@@ -31,25 +32,15 @@ function AnalyticsPage() {
       <h1 className="font-display text-4xl font-semibold tracking-tight">Data Lab</h1>
       <p className="mt-1 text-sm text-muted">Every number is recomputed from stored sets. Nothing is cached as truth.</p>
 
-      <Card className="mt-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
-              Last week · {formatLocalDate(verdict.lastWeekStart)} – {formatLocalDate(verdict.lastWeekEnd)}
-            </p>
-            <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight">{verdict.headline}</h2>
-            <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted">{verdict.detail}</p>
-          </div>
-          <Badge tone={verdict.direction === "up" ? "success" : verdict.direction === "down" ? "warning" : "muted"}>
-            {verdict.direction}
-          </Badge>
-        </div>
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          <Stat label="Hard sets" value={verdict.lastHardSets} hint={`mean ${Math.round(verdict.baselineHardSets)}`} />
-          <Stat label="Sessions" value={verdict.lastSessions} hint={`mean ${verdict.baselineSessions.toFixed(1)}`} />
-          <Stat label="Hit rate" value={`${Math.round(intelligence.hitRate * 100)}%`} hint="tracked lifts" />
-        </div>
-      </Card>
+      <div className="mt-6 space-y-4">
+        <WeeklyVerdictCard
+          verdict={verdict}
+          weightUnit={weightUnitFor(settings.unitSystem)}
+          lens={verdictLens}
+          lensLabel={lensDef(settings.goalLens).label}
+        />
+        <ChangeFlagsCard flags={flags} weightUnit={weightUnitFor(settings.unitSystem)} />
+      </div>
 
       <Card className="mt-4 h-64 p-3">
         <p className="mb-2 px-1 text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Weekly hard sets</p>
