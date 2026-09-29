@@ -2,8 +2,8 @@
 @import "./fonts.css";
 
 @theme {
-  --font-sans: "Barlow", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-sans: "Archivo", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Big Shoulders Display", "Arial Narrow", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --color-canvas: var(--rf-canvas);

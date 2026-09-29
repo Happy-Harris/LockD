@@ -27,3 +27,15 @@ export const BRAND = {
   /** Text on the dark surfaces. */
   inkOnDark: "#F6F1E8",
 } as const;
+
+/**
+ * The typefaces (plan D9 and the knurl port: Big Shoulders Display and Archivo, both OFL, self-hosted). The
+ * data face stays IBM Plex Mono: the plan names no mono face, and aligned digits matter when reading a
+ * record. `styles.css` sets the same families as `--font-*`; canvas drawing (posters, receipts, lock-screen
+ * art) uses these strings so it cannot fall back to an old face.
+ */
+export const FONTS = {
+  display: '"Big Shoulders Display"',
+  sans: '"Archivo"',
+  mono: '"IBM Plex Mono"',
+} as const;

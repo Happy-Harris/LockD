@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { BRAND } from "./brand";
+import { BRAND, FONTS } from "./brand";
 
 const read = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const css = read("src/styles.css");
@@ -115,6 +115,64 @@ describe("contrast (plan O3: check Oxide on Mill for small text)", () => {
 
   it("printed surfaces: Mill ink on Chalk passes AA", () => {
     expect(contrast(BRAND.ink, BRAND.chalk)).toBeGreaterThanOrEqual(AA);
+  });
+});
+
+describe("the typefaces", () => {
+  const fontsCss = read("src/fonts.css");
+
+  it("styles.css and the brand module name the same families", () => {
+    const theme = css.slice(css.indexOf("@theme"), css.indexOf("}", css.indexOf("@theme")));
+    expect(theme).toContain(`--font-sans: ${FONTS.sans},`);
+    expect(theme).toContain(`--font-display: ${FONTS.display},`);
+    expect(theme).toContain(`--font-mono: ${FONTS.mono},`);
+  });
+
+  it("every face is declared, and every file it points at exists in node_modules", () => {
+    for (const family of [FONTS.display, FONTS.sans, FONTS.mono]) {
+      expect(fontsCss, family).toContain(`font-family: ${family};`);
+    }
+    const files = [...fontsCss.matchAll(/url\("\.\.\/(node_modules\/[^"]+)"\)/g)].map((m) => m[1]!);
+    expect(files.length).toBeGreaterThanOrEqual(5);
+    for (const file of files) {
+      expect(existsSync(new URL(`../../${file}`, import.meta.url)), file).toBe(true);
+    }
+  });
+
+  it("the old faces are gone from the styles, the canvas code and the dependencies", () => {
+    for (const file of [
+      "src/styles.css",
+      "src/fonts.css",
+      "src/components/app/receipt.tsx",
+      "src/components/app/moment-poster.tsx",
+      "src/components/app/rest-timer.tsx",
+    ]) {
+      expect(read(file), file).not.toMatch(/Barlow/);
+    }
+    const pkg = read("package.json");
+    expect(pkg).not.toContain("@fontsource/barlow");
+    expect(pkg).toContain("@fontsource/big-shoulders-display");
+    expect(pkg).toContain("@fontsource-variable/archivo");
+  });
+
+  it("canvas text is drawn with the brand's family names", () => {
+    for (const file of [
+      "src/components/app/receipt.tsx",
+      "src/components/app/moment-poster.tsx",
+      "src/components/app/rest-timer.tsx",
+    ]) {
+      const source = read(file);
+      expect(source, file).toContain("FONTS.");
+      expect(source, file).not.toMatch(/ctx\.font = "/);
+    }
+  });
+
+  it("the licence text ships with the fonts", () => {
+    const licences = read("public/font-licences.txt");
+    for (const name of ["Big Shoulders Display", "Archivo", "IBM Plex Mono"]) {
+      expect(licences, name).toContain(name);
+    }
+    expect(licences.match(/SIL OPEN FONT LICENSE Version 1\.1/g)?.length).toBeGreaterThanOrEqual(3);
   });
 });
 

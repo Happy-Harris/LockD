@@ -31,8 +31,9 @@ test.describe("the app carries what it needs", () => {
         .filter((face) => face.status === "loaded")
         .map((face) => `${face.family.replace(/"/g, "")} ${face.weight}`);
     });
-    expect(faces.some((face) => face.startsWith("Barlow Condensed"))).toBe(true);
-    expect(faces.some((face) => face.startsWith("Barlow "))).toBe(true);
+    // The display and body faces are the app's own files, loaded and in use on this page.
+    expect(faces.some((face) => face.startsWith("Big Shoulders Display "))).toBe(true);
+    expect(faces.some((face) => face.startsWith("Archivo "))).toBe(true);
   });
 
   test("links its own manifest and touch icon, and both are served", async ({ page, request }) => {
