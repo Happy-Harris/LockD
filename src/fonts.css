@@ -1,70 +1,34 @@
 /*
  * Fonts, served from this app instead of a CDN so they work offline and load with the page.
- * Latin subset, woff2 only. Barlow, Barlow Condensed and IBM Plex Mono are licensed under the SIL
- * Open Font License 1.1 (see docs/FONTS.md). The visual identity PR swaps these for the new faces.
+ * Latin subset, woff2 only. All three families are licensed under the SIL Open Font License 1.1: the
+ * texts ship in public/font-licences.txt and are summarised in docs/FONTS.md.
+ *
+ *  - Big Shoulders Display: headings and big numbers (700, 800; other weights use the nearest).
+ *  - Archivo: body text, one variable file for every weight.
+ *  - IBM Plex Mono: numbers in tables and set rows.
  */
 @font-face {
-  font-family: "Barlow";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../node_modules/@fontsource/barlow/files/barlow-latin-400-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Barlow";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("../node_modules/@fontsource/barlow/files/barlow-latin-500-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Barlow";
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url("../node_modules/@fontsource/barlow/files/barlow-latin-600-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Barlow";
+  font-family: "Big Shoulders Display";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("../node_modules/@fontsource/barlow/files/barlow-latin-700-normal.woff2") format("woff2");
+  src: url("../node_modules/@fontsource/big-shoulders-display/files/big-shoulders-display-latin-700-normal.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Barlow";
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../node_modules/@fontsource/barlow/files/barlow-latin-400-italic.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Barlow Condensed";
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url("../node_modules/@fontsource/barlow-condensed/files/barlow-condensed-latin-600-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Barlow Condensed";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("../node_modules/@fontsource/barlow-condensed/files/barlow-condensed-latin-700-normal.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Barlow Condensed";
+  font-family: "Big Shoulders Display";
   font-style: normal;
   font-weight: 800;
   font-display: swap;
-  src: url("../node_modules/@fontsource/barlow-condensed/files/barlow-condensed-latin-800-normal.woff2") format("woff2");
+  src: url("../node_modules/@fontsource/big-shoulders-display/files/big-shoulders-display-latin-800-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../node_modules/@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2") format("woff2-variations");
 }
 
 @font-face {

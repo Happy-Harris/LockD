@@ -3,7 +3,7 @@ import { formatDuration, formatWeightWithUnit, type WeightUnit } from "@/domain/
 import type { PersonalRecord, SessionSlice } from "@/lib/gym/analytics";
 import { hardSetCount } from "@/domain/volume";
 import { StampMark } from "./mark";
-import { BRAND } from "@/lib/brand";
+import { BRAND, FONTS } from "@/lib/brand";
 
 export function SessionReceipt({
   slice,
@@ -117,14 +117,14 @@ export function downloadReceiptPng(node: HTMLElement, filename: string) {
   ctx.fillStyle = BRAND.oxide;
   ctx.fillRect(0, 0, width, 8);
   ctx.fillStyle = BRAND.ink;
-  ctx.font = "800 64px Barlow Condensed, Arial Narrow, sans-serif";
+  ctx.font = `800 64px ${FONTS.display}, Arial Narrow, sans-serif`;
   ctx.fillText("LOCKD", 48, 96);
-  ctx.font = "500 16px Barlow, sans-serif";
+  ctx.font = `500 16px ${FONTS.sans}, sans-serif`;
   ctx.fillStyle = "#5c564c";
   ctx.fillText("KEEP THE RECEIPT.", 48, 124);
   const text = node.innerText;
   ctx.fillStyle = BRAND.ink;
-  ctx.font = "400 22px Barlow, sans-serif";
+  ctx.font = `400 22px ${FONTS.sans}, sans-serif`;
   const lines = wrapCanvasText(ctx, text, width - 96);
   let y = 180;
   for (const line of lines) {

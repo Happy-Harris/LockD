@@ -19,7 +19,8 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex h-6 items-center rounded-full px-2 text-[11px] font-medium tracking-wide",
+        // A badge is one short label: it never wraps or shrinks, however wide the typeface.
+        "inline-flex h-6 shrink-0 items-center whitespace-nowrap rounded-full px-2 text-[11px] font-medium tracking-wide",
         tones[tone],
         className,
       )}
