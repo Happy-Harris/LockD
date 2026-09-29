@@ -6,6 +6,24 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 4f: `types` union
+
+- `src/domain/types.ts` gains Strong-Pro's fields, **all optional**, so nothing stored changes shape:
+  `WorkoutSet.rir` / `side` / `pairId`, `WorkoutExercise.unilateralSnapshot`,
+  `TemplateExercise.targetRir`, `Workout.importFingerprint` / `importJobId`,
+  `AppSettings.personalMuscleTargets` / `restTimerVibrate` / `restTimerNotification`, and
+  `IntensityMode` gains `"rir"` (D17). Also `MuscleTargetBand`, `PersonalMuscleTargets`,
+  `ImportJob`, `ImportIssue`, `ImportJobStatus` and `ImportSource`.
+- **Deliberately not merged:** Strong-Pro's `GoalLens` (3 values; Lock'd keeps its 6),
+  `AccentTheme` `violet` and `AppIcon` (not decided), and its `id: "settings"` / `"rest-timer"` /
+  `"meta"` singleton rows (a Dexie concern; plan PR 5). Lock'd's `Workout.tzOffsetMinutes` keeps
+  its sign (see the comment on the field).
+- **Nothing reads the new fields yet.** RIR entry is plan PR 9, unilateral logging is PR 9, the
+  import fingerprint is PR 7, muscle targets are PR 8. `ImportSource` is provisional until PR 7.
+- Tests: `backup-fields.test.ts` loads a hand-written backup from before this change
+  (`src/test/fixtures/backup/lockd-backup-v3-before-type-union.json`) and checks it is unchanged,
+  and that every new field survives import and export. No stored-data migration is needed.
+
 ### 2026-09-29 — Plan PR 4c: `volume`
 
 - `src/domain/volume.ts` is Strong-Pro's module (tracking-aware tonnage, `totalsForGroups`,
