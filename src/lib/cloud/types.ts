@@ -133,6 +133,7 @@ export type CloudProfile = {
   bio: string;
   lens?: string;
   isPublic: boolean;
+  privacyNoticePending?: boolean;
 };
 
 export type LabHistoryNote = {

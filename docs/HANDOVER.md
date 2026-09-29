@@ -6,6 +6,28 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Privacy prerequisite before plan PR 3
+
+- Owner approved private defaults and switching **all existing public lockers** to private.
+  Migration `0003_locker_privacy.sql` changes the database default, marks previously
+  public rows private, and adds a server-persisted notice flag. The migration ledger
+  runs this once; a later explicit opt-in is preserved.
+- Profile creation and the locker form default private; saving waits for the profile
+  to load. The owner explicitly enables Public locker and saves to publish again.
+  The migration notice remains until acknowledged. Published receipts are separate
+  and stay public until the owner uses Unpublish; revoked links stop resolving.
+- Shared development identity cannot access cloud owner operations. Guest logging
+  remains local. Real auth-provider sign-in is still not configured or verified.
+- Regression tests exercise old-format rows through the real SQL migration and API
+  handlers in PGlite, plus the locker component's default, loading and opt-in states.
+- Browser verification and 390/1024 screenshots remain outstanding: Chromium launch
+  fails in this environment with `socket() failed: Operation not permitted`.
+  `test:e2e` also fails before tests: Vite cannot enumerate network interfaces
+  (`uv_interface_addresses`, EPERM).
+  Do not treat component tests as browser or visual verification.
+- Owner decisions (repo location, main-only PR targets, synthetic Hevy sample approval)
+  recorded in PLAN-ADDENDUM §10. Next: characterisation on a separate branch from main.
+
 ### 2026-09-28 — PR 2: Critical fixes
 
 - **I-4** (first commit): the unauthenticated `askTheLab` endpoint is gone. `consultLab` refuses
