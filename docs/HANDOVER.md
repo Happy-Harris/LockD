@@ -6,6 +6,24 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 4b: `time`
+
+- `src/domain/time.ts` is now Strong-Pro's module plus Lockd's helpers: date ranges
+  (`resolveRange`, `previousRange`, `isWithin`, `RANGE_*`), `parseIso`, `nowIso`, `formatDate`,
+  `formatDateTime`, `relativeDay`, and Strong-Pro's `elapsedSeconds` (it clamps a negative pause
+  so it can't add time). Kept from Lockd: `nowParts`, `addDays`, the calendar ordinals,
+  `formatLocalDate`, `formatWeekday`. Strong-Pro's 8 date-range tests are ported; 22 new tests
+  cover the stored sign, ordinals and DST, `addDays`, `elapsedSeconds` and `relativeDay`.
+- **Timezone sign, on purpose:** `Workout.tzOffsetMinutes` keeps Lockd's raw
+  `getTimezoneOffset()` (positive WEST: UTC+1 = -60). Strong-Pro's function of that name returns
+  the opposite sign, so it was **not** ported. `utcOffsetMinutes()` (positive east) exists for
+  display and is documented as never to be stored. **The Strong-Pro importer (PR 7) must negate
+  its `tzOffsetMinutes`.** The sign is now documented on the field in `types.ts`.
+- Found by the tests: in UTC, `-getTimezoneOffset()` is `-0`, which prints as "-0". Fixed with
+  `0 - offset`.
+- No behaviour change in the app: every characterisation snapshot is unchanged. The new
+  exports are unused until the analytics PR (8); nothing else was rewired.
+
 ### 2026-09-29 — Plan PR 4a: domain tests and the unrounded e1RM core
 
 - Strong-Pro's tests for `units`, `oneRepMax`, `plateCalculator` and `warmup` are ported (69
