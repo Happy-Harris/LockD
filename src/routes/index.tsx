@@ -13,7 +13,7 @@ import { e1rmSeries } from "@/lib/gym/analytics";
 import { LENSES, lensShows } from "@/lib/gym/lenses";
 import { formatSets, stateLabel } from "@/lib/gym/muscle-labels";
 import { actionLabel } from "@/lib/gym/progression";
-import { freshnessLabel, muscleRecovery } from "@/lib/gym/recovery";
+import { lastTrainedLabel, muscleLastTrained } from "@/lib/gym/recovery";
 import { useGymDerived } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
 import { cn } from "@/lib/utils";
@@ -59,7 +59,7 @@ function TodayPage() {
   } = derived;
   const unit = weightUnitFor(settings.unitSystem);
   const today = formatWeekday(new Date().toISOString().slice(0, 10));
-  const recovery = muscleRecovery(slices);
+  const lastTrained = muscleLastTrained(slices);
   const startRoutine = (templateId: string) => {
     startFromTemplate(templateId);
     void navigate({ to: "/workout" });
@@ -371,20 +371,20 @@ function TodayPage() {
       </section>
 
       {lensShows(settings.goalLens, "recovery") ? (
-        <section className="mb-6">
+        <section className="mb-6" data-testid="today-last-trained">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-2xl font-semibold tracking-tight">Recovery</h2>
+            <h2 className="font-display text-2xl font-semibold tracking-tight">Last trained</h2>
             <Link to="/lab" className="text-sm text-muted hover:text-ink">
               The Lab
             </Link>
           </div>
           <div className="grid grid-cols-3 gap-2">
-            {recovery.map((row) => (
+            {lastTrained.map((row) => (
               <div key={row.muscle} className="rounded-2xl bg-surface p-3 hairline">
                 <p className="text-xs text-muted">{titleCase(row.muscle)}</p>
-                <p className={cn("mt-1 text-sm font-medium", `fresh-${row.state}`)}>{freshnessLabel(row.state)}</p>
+                <p className="mt-1 text-sm font-medium text-ink">{lastTrainedLabel(row.daysAgo)}</p>
                 <p className="mt-1 text-[10px] text-subtle">
-                  {row.lastDate ? formatLocalDate(row.lastDate) : "No work yet"}
+                  {row.lastDate ? formatLocalDate(row.lastDate) : "\u00a0"}
                 </p>
               </div>
             ))}

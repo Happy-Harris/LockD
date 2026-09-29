@@ -36,7 +36,7 @@ const ITEMS = [
   {
     to: "/library",
     label: "Library",
-    hint: "Exercise DNA, standards, machine memory",
+    hint: "Exercise DNA, machine memory",
     icon: Dumbbell,
   },
   { to: "/vault", label: "Set vault", hint: "Clips attached to sets", icon: Film },

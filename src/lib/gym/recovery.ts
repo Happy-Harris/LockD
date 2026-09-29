@@ -1,59 +1,56 @@
 import { HEATMAP_MUSCLES } from "@/domain/taxonomy";
-import { localDateToOrdinal } from "@/domain/time";
+import { localDateOf, localDateToOrdinal } from "@/domain/time";
 import type { MuscleGroup } from "@/domain/types";
 import { countsForVolume } from "@/domain/volume";
 import type { SessionSlice } from "./analytics";
 
-export type Freshness = "loaded" | "recovering" | "ready" | "fresh";
-
-export interface MuscleRecovery {
+/**
+ * When each muscle last had a working set, and nothing more. This is a fact from the log, not a
+ * recovery score: there is no "fresh" or "ready", because nothing here can know how recovered
+ * anyone is. A muscle with no sets on file says so instead of reading as rested.
+ */
+export interface MuscleLastTrained {
   muscle: MuscleGroup;
+  /** Local date of the latest session with a completed set that counts for volume. */
   lastDate?: string;
-  hours: number | null;
-  state: Freshness;
+  /** Whole calendar days since then; 0 is today. Null when no set is on file. */
+  daysAgo: number | null;
 }
 
-function hoursSince(date: string, reference = new Date()): number {
-  const ordinal = localDateToOrdinal(date);
-  const now = localDateToOrdinal(
-    `${reference.getFullYear()}-${String(reference.getMonth() + 1).padStart(2, "0")}-${String(reference.getDate()).padStart(2, "0")}`,
-  );
-  return (now - ordinal) * 24;
-}
-
-export function classifyHours(hours: number | null): Freshness {
-  if (hours == null) return "fresh";
-  if (hours < 24) return "loaded";
-  if (hours < 48) return "recovering";
-  if (hours < 72) return "ready";
-  return "fresh";
-}
-
-export function muscleRecovery(slices: SessionSlice[], reference = new Date()): MuscleRecovery[] {
+export function muscleLastTrained(
+  slices: readonly SessionSlice[],
+  reference = new Date(),
+): MuscleLastTrained[] {
   const last = new Map<MuscleGroup, string>();
   for (const slice of slices) {
     for (const exercise of slice.exercises) {
       const hard = slice.sets.some(
-        (set) => set.workoutExerciseId === exercise.id && set.isCompleted && countsForVolume(set.setType),
+        (set) =>
+          set.workoutExerciseId === exercise.id && set.isCompleted && countsForVolume(set.setType),
       );
       if (!hard) continue;
-      const muscles = [exercise.primaryMuscleGroupSnapshot, ...exercise.secondaryMuscleGroupsSnapshot];
+      const muscles = [
+        exercise.primaryMuscleGroupSnapshot,
+        ...exercise.secondaryMuscleGroupsSnapshot,
+      ];
       for (const muscle of muscles) {
         const prev = last.get(muscle);
         if (!prev || slice.workout.localDate > prev) last.set(muscle, slice.workout.localDate);
       }
     }
   }
+  const today = localDateToOrdinal(localDateOf(reference));
   return HEATMAP_MUSCLES.map((muscle) => {
     const lastDate = last.get(muscle);
-    const hours = lastDate ? hoursSince(lastDate, reference) : null;
-    return { muscle, lastDate, hours, state: classifyHours(hours) };
+    if (!lastDate) return { muscle, daysAgo: null };
+    // A session dated after today (a clock change, an import) is "today", never a negative count.
+    return { muscle, lastDate, daysAgo: Math.max(0, today - localDateToOrdinal(lastDate)) };
   });
 }
 
-export function freshnessLabel(state: Freshness): string {
-  if (state === "loaded") return "Loaded";
-  if (state === "recovering") return "Recovering";
-  if (state === "ready") return "Ready";
-  return "Fresh";
+export function lastTrainedLabel(daysAgo: number | null): string {
+  if (daysAgo === null) return "No sets logged";
+  if (daysAgo === 0) return "Today";
+  if (daysAgo === 1) return "Yesterday";
+  return `${daysAgo} days ago`;
 }

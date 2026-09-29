@@ -9,7 +9,7 @@ import { titleCase } from "@/domain/taxonomy";
 import { formatLocalDate } from "@/domain/time";
 import { formatWeight, formatWeightWithUnit, weightUnitFor } from "@/domain/units";
 import { bestOneRepMax } from "@/domain/oneRepMax";
-import { bandLabel, classifyE1rm, findStandard, scaleStandard } from "@/domain/standards";
+import { formatRatio, relativeStrength } from "@/domain/relativeStrength";
 import { e1rmSeries } from "@/lib/gym/analytics";
 import { autopsyLift } from "@/lib/gym/autopsy";
 import { buildLiftDna } from "@/lib/gym/dna";
@@ -71,10 +71,9 @@ function ExerciseDetailPage() {
     e1rm: Number(formatWeight(point.value, unit)),
   }));
   const latest = history[0];
-  const standard = findStandard(id);
-  const bodyweight = [...measurements].reverse().find((row) => row.metric === "bodyweight")?.value;
-  const classified =
-    standard && latest?.best ? classifyE1rm(latest.best.value, standard, bodyweight) : null;
+  const relative = latest?.best
+    ? relativeStrength(latest.best.value, latest.slice.workout.localDate, measurements)
+    : null;
   const call = progressExercise({
     exerciseId: id,
     exerciseName: exercise.name,
@@ -164,19 +163,29 @@ function ExerciseDetailPage() {
           <Stat label="Sessions" value={history.length} />
         </Card>
       </div>
-      {classified && standard ? (
-        <Card className="mt-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Strength standard</p>
-          <p className="mt-1 font-display text-2xl font-semibold">{bandLabel(classified.band)}</p>
-          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-raised">
-            <div className="h-full bg-accent" style={{ width: `${Math.round(classified.progress * 100)}%` }} />
-          </div>
-          <p className="mt-2 text-xs text-muted">
-            {classified.next
-              ? `Next: ${bandLabel(classified.next)} at ${formatWeightWithUnit(scaleStandard(standard, bodyweight)[classified.next], unit)}`
-              : "Elite band."}{" "}
-            Scaled to bodyweight when one is on file.
+      {latest?.best ? (
+        <Card className="mt-3" data-testid="relative-strength">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+            Est. 1RM ÷ body weight
           </p>
+          {relative ? (
+            <>
+              <p className="mt-1 font-display text-2xl font-semibold tabular">{formatRatio(relative.ratio)}</p>
+              <p className="mt-2 text-xs text-muted">
+                Est. 1RM {formatWeightWithUnit(relative.e1rmG, unit)} on {formatLocalDate(relative.e1rmDate)}, body
+                weight {formatWeightWithUnit(relative.bodyweightG, unit)} on{" "}
+                {formatLocalDate(relative.bodyweightDate)}. Just the ratio: there is no scale to place it on.
+              </p>
+            </>
+          ) : (
+            <p className="mt-2 text-sm text-muted">
+              No body weight recorded on or before this lift.{" "}
+              <Link to="/body" className="text-accent underline-offset-2 hover:underline">
+                Add one
+              </Link>
+              .
+            </p>
+          )}
         </Card>
       ) : null}
 
