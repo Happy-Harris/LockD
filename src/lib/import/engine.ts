@@ -1,5 +1,11 @@
 import { fingerprint } from "@/domain/ids";
-import type { ImportIssue, ImportSource, SetType } from "@/domain/types";
+import type {
+  Exercise,
+  ImportIssue,
+  ImportSource,
+  MeasurementMetric,
+  SetType,
+} from "@/domain/types";
 import { toGrams, type WeightUnit } from "@/domain/units";
 import { normaliseHeader, parseCsv } from "./csv";
 import { parseDuration, parseLocalMoment, parseNumber } from "./parse";
@@ -85,14 +91,40 @@ export interface ParsedSetRow {
   distanceM?: number;
   durationSeconds?: number;
   rpe?: number;
+  /** Reps in reserve, from a source that records it (a backup). CSV sources leave it out. */
+  rir?: number;
+  /** Left or right, for a unilateral exercise. Undefined is a bilateral row. */
+  side?: "left" | "right";
+  /** Links the left and right row of one set number, as the source wrote it. */
+  pairId?: string;
   notes?: string;
 }
+
+/**
+ * What a source says about an exercise, used only when the exercise has to be created here. A
+ * source that classifies its exercises (another Lock'd-family backup) passes its own choices on;
+ * a CSV has none, so its exercises are created unmapped.
+ */
+export type ExerciseHints = Partial<
+  Pick<
+    Exercise,
+    | "primaryMuscleGroup"
+    | "secondaryMuscleGroups"
+    | "equipment"
+    | "movementPattern"
+    | "trackingType"
+    | "unilateral"
+    | "incrementG"
+  >
+>;
 
 export interface ParsedExercise {
   name: string;
   notes?: string;
   /** The source's superset id, when the exercise is part of one. */
   superset?: string;
+  restSeconds?: number;
+  hints?: ExerciseHints;
   sets: ParsedSetRow[];
 }
 
@@ -106,8 +138,43 @@ export interface ParsedWorkout {
   startedAt: string;
   durationSeconds?: number;
   notes?: string;
+  /** The source's own offset, raw `getTimezoneOffset()` sign. Without it this device's is used. */
+  tzOffsetMinutes?: number;
+  pausedSeconds?: number;
   exercises: ParsedExercise[];
   setCount: number;
+}
+
+/** A routine from a backup: exercises are named, and resolved the same way a session's are. */
+export interface ParsedTemplate {
+  key: string;
+  name: string;
+  notes?: string;
+  isArchived: boolean;
+  exercises: Array<{
+    name: string;
+    hints?: ExerciseHints;
+    targetSets: number;
+    targetRepMin?: number;
+    targetRepMax?: number;
+    targetRpe?: number;
+    targetRir?: number;
+    restSeconds: number;
+    defaultSetType: SetType;
+    includeWarmup: boolean;
+    notes?: string;
+    superset?: string;
+  }>;
+}
+
+/** A body measurement in canonical units: grams for body weight, millimetres for a length. */
+export interface ParsedMeasurement {
+  metric: MeasurementMetric;
+  value: number;
+  displayUnit: "kg" | "lb" | "cm" | "in";
+  recordedAt: string;
+  localDate: string;
+  note?: string;
 }
 
 export type IssueDraft = Omit<ImportIssue, "id" | "jobId">;
@@ -118,6 +185,9 @@ export interface ImportAnalysis {
   unmappedColumns: Array<{ index: number; name: string }>;
   missingRequired: ImportField[];
   workouts: ParsedWorkout[];
+  /** Backups only: routines and body measurements found beside the sessions. */
+  templates?: ParsedTemplate[];
+  measurements?: ParsedMeasurement[];
   issues: IssueDraft[];
   totalRows: number;
   skippedRows: number;

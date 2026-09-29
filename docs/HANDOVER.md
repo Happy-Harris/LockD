@@ -6,6 +6,42 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 7d-1: import a backup from the sister app (`repforge-backup` v1)
+
+Plan PR 7d is split. **7d-1 (this):** the `repforge-backup` reader and the engine changes it needs.
+**7d-2:** the knurl-os vault reader, and the unsided girth metrics (D13).
+
+- **`src/lib/import/repforge.ts`:** validates the file (Zod, bounded, unknown keys dropped, a newer
+  format refused with that reason, bad values refused with where they are) and turns it into the same
+  parsed structures a CSV makes, so it uses the same pipeline: duplicate check by fingerprint,
+  exact-name exercise match, "nothing invented". Carries finished sessions with sets, RPE, RIR,
+  supersets, sides/pairs, notes, paused time and the session's own length; routines with their
+  targets; body measurements (already grams and millimetres, same as here).
+- **Time zone:** the other app stored the offset with the opposite sign (positive east). It is
+  negated on the way in, so `Workout.tzOffsetMinutes` keeps this log's raw `getTimezoneOffset()`
+  sign. Tests pin +60 there → -60 here, and that a session is still recognised after the device
+  zone changes.
+- **Classification, not guessing:** an exercise the file classifies keeps its muscle groups,
+  equipment, pattern and tracking. A muscle value this app does not use is not carried (the
+  exercise is `unmapped`, and the summary says so). A name that exactly matches an exercise already
+  here uses that one.
+- **Left out, and said so:** unfinished sessions, sets that were planned but never completed,
+  exercises with no completed sets, routine rows pointing at an exercise the file does not have,
+  measurements that are not a positive value of a known kind; settings, bars and plates are not
+  imported.
+- **Engine/batch changes:** parsed types gained RIR, side, pairId, exercise hints, rest seconds,
+  the source's own offset and paused time, routines and measurements. `buildImportBatch` now also
+  returns routines (a routine whose name is already used is skipped) and measurements (skipped when
+  the same metric, time and value exist). `applyImportBatch` returns an untouched collection as the
+  same array, so the store sees no change there.
+- **Settings:** "Import a backup from another app (JSON)". The label carries no source brand name.
+  It only adds; it never replaces (Replace stays the `lockd-backup` flow with its safety copy).
+- **Tests:** 18 in `repforge.test.ts` (synthetic fixture `src/test/fixtures/repforge/`, mutation
+  checked: sign, status, completed filter, hints, both dedupes, unknown muscle, RIR) and an e2e case
+  (import, again adds nothing, a bad file is refused with the path). The demo log already has a
+  routine called Push Day, and the e2e asserts it is not doubled.
+- **Not verified:** a real backup file from the other app; the fixture follows its published schema.
+
 ### 2026-09-29 — Plan PR 7c: Hevy CSV importer
 
 - **`src/lib/import/hevy.ts`:** a source profile on the 7b engine (`start_time`, `title`,

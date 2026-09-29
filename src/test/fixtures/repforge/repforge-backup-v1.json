@@ -1,0 +1,487 @@
+{
+ "format": "repforge-backup",
+ "version": 1,
+ "exportedAt": "2026-09-28T19:11:09.589Z",
+ "appVersion": "1.0.0",
+ "data": {
+  "exercises": [
+   {
+    "id": "seed-bench-press",
+    "name": "Bench Press",
+    "primaryMuscleGroup": "chest",
+    "secondaryMuscleGroups": [
+     "triceps",
+     "shoulders"
+    ],
+    "equipment": "barbell",
+    "movementPattern": "horizontal push",
+    "trackingType": "weight_reps",
+    "isCustom": false,
+    "isArchived": false,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z",
+    "incrementG": 2500
+   },
+   {
+    "id": "seed-pull-up",
+    "name": "Pull Up",
+    "primaryMuscleGroup": "lats",
+    "secondaryMuscleGroups": [
+     "biceps"
+    ],
+    "equipment": "bodyweight",
+    "movementPattern": "vertical pull",
+    "trackingType": "reps_only",
+    "isCustom": false,
+    "isArchived": false,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+   },
+   {
+    "id": "seed-split-squat",
+    "name": "Bulgarian Split Squat",
+    "primaryMuscleGroup": "quads",
+    "secondaryMuscleGroups": [
+     "glutes"
+    ],
+    "equipment": "dumbbell",
+    "movementPattern": "lunge",
+    "trackingType": "weight_reps",
+    "isCustom": false,
+    "isArchived": false,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z",
+    "unilateral": true
+   },
+   {
+    "id": "seed-lat-raise",
+    "name": "Lateral Raise",
+    "primaryMuscleGroup": "shoulders",
+    "secondaryMuscleGroups": [],
+    "equipment": "dumbbell",
+    "movementPattern": "isolation",
+    "trackingType": "weight_reps",
+    "isCustom": false,
+    "isArchived": false,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+   },
+   {
+    "id": "custom-sled-drag",
+    "name": "Sled Drag",
+    "primaryMuscleGroup": "strange muscle",
+    "secondaryMuscleGroups": [],
+    "equipment": "other",
+    "movementPattern": "carry",
+    "trackingType": "distance_duration",
+    "isCustom": false,
+    "isArchived": false,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+   }
+  ],
+  "templates": [
+   {
+    "id": "t1",
+    "name": "Push Day",
+    "notes": "From the old app",
+    "order": 0,
+    "isArchived": false,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+   }
+  ],
+  "templateExercises": [
+   {
+    "id": "te1",
+    "templateId": "t1",
+    "exerciseId": "seed-bench-press",
+    "order": 0,
+    "targetSets": 4,
+    "targetRepMin": 5,
+    "targetRepMax": 8,
+    "targetRpe": 8,
+    "restSeconds": 150,
+    "defaultSetType": "working",
+    "includeWarmup": true
+   },
+   {
+    "id": "te2",
+    "templateId": "t1",
+    "exerciseId": "seed-lat-raise",
+    "order": 1,
+    "targetSets": 3,
+    "targetRepMin": 12,
+    "targetRepMax": 15,
+    "targetRir": 2,
+    "restSeconds": 60,
+    "defaultSetType": "working",
+    "includeWarmup": false,
+    "supersetGroup": "A"
+   },
+   {
+    "id": "te3",
+    "templateId": "t1",
+    "exerciseId": "ghost-exercise",
+    "order": 2,
+    "targetSets": 3,
+    "restSeconds": 60,
+    "defaultSetType": "working",
+    "includeWarmup": false
+   }
+  ],
+  "workouts": [
+   {
+    "id": "w1",
+    "name": "Push A",
+    "status": "completed",
+    "startedAt": "2026-01-05T17:30:00.000Z",
+    "localDate": "2026-01-05",
+    "tzOffsetMinutes": 60,
+    "pausedSeconds": 60,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z",
+    "endedAt": "2026-01-05T18:35:00.000Z",
+    "notes": "Good session"
+   },
+   {
+    "id": "w2",
+    "name": "Push A",
+    "status": "completed",
+    "startedAt": "2026-01-12T07:00:00.000Z",
+    "localDate": "2026-01-12",
+    "tzOffsetMinutes": -120,
+    "pausedSeconds": 60,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z",
+    "endedAt": "2026-01-12T08:10:00.000Z"
+   },
+   {
+    "id": "w3",
+    "name": "Half done",
+    "status": "active",
+    "startedAt": "2026-01-15T10:00:00.000Z",
+    "localDate": "2026-01-15",
+    "tzOffsetMinutes": 0,
+    "pausedSeconds": 60,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+   },
+   {
+    "id": "w4",
+    "name": "Thrown away",
+    "status": "discarded",
+    "startedAt": "2026-01-16T10:00:00.000Z",
+    "localDate": "2026-01-16",
+    "tzOffsetMinutes": 0,
+    "pausedSeconds": 60,
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z",
+    "endedAt": "2026-01-16T10:05:00.000Z"
+   }
+  ],
+  "workoutExercises": [
+   {
+    "id": "b1",
+    "workoutId": "w1",
+    "exerciseId": "seed-bench-press",
+    "order": 0,
+    "exerciseNameSnapshot": "Bench Press",
+    "primaryMuscleGroupSnapshot": "chest",
+    "secondaryMuscleGroupsSnapshot": [
+     "triceps",
+     "shoulders"
+    ],
+    "equipmentSnapshot": "barbell",
+    "trackingTypeSnapshot": "weight_reps",
+    "restSeconds": 90
+   },
+   {
+    "id": "b2",
+    "workoutId": "w1",
+    "exerciseId": "seed-pull-up",
+    "order": 1,
+    "exerciseNameSnapshot": "Pull Up",
+    "primaryMuscleGroupSnapshot": "lats",
+    "secondaryMuscleGroupsSnapshot": [
+     "biceps"
+    ],
+    "equipmentSnapshot": "bodyweight",
+    "trackingTypeSnapshot": "reps_only",
+    "restSeconds": 90,
+    "supersetGroup": "A",
+    "notes": "Slow negatives"
+   },
+   {
+    "id": "b3",
+    "workoutId": "w1",
+    "exerciseId": "seed-lat-raise",
+    "order": 2,
+    "exerciseNameSnapshot": "Lateral Raise",
+    "primaryMuscleGroupSnapshot": "shoulders",
+    "secondaryMuscleGroupsSnapshot": [],
+    "equipmentSnapshot": "dumbbell",
+    "trackingTypeSnapshot": "weight_reps",
+    "restSeconds": 90,
+    "supersetGroup": "A"
+   },
+   {
+    "id": "b4",
+    "workoutId": "w2",
+    "exerciseId": "seed-bench-press",
+    "order": 0,
+    "exerciseNameSnapshot": "Bench Press",
+    "primaryMuscleGroupSnapshot": "chest",
+    "secondaryMuscleGroupsSnapshot": [
+     "triceps",
+     "shoulders"
+    ],
+    "equipmentSnapshot": "barbell",
+    "trackingTypeSnapshot": "weight_reps",
+    "restSeconds": 90
+   },
+   {
+    "id": "b5",
+    "workoutId": "w2",
+    "exerciseId": "seed-split-squat",
+    "order": 1,
+    "exerciseNameSnapshot": "Bulgarian Split Squat",
+    "primaryMuscleGroupSnapshot": "quads",
+    "secondaryMuscleGroupsSnapshot": [
+     "glutes"
+    ],
+    "equipmentSnapshot": "dumbbell",
+    "trackingTypeSnapshot": "weight_reps",
+    "restSeconds": 90,
+    "unilateralSnapshot": true
+   },
+   {
+    "id": "b6",
+    "workoutId": "w2",
+    "exerciseId": "custom-sled-drag",
+    "order": 2,
+    "exerciseNameSnapshot": "Sled Drag",
+    "primaryMuscleGroupSnapshot": "strange muscle",
+    "secondaryMuscleGroupsSnapshot": [],
+    "equipmentSnapshot": "other",
+    "trackingTypeSnapshot": "distance_duration",
+    "restSeconds": 90
+   },
+   {
+    "id": "b7",
+    "workoutId": "w3",
+    "exerciseId": "seed-bench-press",
+    "order": 0,
+    "exerciseNameSnapshot": "Bench Press",
+    "primaryMuscleGroupSnapshot": "chest",
+    "secondaryMuscleGroupsSnapshot": [],
+    "equipmentSnapshot": "barbell",
+    "trackingTypeSnapshot": "weight_reps",
+    "restSeconds": 90
+   },
+   {
+    "id": "b8",
+    "workoutId": "w2",
+    "exerciseId": "seed-lat-raise",
+    "order": 3,
+    "exerciseNameSnapshot": "Lateral Raise",
+    "primaryMuscleGroupSnapshot": "shoulders",
+    "secondaryMuscleGroupsSnapshot": [],
+    "equipmentSnapshot": "dumbbell",
+    "trackingTypeSnapshot": "weight_reps",
+    "restSeconds": 90
+   }
+  ],
+  "workoutSets": [
+   {
+    "id": "s1",
+    "workoutExerciseId": "b1",
+    "workoutId": "w1",
+    "order": 0,
+    "setType": "warmup",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 40000,
+    "reps": 10
+   },
+   {
+    "id": "s2",
+    "workoutExerciseId": "b1",
+    "workoutId": "w1",
+    "order": 1,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 80000,
+    "reps": 5,
+    "rpe": 8,
+    "rir": 2
+   },
+   {
+    "id": "s3",
+    "workoutExerciseId": "b1",
+    "workoutId": "w1",
+    "order": 2,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 80000,
+    "reps": 5,
+    "rpe": 9
+   },
+   {
+    "id": "s4",
+    "workoutExerciseId": "b1",
+    "workoutId": "w1",
+    "order": 3,
+    "setType": "failure",
+    "isCompleted": false,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 80000,
+    "reps": 3
+   },
+   {
+    "id": "s5",
+    "workoutExerciseId": "b2",
+    "workoutId": "w1",
+    "order": 0,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "reps": 8
+   },
+   {
+    "id": "s6",
+    "workoutExerciseId": "b2",
+    "workoutId": "w1",
+    "order": 1,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "reps": 7
+   },
+   {
+    "id": "s7",
+    "workoutExerciseId": "b3",
+    "workoutId": "w1",
+    "order": 0,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 10000,
+    "reps": 12,
+    "notes": "Slow"
+   },
+   {
+    "id": "s8",
+    "workoutExerciseId": "b4",
+    "workoutId": "w2",
+    "order": 0,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 82500,
+    "reps": 5
+   },
+   {
+    "id": "s9",
+    "workoutExerciseId": "b5",
+    "workoutId": "w2",
+    "order": 0,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 20000,
+    "reps": 8,
+    "side": "left",
+    "pairId": "p1"
+   },
+   {
+    "id": "s10",
+    "workoutExerciseId": "b5",
+    "workoutId": "w2",
+    "order": 1,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 20000,
+    "reps": 8,
+    "side": "right",
+    "pairId": "p1"
+   },
+   {
+    "id": "s11",
+    "workoutExerciseId": "b6",
+    "workoutId": "w2",
+    "order": 0,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "distanceM": 50,
+    "durationSeconds": 45,
+    "weightG": 60000
+   },
+   {
+    "id": "s12",
+    "workoutExerciseId": "b7",
+    "workoutId": "w3",
+    "order": 0,
+    "setType": "working",
+    "isCompleted": true,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 60000,
+    "reps": 5
+   },
+   {
+    "id": "s13",
+    "workoutExerciseId": "b8",
+    "workoutId": "w2",
+    "order": 0,
+    "setType": "working",
+    "isCompleted": false,
+    "completedAt": "2026-01-05T17:40:00.000Z",
+    "weightG": 8000,
+    "reps": 12
+   }
+  ],
+  "measurements": [
+   {
+    "id": "m1",
+    "metric": "bodyweight",
+    "value": 82000,
+    "displayUnit": "kg",
+    "recordedAt": "2026-01-05T08:00:00.000Z",
+    "localDate": "2026-01-05",
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+   },
+   {
+    "id": "m2",
+    "metric": "arm_left",
+    "value": 348,
+    "displayUnit": "cm",
+    "recordedAt": "2026-01-05T08:05:00.000Z",
+    "localDate": "2026-01-05",
+    "note": "Flexed",
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+   }
+  ],
+  "barProfiles": [
+   {
+    "id": "bar1",
+    "name": "Olympic",
+    "weightG": 20000,
+    "collarWeightG": 0,
+    "isDefault": true
+   }
+  ],
+  "plateInventories": [],
+  "settings": {
+   "id": "settings",
+   "unitSystem": "metric",
+   "updatedAt": "2026-01-01T00:00:00.000Z"
+  },
+  "importJobs": []
+ }
+}

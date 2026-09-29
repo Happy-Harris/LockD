@@ -19,7 +19,7 @@ import {
  */
 
 /** Runtime lists for the unions in `types.ts`. The `_Covers` checks fail to compile if one drifts. */
-const MUSCLES = [
+export const MUSCLES = [
   "unmapped",
   "chest",
   "back",
@@ -40,7 +40,7 @@ const MUSCLES = [
   "full body",
   "cardio",
 ] as const satisfies readonly MuscleGroup[];
-const EQUIPMENT = [
+export const EQUIPMENT = [
   "barbell",
   "dumbbell",
   "machine",
@@ -52,7 +52,7 @@ const EQUIPMENT = [
   "plate",
   "other",
 ] as const satisfies readonly Equipment[];
-const MOVEMENTS = [
+export const MOVEMENTS = [
   "squat",
   "hinge",
   "horizontal push",
@@ -65,15 +65,15 @@ const MOVEMENTS = [
   "core",
   "conditioning",
 ] as const satisfies readonly MovementPattern[];
-const TRACKING = [
+export const TRACKING = [
   "weight_reps",
   "reps_only",
   "duration",
   "distance_duration",
   "assisted_weight",
 ] as const satisfies readonly TrackingType[];
-const SET_TYPES = ["warmup", "working", "drop", "failure"] as const satisfies readonly SetType[];
-const METRICS = [
+export const SET_TYPES = ["warmup", "working", "drop", "failure"] as const satisfies readonly SetType[];
+export const METRICS = [
   "bodyweight",
   "neck",
   "shoulders",
