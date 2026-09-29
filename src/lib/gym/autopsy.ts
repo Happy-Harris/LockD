@@ -38,6 +38,24 @@ export interface PlateauAutopsy {
   findings: AutopsyFinding[];
 }
 
+/** How far the average top load may move between the two windows and still be called "similar" (5%). */
+export const SIMILAR_LOAD_TOLERANCE = 0.05;
+
+/**
+ * True only when both windows have logged loads and their averages are within SIMILAR_LOAD_TOLERANCE. The copy says
+ * "at similar loads" only when this holds; with bodyweight or missing loads it stays silent (never a guess).
+ */
+export function loadsSimilar(
+  recent: Array<{ bestWeightG: number }>,
+  prior: Array<{ bestWeightG: number }>,
+): boolean {
+  const a = recent.map((row) => row.bestWeightG).filter((value) => value > 0);
+  const b = prior.map((row) => row.bestWeightG).filter((value) => value > 0);
+  if (a.length === 0 || b.length === 0) return false;
+  const before = mean(b);
+  return Math.abs(mean(a) - before) / before <= SIMILAR_LOAD_TOLERANCE;
+}
+
 function mean(values: number[]): number {
   if (values.length === 0) return 0;
   return values.reduce((sum, value) => sum + value, 0) / values.length;
@@ -79,6 +97,7 @@ export function autopsyLift(
     });
   }
 
+  const similar = loadsSimilar(recent, prior);
   const recentVol: number[] = [];
   const priorVol: number[] = [];
   for (const slice of slices) {
@@ -94,7 +113,7 @@ export function autopsyLift(
       code: "falling_volume",
       title: "Falling volume",
       detail: `Hard sets dropped from ${mean(priorVol).toFixed(1)} to ${mean(recentVol).toFixed(1)} per exposure.`,
-      evidence: "Fewer credited sets while the load stayed put.",
+      evidence: similar ? "Fewer credited sets while the load stayed put." : "Fewer credited sets.",
     });
   }
 
@@ -104,7 +123,7 @@ export function autopsyLift(
     findings.push({
       code: "rising_rpe",
       title: "Rising RPE",
-      detail: `RPE ${mean(priorRpe).toFixed(1)} → ${mean(recentRpe).toFixed(1)} at similar loads.`,
+      detail: `RPE ${mean(priorRpe).toFixed(1)} → ${mean(recentRpe).toFixed(1)}${similar ? " at similar loads" : ""}.`,
       evidence: recent
         .filter((row) => row.avgRpe != null)
         .slice(-3)

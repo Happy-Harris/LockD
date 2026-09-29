@@ -9,6 +9,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 11 (I-16): the autopsy says "at similar loads" only when the load was similar
+
+- **The bug (plan I-16):** the autopsy wrote "RPE 7.0 → 9.0 at similar loads" and "Fewer credited sets while the load stayed put" without looking at the load. A lifter who added 20 kg
+  was told the load stayed put.
+- **The fix:** `loadsSimilar` in `autopsy.ts` compares the average top load of the recent and prior windows (the same windows the findings use). Both clauses appear only when both windows have
+  logged loads and the averages are within 5% (`SIMILAR_LOAD_TOLERANCE`). Otherwise the sentence stops at the fact ("RPE 7.0 → 9.0." / "Fewer credited sets."). Missing or zero loads never count as similar.
+- **The 5% band is my choice**, not from the evidence catalog; it is one named constant. **Not done:** the copy does not say "load went up"; that would be a new claim needing its own wording review.
+- **Characterisation diff:** none. The pinned autopsy fixture holds its load constant, so its text is unchanged, which is the point: the clauses stay when they are true.
+- **Tests:** three added to `engine-characterisation.test.ts`: held (0% and +4%) keeps both clauses, +20% drops both, and no logged load or an empty window is never "similar". The +20% case fails on the old code.
+- **Checked:** `npm run verify`. `short_rests` (an autopsy code nothing produces) is still open; it needs a decision on whether to build or delete it, so it is left as is.
+
 ### 2026-09-29 — Step 11 (I-33): a program file's unknown exercise is kept, named and announced
 
 - **The bug (plan I-33):** importing a program file whose exercise this library lacks (a sender's custom lift, or a different spelling) kept a row holding only the file's id.
