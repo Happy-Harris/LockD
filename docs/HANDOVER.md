@@ -9,6 +9,24 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-29 — Step 8d-3: Ask the Lab answers on the device, with citations (I-4, D3)
+
+- Ported the donor's deterministic Ask the Lab into `src/domain/analytics/askLab*.ts` (engine, data intents,
+  shared types, 15 tests). Five questions about the lifter's own log (training enough, muscle contribution, why
+  the weekly verdict changed, getting stronger, what to change) are answered from the same functions that drive
+  the Data Lab cards; anything else is matched to a claim in the evidence catalog; a question it cannot compute is
+  labelled "Not computed" and never gets an invented number.
+- New `src/components/app/ask-lab.tsx`, mounted on `/lab` above the read. It works signed out and offline, and
+  each answer lists the claims it cites, which open the existing receipt sheet. The signed-in written second
+  opinion (`consultLab`) is unchanged and still gated and capped.
+- Adapted to Lock'd: the donor test expected the 10–20 band to be a "research default"; the catalog here already
+  calls it an implementation heuristic, so the test follows the catalog. The one Strong mention in the copy now
+  says "a backup from another app".
+- e2e (`critical-fixes.spec.ts`, I-4): a guest asks two starter questions, gets a "Computed" answer with cited
+  claims, and still makes no POST request.
+- **Not verified:** the wording of answers for lifters with under a month of history beyond the donor's fixtures.
+  Free-text matching is keyword-based, so an unusual phrasing lands on "Not computed" rather than a wrong answer.
+
 ### 2026-09-29 — Step 8d-2: one stall rule, loads you can build (I-20)
 
 - **Stall:** the progression engine no longer measures a stall against the lift's all-time peak (which

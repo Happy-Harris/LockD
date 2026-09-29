@@ -5,7 +5,7 @@ this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HAND
 last PRs did and did not verify). Keep this file current: update the tables in the same PR that
 changes a status.
 
-_Last updated: 2026-09-29, after `LockD#35` merged. In flight: run-lockd skill (`LockD#36`); next Step 8d-3._
+_Last updated: 2026-09-29, after `LockD#36` merged. In flight: Step 8d-3 (PR pending); next Step 9._
 
 ## 1. How to read the labels
 
@@ -92,7 +92,7 @@ State: **done**, **in flight**, **not started**. "GitHub" gives the pull request
 | 8c-2 | "Last trained" replaces recovery states; standards bands become a ratio | done | LockD#32 |
 | 8d-1 | Goal lifts are the lifter's own, with pickers; est. 1RM labelled and rounded | done | LockD#33 |
 | 8d-2 | Progression merge (I-20): windowed stall with a layoff guard, loads on the increment grid or buildable with the lifter's plates, program `linear` rule fixed | **done** | branch `claude/step8d2-progression` |
-| 8d-3 | Deterministic Ask the Lab, so guests get an answer that cites the log (I-4, D3) | not started | |
+| 8d-3 | Deterministic Ask the Lab, so guests get an answer that cites the log (I-4, D3) | **done** | branch `claude/step8d3-ask-lab` |
 | 9 | Logging details: per-set targets, supersets, unilateral, RIR mode, rest-timer notification and vibrate, separate warm-up and working rest timers, equipment editor, increment per exercise, input fixes (I-21, I-26 to I-31, I-35) | not started | |
 | 10 | Visual identity: knurl tokens and fonts, the mark, receipt and poster motifs, Oxide discipline (D9, O3, I-32, I-38) | not started | |
 | 11 | Approved improvements, one PR each: I-14, I-15, I-16, I-17/I-18/O2 (eras), I-23, I-24, I-25, I-33, I-34, I-37, I-41 | not started | |
@@ -100,8 +100,8 @@ State: **done**, **in flight**, **not started**. "GitHub" gives the pull request
 | 13 | Cleanup: unused dependencies, `README.md` and the root `HANDOFF.md` rewritten from the code, final decisions summary | not started | |
 
 Audit items (`I-n`) not listed above as belonging to a step are finished. Done: I-1 to I-3, I-5 to I-10,
-I-12, I-13, I-19, I-22, I-36, I-42 (Steps 2, 4d, 5, 7, 8b to 8d-1). Partly done: I-4 (the endpoint is gated and capped;
-the deterministic guest Lab is 8d-3), I-11 (bands gone; the Today "relative" block wording is
+I-12, I-13, I-19, I-22, I-36, I-42 (Steps 2, 4d, 5, 7, 8b to 8d-1). Done: I-4 (the endpoint is gated and capped;
+guests get the on-device Ask the Lab, Step 8d-3), I-11 (bands gone; the Today "relative" block wording is
 open), I-40 (lockfile done in Step 1; unused dependencies in Step 13). In flight: I-20.
 
 ## 4. The owner's opportunities (Phase 3 and 4)
