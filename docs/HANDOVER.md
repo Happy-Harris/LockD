@@ -19,6 +19,16 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 - **Characterisation diff:** none. The pinned autopsy fixture holds its load constant, so its text is unchanged, which is the point: the clauses stay when they are true.
 - **Tests:** three added to `engine-characterisation.test.ts`: held (0% and +4%) keeps both clauses, +20% drops both, and no logged load or an empty window is never "similar". The +20% case fails on the old code.
 - **Checked:** `npm run verify`. `short_rests` (an autopsy code nothing produces) is still open; it needs a decision on whether to build or delete it, so it is left as is.
+### 2026-09-29 — Step 11 (I-34): deleting a set, exercise or workout no longer leaves its clip file behind
+
+- **The bug (plan I-34):** a set's video clip is a blob in IndexedDB (`lockd-vault`) plus a `ClipMeta` in the store. Deleting a set, removing an exercise or discarding a workout removed
+  the rows but left the clip meta and the blob, so the files piled up on the device with nothing pointing at them.
+- **The fix:** `removeExerciseFromWorkout` and `discardWorkout` purge the clip meta and the blobs at once (nothing can undo them). `deleteSet` keeps the clip through the undo window
+  (`UNDO_WINDOW_MS`, 10 s, also the toast's duration) and purges it a second later only if the set is still gone, so Undo always finds its clip. `restoreSet` re-attaches the clip
+  only if its meta still exists. The helpers are in `src/lib/gym/clips.ts`.
+- **Tests:** `clip-cleanup.test.ts` (8), with the vault mocked and fake timers: each delete path, the undo inside the window, the purge after it, and the restore after a purge.
+- **Deliberately not done:** clips already orphaned before this change are not deleted automatically. That is destructive to the lifter's data, and the log cannot say which are wanted.
+- **Checked:** `npm run verify`. **Not checked** on a device: the IndexedDB deletes against a real recorded clip.
 ### 2026-09-29 — Step 11 (I-23): the demo stores whole millimetres
 
 - **The bug (plan I-23):** the demo data stored fractional millimetres for the waist, and also for both arms (137 values in all), against principle 3 (canonical integer storage).
