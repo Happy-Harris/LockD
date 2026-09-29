@@ -37,11 +37,23 @@ test.describe("logging speed (principle 1)", () => {
     const active = log.workouts.find((w) => w.status === "active")!;
     const sets = log.workoutSets.filter((s) => s.workoutId === active.id);
     expect(sets.every((s) => s.isCompleted)).toBe(true);
-    // Every set kept last time's numbers: nothing was typed.
-    expect(sets.every((s) => (s.weightG ?? 0) > 0 && (s.reps ?? 0) > 0)).toBe(true);
+    // Every working set of a weight-and-reps exercise kept last time's numbers: nothing was typed.
+    // (Warm-ups and bodyweight sets carry no working load by design.)
+    const kinds = new Map(
+      log.workoutExercises
+        .filter((row) => row.workoutId === active.id)
+        .map((row) => [row.id, row.trackingTypeSnapshot]),
+    );
+    const loaded = sets.filter(
+      (s) => s.setType === "working" && kinds.get(s.workoutExerciseId) === "weight_reps",
+    );
+    expect(loaded.length).toBeGreaterThan(0);
+    expect(loaded.every((s) => (s.weightG ?? 0) > 0 && (s.reps ?? 0) > 0)).toBe(true);
   });
 
-  test("one tap completes the set and starts the rest timer within the budget", async ({ page }) => {
+  test("one tap completes the set and starts the rest timer within the budget", async ({
+    page,
+  }) => {
     await startRepeatLast(page);
     await expect(restBar(page)).toHaveCount(0);
     const started = Date.now();
@@ -58,13 +70,16 @@ test.describe("logging speed (principle 1)", () => {
     const weight = page.getByRole("textbox", { name: /Set 1 weight/ }).first();
     await weight.fill("87.5");
     await page.getByRole("button", { name: "Complete set" }).first().click();
-    const log = await readLog(page);
-    const active = log.workouts.find((w) => w.status === "active")!;
-    const first = log.workoutSets
-      .filter((s) => s.workoutId === active.id)
-      .sort((a, b) => a.order - b.order)[0]!;
-    expect(first.weightG).toBe(87_500);
-    expect(first.isCompleted).toBe(true);
+    // The store writes asynchronously; wait for the typed set to land, then check exactly one set has it.
+    await expect
+      .poll(async () => {
+        const log = await readLog(page);
+        const active = log.workouts.find((w) => w.status === "active")!;
+        return log.workoutSets
+          .filter((s) => s.workoutId === active.id && s.weightG === 87_500)
+          .map((s) => s.isCompleted);
+      })
+      .toEqual([true]);
   });
 
   test("the active workout and the rest timer survive a reload", async ({ page }) => {
