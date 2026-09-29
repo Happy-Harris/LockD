@@ -135,35 +135,6 @@ exports[`secondary engine characterisation — current outcomes, including known
 }
 `;
 
-exports[`secondary engine characterisation — current outcomes, including known defects > pins current bodyweight-scaled strength bands, including missing bodyweight 1`] = `
-{
-  "absent": {
-    "band": "intermediate",
-    "next": "advanced",
-    "progress": 0.2857142857142857,
-  },
-  "at100kg": {
-    "band": "novice",
-    "next": "intermediate",
-    "progress": 0.6666666666666666,
-  },
-  "scaledAt100kg": {
-    "advanced": 156250,
-    "elite": 200000,
-    "intermediate": 112500,
-    "novice": 75000,
-    "untrained": 50000,
-  },
-  "unscaled": {
-    "advanced": 125000,
-    "elite": 160000,
-    "intermediate": 90000,
-    "novice": 60000,
-    "untrained": 40000,
-  },
-}
-`;
-
 exports[`secondary engine characterisation — current outcomes, including known defects > pins earned moments and year receipt without assuming a future date > 2026 receipt 1`] = `
 {
   "bodyDelta": {
@@ -591,79 +562,59 @@ exports[`secondary engine characterisation — current outcomes, including known
 }
 `;
 
-exports[`secondary engine characterisation — current outcomes, including known defects > pins the no-data recovery state and day-granularity thresholds 1`] = `
+exports[`secondary engine characterisation — current outcomes, including known defects > pins when each muscle was last trained on the dated demo, and that no data says so 1`] = `
 [
   {
-    "hours": 0,
+    "daysAgo": 0,
     "lastDate": "2026-09-28",
     "muscle": "chest",
-    "state": "loaded",
   },
   {
-    "hours": null,
-    "lastDate": undefined,
+    "daysAgo": null,
     "muscle": "lats",
-    "state": "fresh",
   },
   {
-    "hours": null,
-    "lastDate": undefined,
+    "daysAgo": null,
     "muscle": "back",
-    "state": "fresh",
   },
   {
-    "hours": 0,
+    "daysAgo": 0,
     "lastDate": "2026-09-28",
     "muscle": "shoulders",
-    "state": "loaded",
   },
   {
-    "hours": null,
-    "lastDate": undefined,
+    "daysAgo": null,
     "muscle": "biceps",
-    "state": "fresh",
   },
   {
-    "hours": 0,
+    "daysAgo": 0,
     "lastDate": "2026-09-28",
     "muscle": "triceps",
-    "state": "loaded",
   },
   {
-    "hours": null,
-    "lastDate": undefined,
+    "daysAgo": null,
     "muscle": "quads",
-    "state": "fresh",
   },
   {
-    "hours": null,
-    "lastDate": undefined,
+    "daysAgo": null,
     "muscle": "hamstrings",
-    "state": "fresh",
   },
   {
-    "hours": null,
-    "lastDate": undefined,
+    "daysAgo": null,
     "muscle": "glutes",
-    "state": "fresh",
   },
   {
-    "hours": null,
-    "lastDate": undefined,
+    "daysAgo": null,
     "muscle": "calves",
-    "state": "fresh",
   },
   {
-    "hours": 0,
+    "daysAgo": 0,
     "lastDate": "2026-09-28",
     "muscle": "core",
-    "state": "loaded",
   },
   {
-    "hours": null,
-    "lastDate": undefined,
+    "daysAgo": null,
     "muscle": "traps",
-    "state": "fresh",
   },
 ]
 `;

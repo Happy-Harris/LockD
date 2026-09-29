@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { classifyE1rm, findStandard, scaleStandard } from "@/domain/standards";
 import { weeklyVerdict, weeklyVerdictCopy } from "@/domain/analytics/weeklyVerdict";
 import { computeRecords, sliceSessions } from "./analytics";
 import { loggedEntriesOf } from "./entries";
@@ -7,7 +6,7 @@ import { buildDemoLog } from "./demo";
 import { buildIntelligence } from "./intelligence";
 import { buildMoments } from "./moments";
 import { milestoneQueue, nearMisses, rmTable } from "./queue";
-import { classifyHours, freshnessLabel, muscleRecovery } from "./recovery";
+import { lastTrainedLabel, muscleLastTrained } from "./recovery";
 import { seedExerciseId, seedExercises } from "./seed";
 import { buildYearReceipt } from "./wrapped";
 import { buildChronicle } from "./chronicle";
@@ -30,33 +29,12 @@ function sample() {
 }
 
 describe("secondary engine characterisation — current outcomes, including known defects", () => {
-  it("pins the no-data recovery state and day-granularity thresholds", () => {
-    const empty = muscleRecovery([], reference);
+  it("pins when each muscle was last trained on the dated demo, and that no data says so", () => {
+    const empty = muscleLastTrained([], reference);
     expect(empty.length).toBeGreaterThan(0);
-    expect(empty.every((row) => row.hours === null && row.state === "fresh")).toBe(true);
-    expect(freshnessLabel(empty[0]!.state)).toBe("Fresh"); // BUG: no work reads as fresh.
-    const trained = muscleRecovery(sample().slices.slice(-1), reference);
-    expect(trained).toMatchSnapshot();
-    expect([null, 0, 23, 24, 47, 48, 71, 72].map(classifyHours)).toEqual([
-      "fresh",
-      "loaded",
-      "loaded",
-      "recovering",
-      "recovering",
-      "ready",
-      "ready",
-      "fresh",
-    ]);
-  });
-
-  it("pins current bodyweight-scaled strength bands, including missing bodyweight", () => {
-    const standard = findStandard(bench.id)!;
-    expect({
-      unscaled: scaleStandard(standard),
-      scaledAt100kg: scaleStandard(standard, 100_000),
-      absent: classifyE1rm(100_000, standard),
-      at100kg: classifyE1rm(100_000, standard, 100_000),
-    }).toMatchSnapshot();
+    expect(empty.every((row) => row.daysAgo === null && row.lastDate === undefined)).toBe(true);
+    expect(lastTrainedLabel(empty[0]!.daysAgo)).toBe("No sets logged");
+    expect(muscleLastTrained(sample().slices.slice(-1), reference)).toMatchSnapshot();
   });
 
   it("pins RM table, milestone queue and near misses from the same dated log", () => {

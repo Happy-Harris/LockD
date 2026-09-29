@@ -6,6 +6,28 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 8c-2: "last trained" replaces recovery states; standards bands replaced by a ratio
+
+- **Recovery (plan I-9):** Today's recovery block is now **Last trained** and states a fact:
+  "Today", "Yesterday", "3 days ago", or **"No sets logged"**. The old block gave every muscle a state
+  (Loaded, Recovering, Ready, **Fresh**) from hours computed at day granularity, and a muscle with
+  no data read as *Fresh*, which is rest the log cannot know. The four colour classes are gone
+  (`.fresh-*`), and so are the words. `muscleRecovery`/`classifyHours` are replaced by
+  `muscleLastTrained`; counts are whole calendar days, credit secondary muscles as before, ignore
+  warm-ups and unfinished sets, and never go negative for a session dated after today. The
+  characterisation snapshot diff is exactly the states becoming a day count (same dates); the "no
+  data reads as fresh" BUG is fixed.
+- **Standards (plan D4, I-11):** the strength "standard" bands (novice to elite, "male-ish" absolute
+  numbers scaled linearly by body weight, no source) are deleted with `standards.ts`. A lift's page
+  shows **Est. 1RM ÷ body weight** as a plain number (`1.42×`) with the two records it came from and
+  their dates; the body weight is the latest on or before the lift, so a later weight never rewrites
+  an old lift, and with none recorded it says so and links to Body. There is no scale to place it on
+  and the text says that. The More screen's hint no longer promises "standards".
+- **Not changed:** the Today "relative" block (calisthenics lens) still uses `intelligence.relative`.
+  Ratio wording there and the goal-lift "Est. 1RM" labelling (I-13) are with 8d.
+- **Tests:** `recovery.test.ts` and `relativeStrength.test.ts` (both new), the updated
+  characterisation, and `e2e/honest-numbers.spec.ts`.
+
 ### 2026-09-29 — Plan PR 8c-1: muscle sets and personal targets replace the MEV/MAV/MRV bands
 
 Plan PR 8c is split. **8c-1 (this):** muscle sets, personal targets, the verdict's balance line, and

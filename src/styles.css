@@ -239,10 +239,6 @@
   transform: rotate(-6deg);
 }
 
-.fresh-loaded { color: var(--rf-accent); }
-.fresh-recovering { color: var(--rf-warning); }
-.fresh-ready { color: var(--rf-success); }
-.fresh-fresh { color: var(--rf-muted); }
 
 .era-rail {
   position: relative;
