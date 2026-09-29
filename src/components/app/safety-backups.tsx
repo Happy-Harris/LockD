@@ -4,6 +4,8 @@ import { listSafetyBackups, type SafetyBackup } from "@/lib/storage/safety";
 
 const REASON_LABEL: Record<SafetyBackup["reason"], string> = {
   "before-cloud-sign-in": "Before signing in",
+  "pre-migration": "Before the move to the new storage",
+  "before-restore": "Before a restore",
 };
 
 /** Settings → Data: copies taken automatically before the log was replaced or merged. */

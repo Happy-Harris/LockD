@@ -6,6 +6,34 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 5b: Dexie schema v2 and the `LockdRepository` port
+
+- **Nothing reads or writes the new tables yet.** The app still persists to `localStorage`; this
+  adds the database and the seam. The switch-over is 5c (migration) and 5d (wiring).
+- `src/lib/storage/db.ts` owns the IndexedDB database `lockd`. **Version 2** adds the log tables
+  from PLAN § 4 (`exercises` … `clips`), `kv` (settings, restTimer, labLast), `meta`, and a
+  device-only `device` table (reserved for text size; never synced or in the cloud vault). Version
+  1's `safetyBackups` is untouched; a test opens a genuine v1 database and checks its rows survive.
+  Deviation from the plan's table: `isCustom` and `isArchived` are **not** indexed, because
+  IndexedDB cannot key on a boolean. `safety.ts` re-exports the class and helpers, so callers are
+  unchanged. `SafetyReason` gains `pre-migration` and `before-restore`, and a copy can be the raw
+  `localStorage` string (`format: "raw-localstorage"`).
+- `repository.ts` is the port: `load`, `apply(ChangeSet)`, `replaceAll`, `importBatch`,
+  `safetyBackup`, `meta`, `setMeta`, plus `diffSlices(prev, next)`, which compares **by reference**
+  so an edited set is a one-row write. Two implementations: `DexieRepository` and `MemoryRepository`.
+  A SQLite adapter for Capacitor implements the same seven methods.
+- **Atomic:** `apply` and `replaceAll` validate every key first and use one Dexie transaction, so a
+  bad row stores nothing (tested against both implementations). `importBatch` writes in batches of
+  1,000 inside one transaction (tested with 5,500 rows).
+- **Tests (48 in `src/lib/storage`)**: one contract suite run against both implementations, on the
+  real fixtures including the 137-session sample log; and a test that drives the **real store**
+  through a whole session (start, edit, complete, delete, add, finish, change a setting, import a
+  workout), applies each diff to a repository, and checks it reproduces the store after every step.
+  Two mutations (drop removals in `diffSlices`; drop `bulkDelete` in Dexie) each fail.
+- **Next, 5c:** the migration runner (`navigator.locks`, raw safety copy first, one transaction,
+  checksum verify, `meta`), with the two findings from 5a built in (merge over fresh data; never
+  overwrite a corrupt payload).
+
 ### 2026-09-29 — Plan PR 5a: pin the `localStorage` format before moving off it
 
 - **No behaviour change.** The store's persisted format (`lockd-v1`, version 3, the 21-field slice)
