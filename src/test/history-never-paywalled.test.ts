@@ -25,7 +25,7 @@ const HISTORY_SURFACES = [
   "src/routes/moments.$id.tsx",
   "src/routes/workout_.$id.summary.tsx",
   "src/routes/settings.tsx",
-  "src/lib/gym/csv.ts",
+  "src/lib/export/csv.ts",
   "src/lib/import/strong.ts",
   "src/lib/import/hevy.ts",
   "src/lib/import/repforge.ts",

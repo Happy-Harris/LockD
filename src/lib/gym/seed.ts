@@ -14,7 +14,14 @@ import type {
 } from "@/domain/types";
 import { toGrams } from "@/domain/units";
 
-export const SEED_LIBRARY_VERSION = 2;
+/**
+ * Bump when `SEED_ADDITIONS` gains a version. Existing installs take the new exercises once
+ * (`topUpSeedLibrary`); new installs start with the whole library.
+ */
+export const SEED_LIBRARY_VERSION = 3;
+
+/** Installs that predate the top-up carry no version and already have everything up to this one. */
+export const SEED_LIBRARY_VERSION_UNTRACKED = 2;
 
 type SeedTuple = [
   name: string,
@@ -26,7 +33,8 @@ type SeedTuple = [
   unilateral?: boolean,
 ];
 
-const SEED: SeedTuple[] = [
+/** The library as it stood at version 2, before installs could be topped up. */
+const SEED_BASE: SeedTuple[] = [
   ["Back Squat", "quads", ["glutes", "hamstrings", "core"], "barbell", "squat"],
   ["Front Squat", "quads", ["glutes", "core"], "barbell", "squat"],
   ["Conventional Deadlift", "hamstrings", ["glutes", "back", "traps", "forearms"], "barbell", "hinge"],
@@ -95,6 +103,46 @@ const SEED: SeedTuple[] = [
   ["Jump Rope", "cardio", ["calves"], "other", "conditioning", "duration"],
 ];
 
+/**
+ * Exercises added by each later version. An install that has already applied a version never
+ * receives that version's exercises again, so an exercise the lifter removed does not come back.
+ */
+const SEED_ADDITIONS: Record<number, SeedTuple[]> = {
+  3: [
+    ["Box Squat", "quads", ["glutes", "hamstrings"], "barbell", "squat"],
+    ["Rack Pull", "back", ["traps", "glutes", "forearms"], "barbell", "hinge"],
+    ["Push Press", "shoulders", ["triceps", "quads"], "barbell", "vertical push"],
+    ["Wide-Grip Bench Press", "chest", ["shoulders", "triceps"], "barbell", "horizontal push"],
+    ["Behind-the-Neck Press", "shoulders", ["triceps"], "barbell", "vertical push"],
+    ["Wide-Grip Barbell Row", "back", ["lats", "traps"], "barbell", "horizontal pull"],
+    ["Barbell Lunge", "quads", ["glutes", "hamstrings"], "barbell", "lunge"],
+    ["Power Clean", "full body", ["traps", "quads", "glutes"], "barbell", "hinge"],
+    ["Single-Arm Dumbbell Shoulder Press", "shoulders", ["triceps", "core"], "dumbbell", "vertical push", undefined, true],
+    ["Incline Dumbbell Curl", "biceps", ["forearms"], "dumbbell", "isolation"],
+    ["Dumbbell Shrug", "traps", ["forearms"], "dumbbell", "isolation"],
+    ["Wide-Grip Lat Pulldown", "lats", ["biceps", "back"], "cable", "vertical pull"],
+    ["Close-Grip Lat Pulldown", "lats", ["biceps"], "cable", "vertical pull"],
+    ["Straight-Arm Pulldown", "lats", ["triceps"], "cable", "isolation"],
+    ["Smith Machine Bench Press", "chest", ["triceps", "shoulders"], "smith machine", "horizontal push"],
+    ["Smith Machine Overhead Press", "shoulders", ["triceps"], "smith machine", "vertical push"],
+    ["Smith Machine Row", "back", ["lats", "biceps"], "smith machine", "horizontal pull"],
+    ["Neutral-Grip Pull-Up", "lats", ["biceps", "back"], "bodyweight", "vertical pull", "reps_only"],
+    ["Assisted Pull-Up", "lats", ["biceps", "back"], "machine", "vertical pull", "assisted_weight"],
+    ["Assisted Dip", "chest", ["triceps"], "machine", "horizontal push", "assisted_weight"],
+    ["Inverted Row", "back", ["lats", "biceps"], "bodyweight", "horizontal pull", "reps_only"],
+    ["Side Plank", "core", [], "bodyweight", "core", "duration"],
+    ["Nordic Curl", "hamstrings", ["glutes"], "bodyweight", "hinge", "reps_only"],
+    ["Turkish Get-Up", "full body", ["shoulders", "core"], "kettlebell", "carry"],
+    ["Band Face Pull", "shoulders", ["traps"], "band", "horizontal pull", "reps_only"],
+    ["Neck Curl", "neck", [], "plate", "isolation"],
+    ["Stationary Bike", "cardio", ["quads"], "machine", "conditioning", "distance_duration"],
+  ],
+};
+
+
+/** Every exercise in the current library, base first. */
+const SEED: SeedTuple[] = [...SEED_BASE, ...Object.values(SEED_ADDITIONS).flat()];
+
 export function slugify(name: string): string {
   return name
     .toLowerCase()
@@ -107,8 +155,8 @@ export function seedExerciseId(name: string): string {
   return `seed-${slugify(name)}`;
 }
 
-export function seedExercises(now: string): Exercise[] {
-  return SEED.map(([name, primary, secondary, equipment, pattern, tracking, unilateral]) => ({
+function build(tuples: readonly SeedTuple[], now: string): Exercise[] {
+  return tuples.map(([name, primary, secondary, equipment, pattern, tracking, unilateral]) => ({
     id: seedExerciseId(name),
     name,
     primaryMuscleGroup: primary,
@@ -123,6 +171,43 @@ export function seedExercises(now: string): Exercise[] {
     createdAt: now,
     updatedAt: now,
   }));
+}
+
+/** The whole library, for a new install. */
+export function seedExercises(now: string): Exercise[] {
+  return build(SEED, now);
+}
+
+/** Exercises added by versions after `version`, in the order they were added. */
+export function seedExercisesAddedAfter(version: number, now: string): Exercise[] {
+  return build(
+    Object.entries(SEED_ADDITIONS)
+      .filter(([added]) => Number(added) > version)
+      .sort(([a], [b]) => Number(a) - Number(b))
+      .flatMap(([, tuples]) => tuples),
+    now,
+  );
+}
+
+/**
+ * What an existing install needs to catch up with the library: the exercises added since the
+ * version it last applied. Additive only:
+ *  - nothing that exists is changed (a seeded exercise the lifter edited or archived stays as is);
+ *  - an exercise is skipped when one with that id, or the same name, already exists, so a custom
+ *    "Box Squat" is not duplicated;
+ *  - only versions the install has not applied are considered, so an exercise it once had and
+ *    removed is not brought back.
+ */
+export function topUpSeedLibrary(
+  existing: readonly Exercise[],
+  appliedVersion: number | undefined,
+  now: string,
+): Exercise[] {
+  const ids = new Set(existing.map((exercise) => exercise.id));
+  const names = new Set(existing.map((exercise) => slugify(exercise.name)));
+  return seedExercisesAddedAfter(appliedVersion ?? SEED_LIBRARY_VERSION_UNTRACKED, now).filter(
+    (exercise) => !ids.has(exercise.id) && !names.has(slugify(exercise.name)),
+  );
 }
 
 const KG_PLATES: Array<[kg: number, count: number]> = [

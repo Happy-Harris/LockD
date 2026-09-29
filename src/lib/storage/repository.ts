@@ -67,6 +67,11 @@ export interface RepoMeta {
   migratedAt?: string;
   /** Checksum of the source at migration time, to verify the copy. */
   sourceChecksum?: string;
+  /**
+   * The seed library version this log has caught up with (`topUpSeedLibrary`). Unset on a log that
+   * predates the top-up: that log has everything up to `SEED_LIBRARY_VERSION_UNTRACKED`.
+   */
+  seedLibraryVersion?: number;
 }
 
 export interface LockdRepository {

@@ -6,6 +6,47 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 7f: CSV export rewrite and the seed library top-up (closes plan PR 7)
+
+- **CSV export (`src/lib/export/csv.ts`, replaces `src/lib/gym/csv.ts`):** Settings now has five
+  files: **sets** (one row per completed set of a finished session), sessions, exercises, routines
+  and measurements. Weights are written exactly (three decimals in kg, four in lb; a property test
+  over every gram from 0 to 400,000 shows they read back as the same grams) and a set with no weight
+  has an empty cell, never 0. The unit is in the header (`Weight (kg)`). A session's date is the
+  wall-clock time it was logged at, in its own offset. Every cell goes through `escapeCsvValue`, so
+  a note of `=cmd|...` exports as text. The download carries a byte-order mark for Excel; the
+  importer ignores it.
+- **It comes back:** the sets file is read by the import wizard and by the Strong importer (the
+  Strong profile now also knows `Exercise Notes` and `Superset`). A test exports the 137-session
+  sample log in both unit systems and re-reads it: every session's fingerprint is already in the log
+  (`e2e` does the same through Settings: "Imported 0 sessions … already here"). One limit: an
+  exercise that appears twice in one session, in two separate blocks, is read back as one block
+  (the importer groups by name) and would not be recognised.
+- **Characterisation:** the old export (date only, unit unknown, no RIR) is replaced; the snapshot
+  diff is exactly the new columns. `exportSetsCsvText` is gone from the store.
+- **Seed library 66 → 93 (plan I-36):** the 27 exercises the other app had that this one did not
+  (Strong-Pro's list was 92; this library also keeps its own "Farmer's Carry"), same classification
+  vocabulary, ids `seed-<slug>`, two assisted lifts track the assistance (`assisted_weight`), one
+  one-sided (`Single-Arm Dumbbell Shoulder Press`).
+- **Versioned top-up:** `SEED_LIBRARY_VERSION` (was never read) is now 3, and `SEED_ADDITIONS` says
+  which version added what. At boot an existing log is caught up once (`topUpSeedLibrary`): only
+  exercises added in versions it has not applied, never one whose id or name already exists (a custom
+  "Box Squat" is not doubled), never a change to a row that exists (archived or renamed seeds stay as
+  they are), and an exercise removed after the top-up is not brought back. The applied version is
+  the `meta` key `seedLibraryVersion` (additive; a log without it is treated as version 2, and the
+  old `lockd-v1` payload is untouched). It is recorded only after the rows are written, so a failed
+  write is retried at the next boot and never blocks opening the app.
+- **Also:** the name-based suggester now answers `Nordic Curl` (hamstrings, hinge) and `Neck Curl`
+  (neck) rather than biceps; its contract test now measures the 93-exercise library (68 answered,
+  66 agree, the same two arguable calls).
+- **Tests:** `export/csv.test.ts` (15, mutation-checked: pounds and kilogram precision, completed
+  filter, status filter, blank-as-zero, wall clock, unit header), `gym/seed.test.ts` (11),
+  four boot tests with the old-format fixture (a 66-exercise log with no version), and
+  `e2e/library.spec.ts`. The boot test that injects a failed write now arms the failure after boot,
+  because the top-up also writes.
+- **Plan PR 7 is complete.** Next: PR 8 analytics (records, e1RM, volume: engines were characterised
+  in PR 3).
+
 ### 2026-09-29 — Plan PR 7e: the import wizard and Bulk Classify
 
 - **`/import` (More → Import; also linked from Settings):** pick a source (Strong CSV, Hevy CSV,
