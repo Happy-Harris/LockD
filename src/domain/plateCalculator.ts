@@ -1,30 +1,46 @@
 import type { PlateDenomination } from "./types";
 
+/**
+ * Plate calculator.
+ *
+ * A balanced barbell needs the same plates on both sides, so the search works in *pairs*.
+ * Inventory `count` is the number of **physical plates owned**, so the number of usable
+ * pairs is `floor(count / 2)` — an odd 45 lb plate cannot be loaded symmetrically.
+ *
+ * The search is an exact bounded knapsack over per-side gram totals (dynamic programming
+ * across reachable sums), not a greedy descent: greedy is wrong for custom inventories
+ * (e.g. 25/20/15 kg plates with a single 20 kg pair and a 35 kg per-side target — greedy
+ * takes the 25 and strands, while 20 + 15 is exact). Ties break on fewest plates first,
+ * then on loading the heavier plates, which is how lifters actually load a bar.
+ */
+
 export interface PlateCalculatorInput {
+  /** Desired total loaded weight, in grams (bar + collars + plates). */
   targetTotalG: number;
   barWeightG: number;
+  /** Mass of one collar in grams; applied to both sides when > 0. */
   collarWeightG?: number;
   plates: readonly PlateDenomination[];
 }
 
 export interface PlateStackItem {
   weightG: number;
+  /** Plates of this denomination **per side**. */
   countPerSide: number;
 }
 
 export type PlateResultStatus =
-  | "exact"
-  | "closest_lower"
-  | "bar_only"
-  | "below_bar"
-  | "no_plates"
-  | "invalid";
+  "exact" | "closest_lower" | "bar_only" | "below_bar" | "no_plates" | "invalid";
 
 export interface PlateCalculatorResult {
   status: PlateResultStatus;
+  /** Plates per side, heaviest first. Empty for bar-only / unreachable results. */
   perSide: PlateStackItem[];
+  /** Total achieved weight in grams including bar and collars. */
   achievedTotalG: number;
+  /** achievedTotalG - targetTotalG (negative when the target could not be reached). */
   differenceG: number;
+  /** Total plates used across both sides. */
   totalPlates: number;
   barWeightG: number;
   collarWeightG: number;
@@ -38,10 +54,21 @@ interface Denomination {
 
 interface DpEntry {
   plateCount: number;
+  /** Pairs used per denomination, aligned with the descending-weight denomination list. */
   counts: number[];
 }
 
+/** Safety valve: stop expanding the reachable-sum table for absurd inventories. */
 const MAX_REACHABLE_SUMS = 250_000;
+
+/**
+ * Per-side slack, in grams, absorbed when matching a target.
+ *
+ * Pounds do not convert to a whole number of grams (45 lb = 20411.65665 g), so a target
+ * built from pound plates can miss the reachable sum by a gram or two purely from integer
+ * rounding. Real plates step in units of at least 250 g, so a 2 g window can never select
+ * a different stack — it only prevents "225 lb" being reported as 0.002 lb short.
+ */
 const MATCH_TOLERANCE_G = 2;
 
 export function calculatePlates(input: PlateCalculatorInput): PlateCalculatorResult {
@@ -51,7 +78,14 @@ export function calculatePlates(input: PlateCalculatorInput): PlateCalculatorRes
   const base = barWeightG + collarWeightG * 2;
 
   if (!Number.isFinite(targetTotalG) || targetTotalG < 0) {
-    return barOnlyResult("invalid", "Enter a target weight of zero or more.", barWeightG, collarWeightG, base, 0);
+    return barOnlyResult(
+      "invalid",
+      "Enter a target weight of zero or more.",
+      barWeightG,
+      collarWeightG,
+      base,
+      0,
+    );
   }
 
   if (targetTotalG < base) {
@@ -69,7 +103,14 @@ export function calculatePlates(input: PlateCalculatorInput): PlateCalculatorRes
 
   const remainder = targetTotalG - base;
   if (remainder === 0) {
-    return barOnlyResult("bar_only", "No plates needed — that is the bar.", barWeightG, collarWeightG, base, 0);
+    return barOnlyResult(
+      "bar_only",
+      "No plates needed — that is the bar.",
+      barWeightG,
+      collarWeightG,
+      base,
+      0,
+    );
   }
 
   const denominations = normalisePlates(input.plates);
@@ -84,10 +125,14 @@ export function calculatePlates(input: PlateCalculatorInput): PlateCalculatorRes
     );
   }
 
+  // An odd remainder cannot be split evenly, so the search targets floor(remainder / 2)
+  // per side and the shortfall is reported as the difference from target.
   const targetPerSide = Math.floor(remainder / 2);
   const searchLimit = targetPerSide + MATCH_TOLERANCE_G;
   const reachable = solve(searchLimit, denominations);
-  const chosenSum = reachable.has(targetPerSide) ? targetPerSide : bestBelow(reachable, searchLimit);
+  const chosenSum = reachable.has(targetPerSide)
+    ? targetPerSide
+    : bestBelow(reachable, searchLimit);
 
   if (chosenSum === null || chosenSum === 0) {
     return barOnlyResult(
@@ -120,7 +165,9 @@ export function calculatePlates(input: PlateCalculatorInput): PlateCalculatorRes
     totalPlates: entry.plateCount * 2,
     barWeightG,
     collarWeightG,
-    message: isExact ? "Exact match." : "Closest achievable load below the target with this inventory.",
+    message: isExact
+      ? "Exact match."
+      : "Closest achievable load below the target with this inventory.",
   };
 }
 
@@ -144,6 +191,7 @@ function barOnlyResult(
   };
 }
 
+/** Collapse duplicate denominations, drop unusable ones, convert plate counts to pairs. */
 function normalisePlates(plates: readonly PlateDenomination[]): Denomination[] {
   const merged = new Map<number, number>();
   for (const plate of plates) {
@@ -158,6 +206,10 @@ function normalisePlates(plates: readonly PlateDenomination[]): Denomination[] {
     .sort((a, b) => b.weightG - a.weightG);
 }
 
+/**
+ * Bounded knapsack over per-side gram sums. Returns every reachable sum <= limit together
+ * with the cheapest (fewest-plate) way of reaching it.
+ */
 function solve(limit: number, denominations: readonly Denomination[]): Map<number, DpEntry> {
   const size = denominations.length;
   const best = new Map<number, DpEntry>();
@@ -185,6 +237,7 @@ function solve(limit: number, denominations: readonly Denomination[]): Map<numbe
   return best;
 }
 
+/** Fewest plates wins; on a tie prefer the stack that loads more of the heavier plates. */
 function isBetter(candidate: DpEntry, incumbent: DpEntry): boolean {
   if (candidate.plateCount !== incumbent.plateCount) {
     return candidate.plateCount < incumbent.plateCount;
@@ -206,7 +259,14 @@ function bestBelow(reachable: Map<number, DpEntry>, target: number): number | nu
   return best;
 }
 
-export function reachableTotals(input: Omit<PlateCalculatorInput, "targetTotalG">, maxG: number): number[] {
+/**
+ * Every total weight (in grams) reachable with this bar + inventory, ascending.
+ * Used by the warm-up generator to round prescriptions to loads the user can build.
+ */
+export function reachableTotals(
+  input: Omit<PlateCalculatorInput, "targetTotalG">,
+  maxG: number,
+): number[] {
   const barWeightG = Math.max(0, Math.round(input.barWeightG || 0));
   const collarWeightG = Math.max(0, Math.round(input.collarWeightG ?? 0));
   const base = barWeightG + collarWeightG * 2;

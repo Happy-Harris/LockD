@@ -1,3 +1,4 @@
+/** UUID v4 generation with a deterministic fallback for environments lacking crypto.randomUUID. */
 export function uuid(): string {
   const cryptoApi = globalThis.crypto as Crypto | undefined;
   if (cryptoApi?.randomUUID) return cryptoApi.randomUUID();
@@ -8,6 +9,7 @@ export function uuid(): string {
     const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
   }
+  // Last resort: time + Math.random. Only reachable in very old or locked-down runtimes.
   const rand = () =>
     Math.floor(Math.random() * 0xffff)
       .toString(16)
@@ -15,6 +17,10 @@ export function uuid(): string {
   return `${rand()}${rand()}-${rand()}-4${rand().slice(1)}-a${rand().slice(1)}-${rand()}${rand()}${rand()}`;
 }
 
+/**
+ * Stable, non-cryptographic 32-bit hash (FNV-1a) used for import fingerprints.
+ * Deduplication only needs determinism and a low collision rate, not secrecy.
+ */
 export function fingerprint(input: string): string {
   let hash = 0x811c9dc5;
   for (let i = 0; i < input.length; i += 1) {

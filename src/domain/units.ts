@@ -1,6 +1,12 @@
 import type { UnitSystem } from "./types";
 
+/**
+ * Unit conversion. Mass is stored canonically in grams and length in millimetres so that
+ * repeated kg <-> lb round trips never drift: only the display layer sees fractional units.
+ */
+
 export const GRAMS_PER_KG = 1000;
+/** International avoirdupois pound. */
 export const GRAMS_PER_LB = 453.59237;
 export const MM_PER_CM = 10;
 export const MM_PER_INCH = 25.4;
@@ -16,18 +22,28 @@ export function lengthUnitFor(system: UnitSystem): LengthUnit {
   return system === "metric" ? "cm" : "in";
 }
 
+/** Convert a display weight to canonical grams, rounded to the nearest gram. */
 export function toGrams(value: number, unit: WeightUnit): number {
   if (!Number.isFinite(value)) return 0;
   const grams = unit === "kg" ? value * GRAMS_PER_KG : value * GRAMS_PER_LB;
   return Math.round(grams);
 }
 
+/** Convert canonical grams to a display weight (unrounded). */
 export function fromGrams(grams: number, unit: WeightUnit): number {
   if (!Number.isFinite(grams)) return 0;
   return unit === "kg" ? grams / GRAMS_PER_KG : grams / GRAMS_PER_LB;
 }
 
-export function formatWeight(grams: number, unit: WeightUnit, opts?: { decimals?: number }): string {
+/**
+ * Display weight rounded for humans: 2 decimals max, trailing zeros trimmed.
+ * 2.5 kg stays "2.5"; 45 lb stays "45"; 60 kg shown in lb becomes "132.28".
+ */
+export function formatWeight(
+  grams: number,
+  unit: WeightUnit,
+  opts?: { decimals?: number },
+): string {
   const decimals = opts?.decimals ?? 2;
   const value = fromGrams(grams, unit);
   const rounded = roundTo(value, decimals);
@@ -54,9 +70,11 @@ export function formatLength(mm: number, unit: LengthUnit, decimals = 1): string
 
 export function roundTo(value: number, decimals: number): number {
   const factor = 10 ** decimals;
+  // Epsilon nudge keeps values such as 1.005 from rounding down due to float representation.
   return Math.round((value + Number.EPSILON * Math.sign(value || 1)) * factor) / factor;
 }
 
+/** Locale-aware grouping (1,234.5) shared by every place a rounded number is displayed. */
 const groupedNumberFormatter = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 6,
   useGrouping: true,
@@ -65,9 +83,11 @@ const groupedNumberFormatter = new Intl.NumberFormat(undefined, {
 export function trimNumber(value: number): string {
   if (!Number.isFinite(value)) return "0";
   if (Object.is(value, -0)) return "0";
+  // toFixed(6) first strips float artefacts (e.g. 1.0000000001) before grouping.
   return groupedNumberFormatter.format(parseFloat(value.toFixed(6)));
 }
 
+/** Locale-formatted whole-number count (sets, reps, workouts) — e.g. "13,319". */
 const countFormatter = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
 
 export function formatCount(value: number): string {
@@ -75,6 +95,7 @@ export function formatCount(value: number): string {
   return countFormatter.format(Math.round(value));
 }
 
+/** Compact display for large analytics values, e.g. 5,160,000 -> 5.16M. */
 export function formatCompactNumber(value: number, maximumFractionDigits = 2): string {
   if (!Number.isFinite(value)) return "0";
   return new Intl.NumberFormat(undefined, {
@@ -83,6 +104,7 @@ export function formatCompactNumber(value: number, maximumFractionDigits = 2): s
   }).format(value);
 }
 
+/** Round canonical grams to the nearest multiple of `incrementG` (used for equipment steps). */
 export function roundGramsToIncrement(
   grams: number,
   incrementG: number,
@@ -91,10 +113,15 @@ export function roundGramsToIncrement(
   if (incrementG <= 0) return Math.round(grams);
   const ratio = grams / incrementG;
   const steps =
-    mode === "down" ? Math.floor(ratio + 1e-9) : mode === "up" ? Math.ceil(ratio - 1e-9) : Math.round(ratio);
+    mode === "down"
+      ? Math.floor(ratio + 1e-9)
+      : mode === "up"
+        ? Math.ceil(ratio - 1e-9)
+        : Math.round(ratio);
   return Math.round(steps * incrementG);
 }
 
+/** Default quick-adjust step: 2.5 kg for metric, 5 lb for imperial. */
 export function defaultQuickIncrementG(system: UnitSystem): number {
   return system === "metric" ? toGrams(2.5, "kg") : toGrams(5, "lb");
 }
@@ -118,7 +145,9 @@ export function formatDurationLong(totalSeconds: number): string {
 
 export function formatDistance(metres: number, system: UnitSystem): string {
   if (system === "metric") {
-    return metres >= 1000 ? `${trimNumber(roundTo(metres / 1000, 2))} km` : `${Math.round(metres)} m`;
+    return metres >= 1000
+      ? `${trimNumber(roundTo(metres / 1000, 2))} km`
+      : `${Math.round(metres)} m`;
   }
   const miles = metres / 1609.344;
   return miles >= 0.1
@@ -126,6 +155,7 @@ export function formatDistance(metres: number, system: UnitSystem): string {
     : `${Math.round(metres * 1.09361)} yd`;
 }
 
+/** Parse a typed weight ("102.5", "102,5") into canonical grams; undefined for blank or invalid input. */
 export function parseWeightInput(raw: string, unit: WeightUnit): number | undefined {
   const cleaned = raw.replace(",", ".").trim();
   if (!cleaned) return undefined;

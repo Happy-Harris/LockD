@@ -6,6 +6,26 @@ doc to rewrite.
 
 ## Log
 
+### 2026-09-29 — Plan PR 4a: domain tests and the unrounded e1RM core
+
+- Strong-Pro's tests for `units`, `oneRepMax`, `plateCalculator` and `warmup` are ported (69
+  tests), with its doc comments. Phase 1 said these five modules were logically identical to
+  Strong-Pro's; the AST diff against the previous Lockd files confirms it (only ternary line
+  wrapping differs, and Lockd's `parseWeightInput` and its `×`/`−` labels are kept).
+- **A-5:** `oneRepMax.ts` gains `e1rmExact(weight, reps, formula)`, the unrounded core (one rep
+  is the load itself; null with no load or past 12 reps). `estimateOneRepMax` now rounds its
+  result, with the same output as before: every characterisation snapshot is unchanged.
+  `src/domain/e1rmExact.test.ts` holds Appendix A's hand-checked vectors and asserts that
+  `estimateOneRepMax`, `bestOneRepMax` and analytics' `estimateFromSet` all equal the rounded
+  core for every rep count 1–12, both formulas, seven loads. Lift Math (Phase 3) must call
+  `e1rmExact` and round in the unit the lifter typed.
+- This branch includes the timezone pin from #5 (merged in so CI is green on its own); once #5 is
+  on `main` that part of the diff disappears.
+
+Still to do in plan PR 4: `time` (ranges and tests; keep Lockd's stored tz sign), `volume`,
+`records`, `exerciseTaxonomy`, the union of `types`, and the evidence catalog. `volume` and
+`records` change engine output, so they land as separate PRs with reviewed snapshot diffs.
+
 ### 2026-09-29 — Fix: test suite pinned to UTC
 
 - `verify` was red on `main`: `workflow-characterisation` snapshotted an absolute instant
