@@ -5,7 +5,6 @@ import { computeRecords, sliceSessions } from "./analytics";
 import { loggedEntriesOf } from "./entries";
 import { buildDemoLog } from "./demo";
 import { buildIntelligence } from "./intelligence";
-import { classifyVolume, landmarkLabel } from "./landmarks";
 import { buildMoments } from "./moments";
 import { milestoneQueue, nearMisses, rmTable } from "./queue";
 import { classifyHours, freshnessLabel, muscleRecovery } from "./recovery";
@@ -48,21 +47,6 @@ describe("secondary engine characterisation — current outcomes, including know
       "ready",
       "fresh",
     ]);
-  });
-
-  it("pins unsourced volume bands and missing-landmark fallback", () => {
-    expect([0, 7, 8, 15, 16, 21, 22, 23].map((n) => classifyVolume("chest", n))).toEqual([
-      "below",
-      "below",
-      "mev",
-      "mev",
-      "mav",
-      "mav",
-      "mrv",
-      "over",
-    ]);
-    expect(classifyVolume("forearms", 0)).toBe("mev"); // BUG: no landmark still says MEV.
-    expect(landmarkLabel(classifyVolume("forearms", 0))).toBe("MEV");
   });
 
   it("pins current bodyweight-scaled strength bands, including missing bodyweight", () => {

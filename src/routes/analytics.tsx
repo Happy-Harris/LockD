@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChangeFlagsCard } from "@/components/app/change-flags-card";
+import { MuscleSetsCard } from "@/components/app/muscle-sets-card";
 import { Page } from "@/components/app/shell";
 import { WeeklyVerdictCard } from "@/components/app/weekly-verdict-card";
 import { Card } from "@/components/ui/card";
@@ -9,11 +10,13 @@ import { formatWeight, formatWeightWithUnit, fromGrams, weightUnitFor } from "@/
 import { e1rmSeries } from "@/lib/gym/analytics";
 import { useGymDerived } from "@/lib/gym/hooks";
 import { lensDef } from "@/lib/gym/lenses";
+import { useGym } from "@/lib/gym/store";
 
 export const Route = createFileRoute("/analytics")({ component: AnalyticsPage });
 
 function AnalyticsPage() {
-  const { verdict, verdictLens, flags, weeks, muscles, records, settings, slices, heat, exercises, intelligence } = useGymDerived();
+  const { verdict, verdictLens, flags, muscleInsights, subjectBalance, weeks, muscles, records, settings, slices, heat, exercises, intelligence } = useGymDerived();
+  const updateSettings = useGym((s) => s.updateSettings);
   const unit = weightUnitFor(settings.unitSystem);
   const maxMuscle = Math.max(1, ...Object.values(muscles));
   const chartData = weeks.slice(-12).map((week) => ({
@@ -38,8 +41,16 @@ function AnalyticsPage() {
           weightUnit={weightUnitFor(settings.unitSystem)}
           lens={verdictLens}
           lensLabel={lensDef(settings.goalLens).label}
+          muscleBalance={subjectBalance}
         />
         <ChangeFlagsCard flags={flags} weightUnit={weightUnitFor(settings.unitSystem)} />
+        <MuscleSetsCard
+          insights={muscleInsights}
+          secondaryCredit={settings.secondaryMuscleCredit}
+          weightUnit={weightUnitFor(settings.unitSystem)}
+          personalTargets={settings.personalMuscleTargets}
+          onPersonalTargetsChange={(personalMuscleTargets) => updateSettings({ personalMuscleTargets })}
+        />
       </div>
 
       <Card className="mt-4 h-64 p-3">

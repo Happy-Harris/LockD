@@ -8,10 +8,10 @@ import { Card } from "@/components/ui/card";
 import { formatLocalDate, formatWeekday } from "@/domain/time";
 import type { GoalLens } from "@/domain/types";
 import { titleCase } from "@/domain/taxonomy";
-import { formatCount, formatWeight, formatWeightWithUnit, weightUnitFor } from "@/domain/units";
+import { formatWeight, formatWeightWithUnit, weightUnitFor } from "@/domain/units";
 import { e1rmSeries } from "@/lib/gym/analytics";
-import { classifyVolume, landmarkLabel } from "@/lib/gym/landmarks";
 import { LENSES, lensShows } from "@/lib/gym/lenses";
+import { formatSets, stateLabel } from "@/lib/gym/muscle-labels";
 import { actionLabel } from "@/lib/gym/progression";
 import { freshnessLabel, muscleRecovery } from "@/lib/gym/recovery";
 import { useGymDerived } from "@/lib/gym/hooks";
@@ -32,12 +32,13 @@ function TodayPage() {
   const {
     verdict,
     verdictLens,
+    muscleInsights,
+    subjectBalance,
     heat,
     streak,
     nextTemplate,
     records,
     lastCompleted,
-    muscles,
     settings,
     templates,
     templateExercises,
@@ -162,6 +163,7 @@ function TodayPage() {
             lens={verdictLens}
             lensLabel={lens.label}
             stamp
+            muscleBalance={subjectBalance}
           />
         </div>
       ) : null}
@@ -391,24 +393,29 @@ function TodayPage() {
       ) : null}
 
       {lensShows(settings.goalLens, "volume") ? (
-        <section className="mb-6">
-          <h2 className="mb-3 font-display text-2xl font-semibold tracking-tight">This week’s volume</h2>
-          <div className="grid grid-cols-3 gap-2">
-            {Object.entries(muscles)
-              .filter(([, value]) => value > 0)
-              .sort((a, b) => b[1] - a[1])
-              .slice(0, 6)
-              .map(([muscle, value]) => {
-                const band = classifyVolume(muscle as never, value);
-                return (
-                  <div key={muscle} className="rounded-2xl bg-surface p-3 hairline">
-                    <p className="text-xs text-muted">{titleCase(muscle)}</p>
-                    <p className="mt-1 font-display text-lg font-semibold tabular">{formatCount(value)}</p>
-                    <p className="text-[10px] text-subtle">{landmarkLabel(band)}</p>
-                  </div>
-                );
-              })}
+        <section className="mb-6" data-testid="today-volume">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-2xl font-semibold tracking-tight">This week’s volume</h2>
+            <Link to="/analytics" className="text-sm text-muted hover:text-ink">
+              Data Lab
+            </Link>
           </div>
+          {muscleInsights.length === 0 ? (
+            <p className="text-sm text-muted">No completed working sets this week yet.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {muscleInsights.slice(0, 6).map((row) => (
+                <div key={row.muscle} className="rounded-2xl bg-surface p-3 hairline">
+                  <p className="text-xs text-muted">{titleCase(row.muscle)}</p>
+                  <p className="mt-1 font-display text-lg font-semibold tabular">{formatSets(row.sets)}</p>
+                  <p className="text-[10px] text-subtle">
+                    {row.target ? `of ${formatSets(row.target.min)}–${formatSets(row.target.max)} · ` : ""}
+                    {stateLabel(row)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       ) : null}
 

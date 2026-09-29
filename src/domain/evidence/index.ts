@@ -59,3 +59,10 @@ export function assertCatalogIntegrity(catalog = EVIDENCE_CATALOG): void {
     }
   }
 }
+
+/** The claim behind the default weekly band on Muscle sets. It must exist: the screen links to it. */
+export function researchMuscleTargetClaim(): EvidenceClaim {
+  const claim = getClaim("weekly-credited-sets-10-20");
+  if (!claim) throw new Error("The weekly credited sets claim is missing from the evidence catalog.");
+  return claim;
+}

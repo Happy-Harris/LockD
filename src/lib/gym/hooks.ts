@@ -19,6 +19,7 @@ import { nextProgramSession } from "./programs";
 import { easierWeekCall, progressBoard } from "./progression";
 import { milestoneQueue } from "./queue";
 import { useGym } from "./store";
+import { muscleBandBalance } from "@/domain/analytics/muscleSets";
 import { trainingFlags } from "@/domain/analytics/trainingFlags";
 import { weeklyVerdict } from "@/domain/analytics/weeklyVerdict";
 import { addDays, localDateOf, startOfTrainingWeek } from "@/domain/time";
@@ -73,6 +74,20 @@ export function useGymDerived() {
       settings.goalLiftIds,
       verdictLens,
     );
+    const muscleBandOptions = {
+      weekStart: settings.weekStartDay,
+      secondaryCredit: settings.secondaryMuscleCredit,
+      personalTargetBands: settings.personalMuscleTargets,
+    };
+    // This training week, for Muscle sets; and the week the verdict is about, for its balance line.
+    const currentBalance = muscleBandBalance(entries, {
+      ...muscleBandOptions,
+      referenceLocalDate: localDateOf(now),
+    });
+    const subjectBalance = muscleBandBalance(entries, {
+      ...muscleBandOptions,
+      referenceLocalDate: verdict.subject.endDate,
+    });
     const heat = calendarHeat(slices, 84);
     const weeks = weeklySeries(slices, settings.weekStartDay);
     const weekStart = startOfTrainingWeek(new Date(), settings.weekStartDay);
@@ -162,6 +177,8 @@ export function useGymDerived() {
       verdict,
       verdictLens,
       flags,
+      muscleInsights: currentBalance.insights,
+      subjectBalance,
       heat,
       weeks,
       muscles,

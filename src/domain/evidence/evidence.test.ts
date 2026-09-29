@@ -65,9 +65,10 @@ describe("evidence catalog", () => {
       if (claim.kind === "implementation_heuristic")
         expect(claim.limitations.length, claim.id).toBeGreaterThan(0);
     }
-    expect(getSourcesForClaim("volume-landmarks-defaults")).toEqual([]);
     expect(getSourcesForClaim("weekly-verdict-direction")).toEqual([]);
-    expect(getClaim("volume-landmarks-defaults")?.kind).toBe("implementation_heuristic");
+    expect(getSourcesForClaim("personal-muscle-targets")).toEqual([]);
+    expect(getClaim("weekly-credited-sets-10-20")?.kind).toBe("implementation_heuristic");
+    expect(getClaim("personal-muscle-targets")?.kind).toBe("user_editable_personal");
     expect(getClaim("weekly-verdict-direction")?.kind).toBe("implementation_heuristic");
     expect(getClaim("e1rm-formulas")?.kind).toBe("pure_calculation");
     expect(getClaim("tonnage-weight-times-reps")?.kind).toBe("pure_calculation");
