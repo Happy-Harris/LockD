@@ -43,6 +43,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Lock'd reads your bodyweight, sleep and heart-rate variability from Health so your training log can show them next to your lifts. Nothing is written back to Health, and sleep and HRV never leave your device.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>

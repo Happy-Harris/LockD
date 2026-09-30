@@ -8,6 +8,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         // App-local plugins are registered before the bridge loads.
         registerPlugin(LockScreenTimerPlugin.class);
+        registerPlugin(LockdHealthPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
