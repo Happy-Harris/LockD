@@ -85,7 +85,7 @@ function LockerPublicPage() {
           <div className="mt-3 space-y-2">
             {card.moments.map((moment) => (
               <Card key={moment.id}>
-                <p className="text-micro-legacy uppercase tracking-[0.16em] text-subtle">{moment.kicker}</p>
+                <p className="text-micro uppercase tracking-[0.16em] text-subtle">{moment.kicker}</p>
                 <p className="mt-1 font-medium">{moment.title}</p>
                 <p className="mt-1 text-sm text-muted">{moment.detail}</p>
                 <p className="mt-2 font-mono text-micro text-subtle">{moment.date}</p>

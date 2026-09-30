@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
-import { goTo, openWithSampleLog } from "./helpers";
+import { goTo, openWithSampleLog, waitForApp } from "./helpers";
 
-/** Text size, step A (owner's spec, Appendix A): the control, no flash on a cold start, and Large at 320 px. */
+/** Text size (owner's spec, Appendix A): the controls, the one-time notice, no flash on a cold start, and Large at 320 px. */
 
 const fontPx = (page: Page, selector: string) =>
   page.locator(selector).first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
@@ -26,7 +26,7 @@ test.describe("text size", () => {
     await goTo(page, "/settings");
     const bodyBefore = await fontPx(page, "p.text-sm");
     const headingBefore = await fontPx(page, "h1");
-    expect(bodyBefore).toBe(14);
+    expect(bodyBefore).toBe(16); // Comfortable, the default since step B
 
     await page.getByTestId("text-size-control").getByRole("button", { name: "Large" }).click();
     await expect(page.locator("html")).toHaveAttribute("data-text-size", "large");
@@ -74,5 +74,47 @@ test.describe("text size", () => {
     await expect.poll(() => noSideScroll(page)).toBe(true);
     const box = await complete.boundingBox();
     expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+  });
+
+  test("onboarding offers the size beside units, and the choice is kept", async ({ page }) => {
+    await page.goto("/");
+    await waitForApp(page);
+    const control = page.getByTestId("onboarding-text-size");
+    await expect(control.getByRole("button", { name: "Comfortable" })).toHaveAttribute("aria-pressed", "true");
+    await control.getByRole("button", { name: "Standard" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-text-size", "standard");
+    await page.getByRole("button", { name: /Open with a sample log/i }).click();
+    await expect(page.getByRole("heading", { name: "Today", level: 1 })).toBeVisible();
+    await expect(page.getByTestId("text-size-notice")).toHaveCount(0);
+    await goTo(page, "/");
+    await expect(page.locator("html")).toHaveAttribute("data-text-size", "standard");
+  });
+
+  test("a lifter who never chose a size is told once, and can keep the previous size", async ({ page }) => {
+    await openWithSampleLog(page);
+    // As an install from before step B: a log, and no size stored anywhere.
+    await page.evaluate(async () => {
+      localStorage.removeItem("lockd-text-size");
+      const { getLockdDb } = await import("/src/lib/storage/db.ts");
+      await getLockdDb().device.clear();
+    });
+    await goTo(page, "/");
+    const notice = page.getByTestId("text-size-notice");
+    await expect(notice).toContainText("Text is larger now. Change it in Settings → Appearance.");
+    await expect(page.locator("html")).toHaveAttribute("data-text-size", "comfortable");
+    await notice.getByRole("button", { name: "Keep previous size" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-text-size", "standard");
+    await expect(notice).toHaveCount(0);
+    await goTo(page, "/");
+    await expect(page.getByTestId("text-size-notice")).toHaveCount(0);
+    await expect(page.locator("html")).toHaveAttribute("data-text-size", "standard");
+  });
+
+  test("the palette sets the size", async ({ page }) => {
+    await openWithSampleLog(page);
+    await page.keyboard.press("ControlOrMeta+k");
+    await page.getByPlaceholder(/jump/).fill("text size");
+    await page.getByRole("button", { name: /Text size: Large/ }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-text-size", "large");
   });
 });

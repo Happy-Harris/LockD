@@ -64,7 +64,7 @@ export function AppShell({ children, hideNav }: { children: React.ReactNode; hid
           <LockdMark className="size-8" />
           <div>
             <p className="stamp text-xl leading-none text-ink">LOCKD</p>
-            <p className="mt-1 text-micro-legacy font-medium uppercase tracking-[0.18em] text-subtle">Keep the receipt.</p>
+            <p className="mt-1 text-micro font-medium uppercase tracking-[0.18em] text-subtle">Keep the receipt.</p>
           </div>
         </div>
         <nav aria-label="Primary" className="space-y-0.5">
@@ -173,7 +173,7 @@ function LockerChip() {
 
   if (isPending) return <div className="mt-auto h-16 animate-pulse rounded-xl bg-raised" />;
   if (!user && !canSignIn) {
-    return <p className="mt-auto px-3 pt-8 font-mono text-micro-legacy tracking-wide text-subtle">⌘K to jump</p>;
+    return <p className="mt-auto px-3 pt-8 font-mono text-micro tracking-wide text-subtle">⌘K to jump</p>;
   }
   if (!user) {
     return (
@@ -185,7 +185,7 @@ function LockerChip() {
           <p className="text-sm font-medium text-ink">Sign in</p>
           <p className="mt-1 text-xs leading-relaxed text-muted">Keep this log on the locker. Share a real link.</p>
         </Link>
-        <p className="mt-3 px-1 font-mono text-micro-legacy tracking-wide text-subtle">⌘K to jump</p>
+        <p className="mt-3 px-1 font-mono text-micro tracking-wide text-subtle">⌘K to jump</p>
       </div>
     );
   }
@@ -193,12 +193,12 @@ function LockerChip() {
   return (
     <div className="mt-auto space-y-3 px-2 pt-8">
       <Link to="/locker" className="block rounded-xl bg-raised px-3 py-3 hairline">
-        <p className="text-micro-legacy font-medium uppercase tracking-[0.16em] text-subtle">{label}</p>
+        <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">{label}</p>
         <p className="mt-1 text-sm font-medium text-ink">{profile?.displayName || user.displayName || "Lifter"}</p>
         {profile?.handle ? <p className="text-xs text-accent">@{profile.handle}</p> : null}
       </Link>
       <UserButton />
-      <p className="px-1 font-mono text-micro-legacy tracking-wide text-subtle">⌘K to jump</p>
+      <p className="px-1 font-mono text-micro tracking-wide text-subtle">⌘K to jump</p>
     </div>
   );
 }

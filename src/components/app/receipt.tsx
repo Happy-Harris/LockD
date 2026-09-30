@@ -29,13 +29,13 @@ export function SessionReceipt({
       <header className="flex items-start justify-between gap-3 border-b border-dashed border-current/20 pb-4">
         <div>
           <p className="stamp text-3xl leading-none tracking-tight">LOCKD</p>
-          <p className="mt-1 text-micro-legacy font-medium uppercase tracking-[0.22em] opacity-60">
+          <p className="mt-1 text-micro font-medium uppercase tracking-[0.22em] opacity-60">
             Keep the receipt.
           </p>
         </div>
         <LockdMark className="size-9" />
       </header>
-      <p className="mt-4 text-micro-legacy font-medium uppercase tracking-[0.18em] opacity-55">
+      <p className="mt-4 text-micro font-medium uppercase tracking-[0.18em] opacity-55">
         Session #{serial}
       </p>
       <h2 className="mt-1 font-display text-3xl font-semibold tracking-tight">
@@ -44,19 +44,19 @@ export function SessionReceipt({
       <p className="mt-1 text-sm opacity-70">{formatLocalDate(slice.workout.localDate)}</p>
       <dl className="mt-5 grid grid-cols-3 gap-2 border-y border-dashed border-current/20 py-4">
         <div>
-          <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Time</dt>
+          <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Time</dt>
           <dd className="mt-1 font-display text-xl font-semibold tabular">
             {formatDuration(duration)}
           </dd>
         </div>
         <div>
-          <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Hard sets</dt>
+          <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Hard sets</dt>
           <dd className="mt-1 font-display text-xl font-semibold tabular">
             {hardSetCount(slice.sets)}
           </dd>
         </div>
         <div>
-          <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Tonnage</dt>
+          <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Tonnage</dt>
           <dd className="mt-1 font-display text-xl font-semibold tabular">
             {formatWeightWithUnit(tonnage, unit)}
           </dd>
@@ -74,7 +74,7 @@ export function SessionReceipt({
                 <p className="text-sm font-medium">
                   {exercise.exerciseNameSnapshot}
                   {isPr ? (
-                    <span className="ml-2 text-micro-legacy font-semibold uppercase tracking-[0.16em] text-accent">
+                    <span className="ml-2 text-micro font-semibold uppercase tracking-[0.16em] text-accent">
                       PR
                     </span>
                   ) : null}

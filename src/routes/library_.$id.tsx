@@ -265,7 +265,7 @@ function ExerciseDetailPage() {
           <div className="mt-3 grid grid-cols-4 gap-2">
             {table.map((mark) => (
               <div key={mark.reps}>
-                <p className="text-micro-legacy uppercase tracking-[0.14em] text-subtle">{mark.reps}RM</p>
+                <p className="text-micro uppercase tracking-[0.14em] text-subtle">{mark.reps}RM</p>
                 <p className="font-mono text-sm tabular">{formatWeight(mark.weightG, unit)}</p>
               </div>
             ))}

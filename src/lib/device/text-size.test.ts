@@ -12,6 +12,7 @@ import oldBackup from "@/test/fixtures/backup/lockd-backup-v3-before-type-union.
 import {
   currentTextSize,
   DEFAULT_TEXT_SIZE,
+  storedTextSize,
   restoreTextSizeFromDevice,
   setTextSize,
   TEXT_SIZE_DEVICE_KEY,
@@ -28,21 +29,25 @@ beforeEach(async () => {
   useGym.getState().resetAll();
 });
 
-describe("text size is a device preference (spec Appendix A, step A)", () => {
-  it("defaults to Standard in step A, so the token migration changes nothing", () => {
-    expect(DEFAULT_TEXT_SIZE).toBe("standard");
-    expect(currentTextSize()).toBe("standard");
+describe("text size is a device preference (spec Appendix A)", () => {
+  it("defaults to Comfortable since step B, with nothing stored until the lifter answers", () => {
+    expect(DEFAULT_TEXT_SIZE).toBe("comfortable");
+    expect(currentTextSize()).toBe("comfortable");
+    expect(storedTextSize()).toBeNull();
   });
 
-  it("the pre-paint script applies the stored size before the app loads, and ignores anything else", () => {
+  it("the pre-paint script applies the stored size before the app loads, else the default", () => {
     window.localStorage.setItem(TEXT_SIZE_STORAGE_KEY, "large");
     new Function(TEXT_SIZE_PREPAINT_SCRIPT)();
     expect(html().getAttribute("data-text-size")).toBe("large");
 
-    html().removeAttribute("data-text-size");
     window.localStorage.setItem(TEXT_SIZE_STORAGE_KEY, "huge");
     new Function(TEXT_SIZE_PREPAINT_SCRIPT)();
-    expect(html().hasAttribute("data-text-size")).toBe(false);
+    expect(html().getAttribute("data-text-size")).toBe("comfortable");
+
+    window.localStorage.removeItem(TEXT_SIZE_STORAGE_KEY);
+    new Function(TEXT_SIZE_PREPAINT_SCRIPT)();
+    expect(html().getAttribute("data-text-size")).toBe("comfortable");
   });
 
   it("choosing a size paints it, mirrors it for the next cold start, and records it in the device table", async () => {
@@ -100,9 +105,10 @@ describe("text size in a backup", () => {
 describe("the role tokens", () => {
   const css = readFileSync(path.resolve(__dirname, "../../styles.css"), "utf8");
 
-  it("Standard keeps today's sizes: micro 11 px, legacy micro and tab labels 10 px", () => {
-    const root = css.match(/:root \{\s+--type-micro: ([^;]+);\s+--type-micro-legacy: ([^;]+);\s+--type-tab: ([^;]+);/);
-    expect(root?.slice(1)).toEqual(["0.6875rem", "0.625rem", "0.625rem"]);
+  it("Standard puts micro text and tab labels at 11 px; no class sets a size below it", () => {
+    const root = css.match(/:root \{\s+--type-micro: ([^;]+);\s+--type-tab: ([^;]+);/);
+    expect(root?.slice(1)).toEqual(["0.6875rem", "0.6875rem"]);
+    expect(css).not.toContain("micro-legacy");
   });
 
   it("no preset changes the root font size, so display type stays put", () => {
@@ -113,9 +119,20 @@ describe("the role tokens", () => {
   it("no preset puts micro text below 11 px", () => {
     for (const preset of ["comfortable", "large"]) {
       const block = css.match(new RegExp(`data-text-size="${preset}"\\] \\{([^}]*)\\}`))?.[1] ?? "";
-      const rems = [...block.matchAll(/--type-micro(?:-legacy)?: ([\d.]+)rem/g)].map((m) => Number(m[1]) * 16);
+      const rems = [...block.matchAll(/--type-(?:micro|tab): ([\d.]+)rem/g)].map((m) => Number(m[1]) * 16);
       expect(rems.length).toBe(2);
       for (const px of rems) expect(px).toBeGreaterThanOrEqual(11);
     }
+  });
+});
+
+describe("no text below 11 px (A-4)", () => {
+  it("no component uses a 9 or 10 px class", async () => {
+    const { globSync } = await import("node:fs");
+    const files = globSync("src/**/*.tsx", { cwd: path.resolve(__dirname, "../../..") });
+    const offenders = files.filter((file) =>
+      /text-\[(?:[0-9]|10)px\]/.test(readFileSync(path.resolve(__dirname, "../../..", file), "utf8")),
+    );
+    expect(offenders).toEqual([]);
   });
 });

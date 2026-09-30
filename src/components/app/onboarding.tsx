@@ -5,9 +5,16 @@ import { LockdMark } from "@/components/app/mark";
 import { useCanSignIn } from "@/lib/auth/use-current-user";
 import { useGym } from "@/lib/gym/store";
 import type { UnitSystem } from "@/domain/types";
+import { setTextSize, TEXT_SIZE_LABEL, TEXT_SIZES, useTextSize } from "@/lib/device/text-size";
 
 export function Onboarding() {
-  const completeOnboarding = useGym((s) => s.completeOnboarding);
+  const completeGym = useGym((s) => s.completeOnboarding);
+  const textSize = useTextSize();
+  // The size shown here is stored with the first choice, so a new lifter is never told "text is larger now".
+  const completeOnboarding = (options: Parameters<typeof completeGym>[0]) => {
+    setTextSize(textSize);
+    completeGym(options);
+  };
   const [units, setUnits] = useState<UnitSystem>("metric");
   const canSignIn = useCanSignIn();
   const navigate = useNavigate();
@@ -49,6 +56,24 @@ export function Onboarding() {
             >
               Pounds
             </button>
+          </div>
+        </div>
+        <div data-testid="onboarding-text-size">
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.16em] text-subtle">Text size</p>
+          <div className="grid grid-cols-3 gap-2">
+            {TEXT_SIZES.map((size) => (
+              <button
+                key={size}
+                type="button"
+                aria-pressed={textSize === size}
+                onClick={() => setTextSize(size)}
+                className={`min-h-12 rounded-xl text-sm font-medium hairline ${
+                  textSize === size ? "bg-accent text-accent-ink" : "bg-raised text-ink"
+                }`}
+              >
+                {TEXT_SIZE_LABEL[size]}
+              </button>
+            ))}
           </div>
         </div>
         <div className="space-y-2">

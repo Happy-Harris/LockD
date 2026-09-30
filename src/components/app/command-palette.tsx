@@ -5,6 +5,7 @@ import { searchSessions } from "@/lib/gym/search";
 import { useGym } from "@/lib/gym/store";
 import { weightUnitFor } from "@/domain/units";
 import { cn } from "@/lib/utils";
+import { setTextSize, TEXT_SIZE_LABEL, TEXT_SIZES } from "@/lib/device/text-size";
 
 interface CommandItem {
   id: string;
@@ -85,6 +86,16 @@ export function CommandPalette() {
         run: go("/tools/lift-math"),
       },
       { id: "settings", label: "Settings", run: go("/settings") },
+      ...TEXT_SIZES.map((size) => ({
+        id: `text-${size}`,
+        label: `Text size: ${TEXT_SIZE_LABEL[size]}`,
+        hint: "This device",
+        keywords: "font bigger smaller larger read appearance",
+        run: () => {
+          setTextSize(size);
+          setOpen(false);
+        },
+      })),
     ];
     for (const template of templates.filter((row) => !row.isArchived)) {
       list.push({

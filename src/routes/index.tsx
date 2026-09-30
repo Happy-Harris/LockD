@@ -103,7 +103,7 @@ function TodayPage() {
               {streak > 0 ? ` · ${streak}-day streak` : ""}
             </p>
           </div>
-          <p className="hidden font-mono text-micro-legacy uppercase tracking-[0.16em] text-subtle sm:block">
+          <p className="hidden font-mono text-micro uppercase tracking-[0.16em] text-subtle sm:block">
             ⌘K
           </p>
         </div>
@@ -452,7 +452,7 @@ function TodayPage() {
               <div key={row.muscle} className="rounded-2xl bg-surface p-3 hairline">
                 <p className="text-xs text-muted">{titleCase(row.muscle)}</p>
                 <p className="mt-1 text-sm font-medium text-ink">{lastTrainedLabel(row.daysAgo)}</p>
-                <p className="mt-1 text-micro-legacy text-subtle">
+                <p className="mt-1 text-micro text-subtle">
                   {row.lastDate ? formatLocalDate(row.lastDate) : "\u00a0"}
                 </p>
               </div>
@@ -481,7 +481,7 @@ function TodayPage() {
                   <p className="mt-1 font-display text-lg font-semibold tabular">
                     {formatSets(row.sets)}
                   </p>
-                  <p className="text-micro-legacy text-subtle">
+                  <p className="text-micro text-subtle">
                     {row.target
                       ? `of ${formatSets(row.target.min)}–${formatSets(row.target.max)} · `
                       : ""}

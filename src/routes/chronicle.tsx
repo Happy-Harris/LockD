@@ -41,13 +41,13 @@ function ChroniclePage() {
           <div className="mt-4 grid grid-cols-2 gap-2">
             {chronicle.strongest ? (
               <div>
-                <p className="text-micro-legacy uppercase tracking-[0.16em] text-subtle">Strongest stretch</p>
+                <p className="text-micro uppercase tracking-[0.16em] text-subtle">Strongest stretch</p>
                 <p className="mt-1 text-sm">{formatLocalDate(chronicle.strongest.startDate)}</p>
               </div>
             ) : null}
             {chronicle.biggestJump ? (
               <div>
-                <p className="text-micro-legacy uppercase tracking-[0.16em] text-subtle">Biggest jump</p>
+                <p className="text-micro uppercase tracking-[0.16em] text-subtle">Biggest jump</p>
                 <p className="mt-1 text-sm">{chronicle.biggestJump.title}</p>
                 {chronicle.biggestJump.magnitude ? (
                   <p className="text-xs text-muted">{formatWeightWithUnit(chronicle.biggestJump.magnitude, unit)}</p>

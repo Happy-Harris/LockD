@@ -308,7 +308,7 @@ export function RestTimerBar() {
                 strokeLinecap="round"
               />
             </svg>
-            <span className="absolute inset-0 grid place-items-center text-[10px] font-semibold tabular text-ink">
+            <span className="absolute inset-0 grid place-items-center text-micro font-semibold tabular text-ink">
               {formatDuration(display)}
             </span>
           </button>
