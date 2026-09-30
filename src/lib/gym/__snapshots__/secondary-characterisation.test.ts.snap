@@ -456,6 +456,7 @@ exports[`secondary engine characterisation — current outcomes, including known
   "exposuresToProgress": [],
   "fatigue": [],
   "hitRate": 0,
+  "hitRateLifts": 2,
   "hitRatePrior": 1,
   "insights": [
     "The progression engine wants an easier week. Trust the misses, not the ego.",

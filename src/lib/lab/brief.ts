@@ -1,4 +1,4 @@
-import { formatWeightWithUnit, weightUnitFor } from "@/domain/units";
+import { formatWeightWithUnit, weightUnitFor, type WeightUnit } from "@/domain/units";
 import { sliceSessions } from "@/lib/gym/analytics";
 import { autopsyBoard } from "@/lib/gym/autopsy";
 import { buildChronicle } from "@/lib/gym/chronicle";
@@ -10,15 +10,17 @@ import { milestoneQueue } from "@/lib/gym/queue";
 import { defaultSettings } from "@/lib/gym/store";
 import type { CloudGym, LabHistoryNote } from "@/lib/cloud/types";
 
-function formatSetLine(set: {
-  setType: string;
-  weightG?: number;
-  reps?: number;
-  rpe?: number;
-  isCompleted: boolean;
-}): string | null {
+export function formatSetLine(
+  set: {
+    setType: string;
+    weightG?: number;
+    reps?: number;
+    rpe?: number;
+    isCompleted: boolean;
+  },
+  unit: WeightUnit,
+): string | null {
   if (!set.isCompleted || set.setType === "warmup") return null;
-  const unit = "kg" as const;
   const load = set.weightG ? formatWeightWithUnit(set.weightG, unit) : "BW";
   const rpe = set.rpe != null ? ` @${set.rpe}` : "";
   return `${load} x ${set.reps ?? "—"}r${rpe}`;
@@ -87,7 +89,7 @@ export function buildLabBrief(
         const sets = slice.sets
           .filter((set) => set.workoutExerciseId === exercise.id)
           .sort((a, b) => a.order - b.order)
-          .map(formatSetLine)
+          .map((set) => formatSetLine(set, unit))
           .filter((line): line is string => Boolean(line));
         return sets.length ? `${exercise.exerciseNameSnapshot}: ${sets.join(", ")}` : null;
       })
@@ -105,7 +107,9 @@ export function buildLabBrief(
     `Lock’d training brief. Lens: ${settings.goalLens}. Formula: ${settings.oneRepMaxFormula}. Units: ${unit}.`,
     `Sessions on file: ${slices.length}. Current era: ${chronicle.current?.name ?? "none"} (${chronicle.current?.startDate ?? "—"}).`,
     `Eras: ${chronicle.eras.map((era) => `${era.name} ${era.startDate}–${era.endDate} n=${era.sessions}`).join(" · ")}`,
-    `Progression hit-rate: ${Math.round(intelligence.hitRate * 100)}% (prior ${Math.round(intelligence.hitRatePrior * 100)}%).`,
+    intelligence.hitRateLifts
+      ? `Progression hit-rate: ${Math.round(intelligence.hitRate * 100)}% across ${intelligence.hitRateLifts} tracked lifts (prior ${Math.round(intelligence.hitRatePrior * 100)}%).`
+      : "Progression hit-rate: not known, no tracked lift has sessions on file.",
     easier.needed ? `Easier week call: ${easier.why}` : "No easier-week call.",
     "DNA: " + dna.map((row) => `${row.name} personality=${row.personality} range=${row.strongestRange ?? "n/a"} rest=${row.learnedRestSeconds ?? "n/a"}s`).join(" | "),
     "Autopsy: " +

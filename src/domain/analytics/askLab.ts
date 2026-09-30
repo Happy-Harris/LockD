@@ -248,7 +248,7 @@ function answerCatalog(query: string, normalized: string): AskLabAnswer | null {
   if (matches.length === 0) return null;
   return {
     query,
-    tier: "computed",
+    tier: "catalog",
     intent: null,
     call: matches[0]!.claim.statement,
     matches,

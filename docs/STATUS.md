@@ -132,6 +132,14 @@ are the ones the Step 4 to 8 work has been building underneath.
 | 10 | Health context: bodyweight, sleep, HRV overlays in Chronicle, no readiness score | design doc only | Phase 4 |
 | 11 | Program from text: paste a program or spreadsheet, get a routine with progression | not started | |
 
+Phase 3 items that are not an Opp (`PLAN-ADDENDUM.md` § 6):
+
+| Item | What | State | Done by / next |
+|---|---|---|---|
+| Lab, cited (item 10) | Audit that every Ask the Lab answer cites the log | **done** | `Lab, cited`: strength, training-volume and muscle answers link the sessions behind them; verdict and flag answers use the lifter's lens as the cards do; catalog answers are labelled as from the catalog; the model's note is labelled as not computed; the brief writes loads in the lifter's unit; the hit rate shows "—" when no tracked lift has sessions |
+| Text size, steps A and B (items 1, 9) | A text size setting; the 9 and 10 px elements raised to 11 px | not started | Needs Appendix A of the owner's *Where It Can Win* (not in this repo); asked 2026-09-30 |
+| Lift Math, steps A and B (items 2, 8) | A calculator on the shared e1RM core (`e1rmExact`) | not started | Same: needs Appendix A |
+
 The owner's document sets the order: stabilise first (Steps 1 to 13), then Opp 1's Chronicle,
 Opp 2, 8, 9, 3, then the native items. It says: finish the stabilise-and-QA work before adding any
 item except 5 and the import work.

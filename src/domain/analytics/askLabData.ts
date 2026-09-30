@@ -216,6 +216,7 @@ export function answerVerdictWhy(query: string, context: AskLabContext): AskLabA
     context.weekStart,
     reference,
     context.goalLiftIds,
+    context.goalLens,
   );
   const copy = weeklyVerdictCopy(verdict, context.weightUnit ?? "kg");
   const matches = claimLinks("weekly-verdict-deload-shape");
@@ -303,6 +304,8 @@ export function answerGettingStronger(query: string, context: AskLabContext): As
       lastE1rmG: last.value,
       changePercent: first.value > 0 ? ((last.value - first.value) / first.value) * 100 : null,
       lastBestWeightG: lastBest?.value ?? null,
+      first: first.source,
+      last: last.source,
     });
   }
 
@@ -326,8 +329,9 @@ export function answerGettingStronger(query: string, context: AskLabContext): As
     };
   }
 
-  const rising = trends.filter((row) => (row.changePercent ?? 0) > 0).length;
-  const flatOrDown = trends.length - rising;
+  const rising = trends.filter((row) => row.changePercent != null && row.changePercent > 0).length;
+  const unknown = trends.filter((row) => row.changePercent == null).length;
+  const flatOrDown = trends.length - rising - unknown;
   return {
     query,
     tier: "computed",
@@ -336,7 +340,7 @@ export function answerGettingStronger(query: string, context: AskLabContext): As
       trends.length === 1 ? "" : "s"
     } show a higher latest e1RM vs first sample${
       flatOrDown > 0 ? `; ${flatOrDown} flat or down` : ""
-    }. Sets above ${MAX_E1RM_REPS} reps stay out of e1RM.`,
+    }${unknown > 0 ? `; ${unknown} with no change that can be worked out` : ""}. Sets above ${MAX_E1RM_REPS} reps stay out of e1RM.`,
     matches,
     payload: {
       kind: "getting_stronger",
@@ -357,6 +361,7 @@ export function answerChangeFlags(query: string, context: AskLabContext): AskLab
     context.weekStart,
     reference,
     context.goalLiftIds,
+    context.goalLens,
   );
   const activeLabels = flags.active.map((flag) => flag.label);
   const receipts = flags.active.map((flag) => flag.receipt);

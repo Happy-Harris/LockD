@@ -67,7 +67,10 @@ function LabPage() {
 
       <div className="mt-6 grid grid-cols-3 gap-2">
         <Card className="p-3">
-          <Stat label="Hit rate" value={`${Math.round(intelligence.hitRate * 100)}%`} />
+          <Stat
+            label="Hit rate"
+            value={intelligence.hitRateLifts ? `${Math.round(intelligence.hitRate * 100)}%` : "—"}
+          />
         </Card>
         <Card className="p-3">
           <Stat label="Easier week" value={easier.needed ? "Yes" : "No"} />
@@ -259,6 +262,10 @@ function LabPage() {
             Note from {new Date(labLast.askedAt).toLocaleString()}
           </p>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink">{labLast.text}</p>
+          <p className="mt-3 text-xs text-subtle" data-testid="lab-note-label">
+            Written by a language model from a summary of your log. Not computed: check any number against your
+            sessions in History.
+          </p>
         </Card>
       ) : (
         <p className="mt-6 text-sm text-muted">The read above is worked out on this device. Signed in, you can ask for a second opinion.</p>
@@ -266,6 +273,7 @@ function LabPage() {
       {history.length > 1 ? (
         <section className="mt-8">
           <h2 className="font-display text-2xl font-semibold tracking-tight">Filed notes</h2>
+          <p className="mt-1 text-xs text-subtle">Written by a language model, not computed.</p>
           <div className="mt-3 space-y-2">
             {history.slice(1).map((note) => (
               <Card key={note.id}>
