@@ -9,6 +9,13 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Fix: "Notify when rest ends" on the native app
+
+- **Shipped:** the Settings toggle asked for permission through the browser `Notification` API, which the iOS web view does not have, so it could
+  not be switched on in the native app (and the native end alert is gated on it). On native it now asks through the local-notifications plugin;
+  the web path is unchanged.
+- **Not verified:** a real permission prompt on a device.
+
 ### 2026-09-30 — Opp 7: watch companion (TypeScript side)
 
 - **Plan:** `PLAN-ADDENDUM.md` § 4 row 7; the design and the owner's seven answers are in `docs/design/watch-companion.md`.
