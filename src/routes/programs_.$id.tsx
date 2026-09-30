@@ -59,7 +59,7 @@ function ProgramDetailPage() {
 
   return (
     <Page>
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">{program.lens}</p>
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">{program.lens}</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">{program.name}</h1>
       <p className="mt-2 text-sm text-muted">{program.notes}</p>
       <p className="mt-2 text-sm text-muted">

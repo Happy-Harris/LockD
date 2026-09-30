@@ -24,7 +24,7 @@ function ChroniclePage() {
 
   return (
     <Page>
-      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-subtle">Training chronicle</p>
+      <p className="text-micro font-medium uppercase tracking-[0.18em] text-subtle">Training chronicle</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">The lifting life.</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         Eras, layoffs, comebacks, PR runs. Named automatically. Rename anything that deserves a better title.
@@ -32,7 +32,7 @@ function ChroniclePage() {
 
       {chronicle.current ? (
         <Card className="mt-6">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Current era</p>
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Current era</p>
           <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">{chronicle.current.name}</h2>
           <p className="mt-1 text-sm text-muted">
             {formatLocalDate(chronicle.current.startDate)} – {formatLocalDate(chronicle.current.endDate)} ·{" "}
@@ -41,13 +41,13 @@ function ChroniclePage() {
           <div className="mt-4 grid grid-cols-2 gap-2">
             {chronicle.strongest ? (
               <div>
-                <p className="text-[10px] uppercase tracking-[0.16em] text-subtle">Strongest stretch</p>
+                <p className="text-micro-legacy uppercase tracking-[0.16em] text-subtle">Strongest stretch</p>
                 <p className="mt-1 text-sm">{formatLocalDate(chronicle.strongest.startDate)}</p>
               </div>
             ) : null}
             {chronicle.biggestJump ? (
               <div>
-                <p className="text-[10px] uppercase tracking-[0.16em] text-subtle">Biggest jump</p>
+                <p className="text-micro-legacy uppercase tracking-[0.16em] text-subtle">Biggest jump</p>
                 <p className="mt-1 text-sm">{chronicle.biggestJump.title}</p>
                 {chronicle.biggestJump.magnitude ? (
                   <p className="text-xs text-muted">{formatWeightWithUnit(chronicle.biggestJump.magnitude, unit)}</p>
@@ -120,7 +120,7 @@ function ChroniclePage() {
                       </p>
                     </>
                   )}
-                  <p className="mt-2 text-[11px] text-subtle">Tap to rename · auto: {era.autoName}</p>
+                  <p className="mt-2 text-micro text-subtle">Tap to rename · auto: {era.autoName}</p>
                 </button>
               )}
             </Card>
@@ -144,7 +144,7 @@ function ChroniclePage() {
                   {event.kind.replace("_", " ")}
                 </Badge>
               </div>
-              <p className="mt-2 text-[11px] text-subtle">{formatLocalDate(event.startDate)}</p>
+              <p className="mt-2 text-micro text-subtle">{formatLocalDate(event.startDate)}</p>
             </Card>
           ))}
       </div>

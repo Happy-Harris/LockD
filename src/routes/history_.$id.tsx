@@ -44,7 +44,7 @@ function HistoryDetailPage() {
 
   return (
     <Page>
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
         {formatLocalDate(slice.workout.localDate)}
       </p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">{slice.workout.name}</h1>
@@ -93,7 +93,7 @@ function HistoryDetailPage() {
 
       {diff.lines.length > 0 ? (
         <Card className="mt-5">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Diff vs last comparable</p>
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Diff vs last comparable</p>
           <p className="mt-2 font-display text-xl font-semibold tracking-tight">{diff.headline}</p>
           <ul className="mt-3 space-y-2">
             {diff.lines.map((line) => (

@@ -137,8 +137,8 @@ Phase 3 items that are not an Opp (`PLAN-ADDENDUM.md` § 6):
 | Item | What | State | Done by / next |
 |---|---|---|---|
 | Lab, cited (item 10) | Audit that every Ask the Lab answer cites the log | **done** | `Lab, cited`: strength, training-volume and muscle answers link the sessions behind them; verdict and flag answers use the lifter's lens as the cards do; catalog answers are labelled as from the catalog; the model's note is labelled as not computed; the brief writes loads in the lifter's unit; the hit rate shows "—" when no tracked lift has sessions |
-| Text size, steps A and B (items 1, 9) | A text size setting; the 9 and 10 px elements raised to 11 px | not started | Needs Appendix A of the owner's *Where It Can Win* (not in this repo); asked 2026-09-30 |
-| Lift Math, steps A and B (items 2, 8) | A calculator on the shared e1RM core (`e1rmExact`) | not started | Same: needs Appendix A |
+| Text size, steps A and B (items 1, 9) | A text size setting; the 9 and 10 px elements raised to 11 px | **step A done**; step B not started | Spec: the owner's *Text Size & Lift Math, Spec v2* (Appendix A, received 2026-09-30; held by the owner, not in this repo). `Text size, step A`: role tokens (body, caption, micro, legacy micro, tab label), a pre-paint script, a device-only setting in Settings → Appearance, Standard as default and unchanged. Step B: flip to Comfortable, the one-time notice, the onboarding control (A-3) and palette entry, the 9 and 10 px elements to 11 px (A-4), contrast |
+| Lift Math, steps A and B (items 2, 8) | A calculator on the shared e1RM core (`e1rmExact`) | not started | Next. Spec as above |
 
 The owner's document sets the order: stabilise first (Steps 1 to 13), then Opp 1's Chronicle,
 Opp 2, 8, 9, 3, then the native items. It says: finish the stabilise-and-QA work before adding any

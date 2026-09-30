@@ -53,7 +53,7 @@ export function SafetyBackups() {
 
   return (
     <div className="mt-4" data-testid="safety-backups">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
         Safety copies
       </p>
       {rows === null ? null : rows.length === 0 ? (
@@ -69,7 +69,7 @@ export function SafetyBackups() {
             >
               <div className="min-w-0">
                 <p className="text-sm">{REASON_LABEL[row.reason]}</p>
-                <p className="font-mono text-[11px] text-subtle">
+                <p className="font-mono text-micro text-subtle">
                   {new Date(row.createdAt).toLocaleString()} · {row.sessions} session
                   {row.sessions === 1 ? "" : "s"}
                 </p>

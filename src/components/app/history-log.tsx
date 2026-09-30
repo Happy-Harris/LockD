@@ -14,7 +14,7 @@ export function HistorySessionCard({ session, unit }: { session: HistorySession;
     <Card data-testid="history-session">
       <div className="flex items-baseline justify-between gap-3">
         <p className="font-medium">{session.name}</p>
-        <p className="font-mono text-[11px] text-subtle">
+        <p className="font-mono text-micro text-subtle">
           {formatLocalDate(session.date, { day: "numeric", month: "short", year: "numeric" })}
         </p>
       </div>

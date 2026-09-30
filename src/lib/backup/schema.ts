@@ -10,6 +10,7 @@ import {
   type SetType,
   type TrackingType,
 } from "@/domain/types";
+import { TEXT_SIZES } from "@/lib/device/text-size";
 
 /**
  * Validation for `lockd-backup` files (plan PR 7). A backup is untrusted input, so it is checked
@@ -396,6 +397,7 @@ export const backupSchema = z.object({
   lessons: optionalRows(lesson),
   namedPrs: optionalRows(namedPr),
   clips: optionalRows(clip),
+  device: z.object({ textSize: z.enum(TEXT_SIZES).optional() }).optional(),
 });
 
 export type BackupSummary = {

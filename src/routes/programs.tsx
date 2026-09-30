@@ -39,7 +39,7 @@ function ProgramsPage() {
 
       {activeProgram?.completedAt ? (
         <Card className="mt-6" data-testid="program-complete">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Active block</p>
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Active block</p>
           <h2 className="mt-2 font-display text-2xl font-semibold">{activeProgram.name}</h2>
           <p className="mt-1 text-sm text-muted">
             Program complete · all {activeProgram.weekCount} weeks finished on {activeProgram.completedAt.slice(0, 10)}.
@@ -52,7 +52,7 @@ function ProgramsPage() {
         </Card>
       ) : activeProgram && nextProgram ? (
         <Card className="mt-6">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Active block</p>
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Active block</p>
           <h2 className="mt-2 font-display text-2xl font-semibold">{activeProgram.name}</h2>
           <p className="mt-1 text-sm text-muted">
             Week {activeProgram.currentWeek} of {activeProgram.weekCount}

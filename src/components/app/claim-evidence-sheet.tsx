@@ -34,7 +34,7 @@ export function ClaimEvidenceSheet({
         <Card className="p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-subtle">Claim</p>
           <p className="mt-1 font-medium text-ink">{claim.statement}</p>
-          <p className="mt-2 inline-flex rounded-full bg-raised px-2 py-0.5 text-[11px] font-semibold text-muted">
+          <p className="mt-2 inline-flex rounded-full bg-raised px-2 py-0.5 text-micro font-semibold text-muted">
             {KIND_LABEL[claim.kind]}
           </p>
         </Card>
@@ -69,7 +69,7 @@ export function ClaimEvidenceSheet({
                   <p className="mt-0.5 text-muted">{source.title}</p>
                   <p className="mt-0.5 text-subtle">{source.venue}</p>
                   {source.doi ? (
-                    <p className="mt-1 font-mono text-[11px] text-accent">
+                    <p className="mt-1 font-mono text-micro text-accent">
                       {source.url ? (
                         <a href={source.url} target="_blank" rel="noreferrer">
                           doi:{source.doi}
@@ -83,7 +83,7 @@ export function ClaimEvidenceSheet({
               ))}
             </ul>
           )}
-          <p className="mt-2 text-[11px] text-subtle">Last reviewed {claim.lastReviewed}</p>
+          <p className="mt-2 text-micro text-subtle">Last reviewed {claim.lastReviewed}</p>
         </section>
       </div>
     </Sheet>

@@ -108,7 +108,7 @@ function ExerciseDetailPage() {
 
   return (
     <Page>
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
         {titleCase(exercise.primaryMuscleGroup)} · {titleCase(exercise.equipment)}
       </p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">{exercise.name}</h1>
@@ -136,7 +136,7 @@ function ExerciseDetailPage() {
         </button>
       </Card>
       <Card className="mt-3">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+        <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
           Progression
         </p>
         <p className="mt-1 font-display text-2xl font-semibold">{actionLabel(call.action)}</p>
@@ -151,7 +151,7 @@ function ExerciseDetailPage() {
       </Card>
 
       <Card className="mt-3">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Lift DNA</p>
+        <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Lift DNA</p>
         <p className="mt-1 font-display text-2xl font-semibold tracking-tight">
           {dna.personality === "reps"
             ? "Reps first"
@@ -183,7 +183,7 @@ function ExerciseDetailPage() {
 
       {autopsy.stalled || autopsy.findings.length > 0 ? (
         <Card className="mt-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-warning">
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-warning">
             Plateau autopsy
           </p>
           <p className="mt-2 font-display text-2xl font-semibold tracking-tight">
@@ -194,7 +194,7 @@ function ExerciseDetailPage() {
               <div key={finding.code}>
                 <p className="text-sm font-medium">{finding.title}</p>
                 <p className="mt-1 text-sm text-muted">{finding.detail}</p>
-                <p className="mt-1 font-mono text-[11px] text-subtle">{finding.evidence}</p>
+                <p className="mt-1 font-mono text-micro text-subtle">{finding.evidence}</p>
               </div>
             ))}
           </div>
@@ -229,7 +229,7 @@ function ExerciseDetailPage() {
       </div>
       {latest?.best ? (
         <Card className="mt-3" data-testid="relative-strength">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
             Est. 1RM ÷ body weight
           </p>
           {relative ? (
@@ -259,13 +259,13 @@ function ExerciseDetailPage() {
 
       {table.length > 0 ? (
         <Card className="mt-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
             Rep maxes
           </p>
           <div className="mt-3 grid grid-cols-4 gap-2">
             {table.map((mark) => (
               <div key={mark.reps}>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-subtle">{mark.reps}RM</p>
+                <p className="text-micro-legacy uppercase tracking-[0.14em] text-subtle">{mark.reps}RM</p>
                 <p className="font-mono text-sm tabular">{formatWeight(mark.weightG, unit)}</p>
               </div>
             ))}
@@ -290,7 +290,7 @@ function ExerciseDetailPage() {
       ) : null}
 
       <Card className="mt-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+        <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
           Machine memory
         </p>
         <p className="mt-1 text-sm text-muted">
@@ -344,7 +344,7 @@ function ExerciseDetailPage() {
       </Card>
 
       <Card className="mt-3">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Lessons</p>
+        <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Lessons</p>
         <div className="mt-3 flex gap-2">
           <Input
             value={note}

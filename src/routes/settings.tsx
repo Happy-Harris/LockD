@@ -33,6 +33,7 @@ import { describeImport } from "@/lib/import/summary";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
 import { SafetyBackups } from "@/components/app/safety-backups";
 import { eraseAllOnDevice } from "@/lib/storage/boot";
+import { isTextSize, setTextSize, TEXT_SIZE_LABEL, TEXT_SIZES, useTextSize } from "@/lib/device/text-size";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
@@ -294,6 +295,7 @@ function SettingsPage() {
             updateSettings({ presentationMode: presentationMode as "loud" | "calm" })
           }
         />
+        <TextSizeControl />
       </Section>
 
       <Section title="Goal lens">
@@ -347,7 +349,7 @@ function SettingsPage() {
 
       <Section title="Data">
         <div className="mb-3 rounded-xl bg-raised px-3 py-3" data-testid="history-promise">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
             {HISTORY_PROMISE_TITLE}
           </p>
           <p className="mt-1 text-sm leading-relaxed text-ink">{HISTORY_PROMISE}</p>
@@ -557,6 +559,23 @@ function ComebackSection() {
   );
 }
 
+function TextSizeControl() {
+  const size = useTextSize();
+  return (
+    <div data-testid="text-size-control">
+      <p className="mb-2 mt-4 text-xs text-subtle">Text size</p>
+      <Segment
+        value={size}
+        options={TEXT_SIZES.map((option) => [option, TEXT_SIZE_LABEL[option]])}
+        onChange={(value) => {
+          if (isTextSize(value)) setTextSize(value);
+        }}
+      />
+      <p className="mt-2 text-xs text-subtle">For this device only. Headings and big numbers keep their size.</p>
+    </div>
+  );
+}
+
 function Section({
   title,
   id,
@@ -594,8 +613,8 @@ function Segment({
           onClick={() => onChange(id)}
           className={
             value === id
-              ? "h-11 rounded-xl bg-accent text-sm text-accent-ink"
-              : "h-11 rounded-xl bg-raised text-sm"
+              ? "min-h-11 rounded-xl bg-accent text-sm text-accent-ink"
+              : "min-h-11 rounded-xl bg-raised text-sm"
           }
         >
           {label}

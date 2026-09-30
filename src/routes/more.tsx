@@ -64,7 +64,7 @@ function MorePage() {
       {!isPending && !user && !canSignIn ? null : !isPending ? (
         <Link to={user ? "/locker" : "/login"} className="mt-4 block">
           <Card>
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+            <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
               {user ? (status === "synced" ? "On the locker" : status) : "Guest"}
             </p>
             <p className="mt-1 font-medium">

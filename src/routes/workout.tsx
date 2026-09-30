@@ -327,7 +327,7 @@ function ActiveWorkoutPage() {
                 </div>
               </div>
               {block.setup ? (
-                <p className="mb-2 font-mono text-[11px] text-subtle">
+                <p className="mb-2 font-mono text-micro text-subtle">
                   Setup {block.setup.gymName ? `· ${block.setup.gymName}` : ""}
                   {block.setup.seat ? ` · seat ${block.setup.seat}` : ""}
                   {block.setup.handle ? ` · ${block.setup.handle}` : ""}
@@ -687,7 +687,7 @@ function SetRow({
             event.target.value = "";
           }}
         />
-        <p className="min-w-0 flex-1 text-[11px] text-subtle">
+        <p className="min-w-0 flex-1 text-micro text-subtle">
           {cmp
             ? cmp.verdict === "beat"
               ? `Beat ghost · ${cmp.label}`
@@ -737,7 +737,7 @@ function SetRow({
             >
               {choice}
               {effortTarget === choice ? (
-                <span className="block text-[10px] font-normal">target</span>
+                <span className="block text-micro-legacy font-normal">target</span>
               ) : null}
             </button>
           ))}

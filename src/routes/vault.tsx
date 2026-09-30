@@ -49,7 +49,7 @@ function VaultPage() {
 
   return (
     <Page>
-      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-subtle">Set vault</p>
+      <p className="text-micro font-medium uppercase tracking-[0.18em] text-subtle">Set vault</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">Local tape.</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         Clips live in this browser, not a server. Pick two of the same lift for a side-by-side.

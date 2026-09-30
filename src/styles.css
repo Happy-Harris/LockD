@@ -84,6 +84,63 @@
   color-scheme: light;
 }
 
+/*
+ * Text size (owner's spec, Appendix A; plan addendum A-4). A preset changes type roles, never the root,
+ * so display type (text-lg and up, the wordmark, big results) stays put. Tokens are rem, so the browser's
+ * own default font size still counts. Roles:
+ *   Body and secondary  text-sm            14 / 16 / 18 px
+ *   Caption             text-xs            12 / 14 / 16 px
+ *   Micro               text-micro         11 / 13 / 15 px
+ *   Micro, legacy       text-micro-legacy  today's 10 px at Standard, Micro above it (step B removes it)
+ *   Tab bar label       text-tab           today's 10 px, +1 px at Comfortable and Large; never wraps
+ * Line heights stay unitless, so they scale with the preset. Receipts and posters are drawn artefacts
+ * and keep Standard at every preset (`.type-fixed`).
+ */
+:root {
+  --type-micro: 0.6875rem;
+  --type-micro-legacy: 0.625rem;
+  --type-tab: 0.625rem;
+}
+
+:root[data-text-size="comfortable"] {
+  --text-sm: 1rem;
+  --text-xs: 0.875rem;
+  --type-micro: 0.8125rem;
+  --type-micro-legacy: 0.8125rem;
+  --type-tab: 0.6875rem;
+}
+
+:root[data-text-size="large"] {
+  --text-sm: 1.125rem;
+  --text-xs: 1rem;
+  --type-micro: 0.9375rem;
+  --type-micro-legacy: 0.9375rem;
+  --type-tab: 0.6875rem;
+}
+
+:root .type-fixed,
+:root .receipt,
+:root .moment-poster {
+  --text-sm: 0.875rem;
+  --text-xs: 0.75rem;
+  --type-micro: 0.6875rem;
+  --type-micro-legacy: 0.625rem;
+  --type-tab: 0.625rem;
+}
+
+@utility text-micro {
+  font-size: var(--type-micro);
+}
+
+@utility text-micro-legacy {
+  font-size: var(--type-micro-legacy);
+}
+
+@utility text-tab {
+  font-size: var(--type-tab);
+  white-space: nowrap;
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;

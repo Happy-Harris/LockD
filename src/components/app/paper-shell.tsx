@@ -9,7 +9,7 @@ export function PaperShell({ children, kicker }: { children: React.ReactNode; ki
           <LockdMark className="size-8" />
           <span>
             <span className="stamp block text-xl leading-none">LOCKD</span>
-            <span className="mt-1 block text-[10px] font-medium uppercase tracking-[0.18em] text-subtle">
+            <span className="mt-1 block text-micro-legacy font-medium uppercase tracking-[0.18em] text-subtle">
               {kicker ?? "Keep the receipt."}
             </span>
           </span>

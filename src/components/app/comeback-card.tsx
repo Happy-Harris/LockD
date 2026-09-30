@@ -26,7 +26,7 @@ export function ComebackCard({
   const restarts = calls.filter((call) => call.action === "re_entry").slice(0, 4);
   return (
     <Card className="mb-5" data-testid="comeback-card">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Comeback</p>
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Comeback</p>
       {comeback.phase === "away" ? (
         <p className="mt-2 font-display text-2xl font-semibold tracking-tight">
           {comeback.daysAway} days since your last session, on {day(comeback.lastDate)}.

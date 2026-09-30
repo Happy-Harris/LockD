@@ -135,7 +135,7 @@ export function AskLab() {
               {TIER_BADGE[answer.tier]}
             </Badge>
             {answer.intent ? (
-              <span className="text-[11px] font-medium uppercase tracking-wide text-subtle">
+              <span className="text-micro font-medium uppercase tracking-wide text-subtle">
                 {answer.intent.replaceAll("_", " ")}
               </span>
             ) : null}
@@ -226,10 +226,10 @@ export function AskLab() {
                     onClick={() => setClaim(getClaim(cited.id) ?? cited)}
                   >
                     <span className="block text-sm font-medium">{cited.statement}</span>
-                    <span className="mt-1 inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold text-muted hairline">
+                    <span className="mt-1 inline-flex rounded-full px-2 py-0.5 text-micro font-semibold text-muted hairline">
                       {KIND_LABEL[cited.kind]}
                     </span>
-                    <span className="mt-1 block text-[11px] text-accent">Open receipt</span>
+                    <span className="mt-1 block text-micro text-accent">Open receipt</span>
                   </button>
                 </li>
               ))}

@@ -62,7 +62,7 @@ export function PublishButton({
       </Button>
       {note && !url ? <p className="text-center text-xs leading-relaxed text-subtle">{note}</p> : null}
       {url ? (
-        <p className="break-all font-mono text-[11px] text-subtle">
+        <p className="break-all font-mono text-micro text-subtle">
           <Link to="/s/$id" params={{ id: url.split("/").pop() ?? "" }} className="underline-offset-2 hover:underline">
             {url}
           </Link>

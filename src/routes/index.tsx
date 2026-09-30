@@ -93,7 +93,7 @@ function TodayPage() {
   return (
     <Page>
       <header className="mb-5">
-        <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-subtle">{today}</p>
+        <p className="text-micro font-medium uppercase tracking-[0.18em] text-subtle">{today}</p>
         <div className="mt-1 flex items-end justify-between gap-3">
           <div>
             <h1 className="font-display text-5xl font-semibold tracking-tight text-ink">Today</h1>
@@ -103,7 +103,7 @@ function TodayPage() {
               {streak > 0 ? ` · ${streak}-day streak` : ""}
             </p>
           </div>
-          <p className="hidden font-mono text-[10px] uppercase tracking-[0.16em] text-subtle sm:block">
+          <p className="hidden font-mono text-micro-legacy uppercase tracking-[0.16em] text-subtle sm:block">
             ⌘K
           </p>
         </div>
@@ -133,7 +133,7 @@ function TodayPage() {
           className="mb-5 flex items-center justify-between rounded-2xl bg-accent px-4 py-4 text-accent-ink"
         >
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] opacity-80">
+            <p className="text-micro font-medium uppercase tracking-[0.16em] opacity-80">
               In progress
             </p>
             <p className="font-display text-2xl font-semibold tracking-tight">Resume session</p>
@@ -144,7 +144,7 @@ function TodayPage() {
 
       {easier.needed ? (
         <Card className="mb-5">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-warning">
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-warning">
             Easier week
           </p>
           <p className="mt-2 font-display text-2xl font-semibold tracking-tight">
@@ -161,7 +161,7 @@ function TodayPage() {
       {autopsies.some((row) => row.stalled) ? (
         <Link to="/lab" className="mb-5 block">
           <Card>
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-warning">
+            <p className="text-micro font-medium uppercase tracking-[0.16em] text-warning">
               Plateau autopsy
             </p>
             <p className="mt-2 font-display text-2xl font-semibold tracking-tight">
@@ -225,7 +225,7 @@ function TodayPage() {
                 <Card className="flex items-end justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium">{card.name}</p>
-                    <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-subtle">
+                    <p className="mt-1 text-micro uppercase tracking-[0.14em] text-subtle">
                       Est. 1RM
                     </p>
                     <p className="font-display text-3xl font-semibold tabular">
@@ -234,14 +234,14 @@ function TodayPage() {
                         : "—"}
                     </p>
                     {card.latest ? (
-                      <p className="text-[11px] text-subtle">
+                      <p className="text-micro text-subtle">
                         from {formatWeight(card.latest.source.weightG, unit)} {unit} ×{" "}
                         {card.latest.source.reps}, {formatLocalDate(card.latest.date)}
                       </p>
                     ) : null}
                     {card.call ? <p className="mt-1 text-xs text-muted">{card.call.why}</p> : null}
                     {dna.find((row) => row.exerciseId === card.id)?.personality ? (
-                      <p className="mt-1 text-[11px] uppercase tracking-[0.14em] text-subtle">
+                      <p className="mt-1 text-micro uppercase tracking-[0.14em] text-subtle">
                         {dna.find((row) => row.exerciseId === card.id)?.personality}
                       </p>
                     ) : null}
@@ -265,7 +265,7 @@ function TodayPage() {
                   <p className="mt-1 font-display text-xl font-semibold">
                     {card.call ? actionLabel(card.call.action) : "—"}
                   </p>
-                  <p className="mt-1 text-[11px] text-subtle">
+                  <p className="mt-1 text-micro text-subtle">
                     {card.call?.why ?? "No history yet."}
                   </p>
                 </Card>
@@ -345,7 +345,7 @@ function TodayPage() {
             params={{ id: activeProgram.id }}
             className="mb-3 block rounded-[28px] bg-raised px-4 py-5 hairline"
           >
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+            <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
               {activeProgram.name}
             </p>
             <p className="mt-1 font-display text-3xl font-semibold tracking-tight">Program complete</p>
@@ -361,7 +361,7 @@ function TodayPage() {
             className="mb-3 flex w-full items-center justify-between rounded-[28px] bg-raised px-4 py-5 text-left hairline"
           >
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+              <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
                 {activeProgram.name} · week {activeProgram.currentWeek}
                 {activeWeek?.isDeload ? " · deload" : ""}
               </p>
@@ -381,7 +381,7 @@ function TodayPage() {
             className="mb-3 flex w-full items-center justify-between rounded-[28px] bg-raised px-4 py-5 text-left hairline"
           >
             <div>
-              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+              <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
                 Suggested next
               </p>
               <p className="mt-1 font-display text-3xl font-semibold tracking-tight">
@@ -452,7 +452,7 @@ function TodayPage() {
               <div key={row.muscle} className="rounded-2xl bg-surface p-3 hairline">
                 <p className="text-xs text-muted">{titleCase(row.muscle)}</p>
                 <p className="mt-1 text-sm font-medium text-ink">{lastTrainedLabel(row.daysAgo)}</p>
-                <p className="mt-1 text-[10px] text-subtle">
+                <p className="mt-1 text-micro-legacy text-subtle">
                   {row.lastDate ? formatLocalDate(row.lastDate) : "\u00a0"}
                 </p>
               </div>
@@ -481,7 +481,7 @@ function TodayPage() {
                   <p className="mt-1 font-display text-lg font-semibold tabular">
                     {formatSets(row.sets)}
                   </p>
-                  <p className="text-[10px] text-subtle">
+                  <p className="text-micro-legacy text-subtle">
                     {row.target
                       ? `of ${formatSets(row.target.min)}–${formatSets(row.target.max)} · `
                       : ""}
@@ -523,7 +523,7 @@ function TodayPage() {
       ) : null}
 
       <Card className="mb-6">
-        <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+        <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
           Last 12 weeks
         </p>
         <div className="mt-3 grid grid-flow-col grid-rows-7 gap-1">

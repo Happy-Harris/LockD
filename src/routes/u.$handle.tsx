@@ -48,7 +48,7 @@ function LockerPublicPage() {
 
   return (
     <PaperShell kicker="Public locker">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">@{card.handle}</p>
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">@{card.handle}</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">{card.displayName}</h1>
       {card.bio ? <p className="mt-3 text-sm leading-relaxed text-muted">{card.bio}</p> : null}
       <p className="mt-2 text-sm text-muted">
@@ -85,10 +85,10 @@ function LockerPublicPage() {
           <div className="mt-3 space-y-2">
             {card.moments.map((moment) => (
               <Card key={moment.id}>
-                <p className="text-[10px] uppercase tracking-[0.16em] text-subtle">{moment.kicker}</p>
+                <p className="text-micro-legacy uppercase tracking-[0.16em] text-subtle">{moment.kicker}</p>
                 <p className="mt-1 font-medium">{moment.title}</p>
                 <p className="mt-1 text-sm text-muted">{moment.detail}</p>
-                <p className="mt-2 font-mono text-[11px] text-subtle">{moment.date}</p>
+                <p className="mt-2 font-mono text-micro text-subtle">{moment.date}</p>
               </Card>
             ))}
           </div>

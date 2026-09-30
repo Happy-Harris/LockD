@@ -14,11 +14,13 @@ import { latestE1rmReceipt } from "@/lib/gym/number-receipts";
 import { useGymDerived, useSlices } from "@/lib/gym/hooks";
 import { lensDef } from "@/lib/gym/lenses";
 import { useGym } from "@/lib/gym/store";
+import { CHART_TICK_PX, useTextSize } from "@/lib/device/text-size";
 
 export const Route = createFileRoute("/analytics")({ component: AnalyticsPage });
 
 function AnalyticsPage() {
   const { verdict, verdictLens, flags, muscleInsights, subjectBalance, weeks, muscles, records, settings, heat, exercises, intelligence } = useGymDerived();
+  const tickPx = CHART_TICK_PX[useTextSize()];
   const updateSettings = useGym((s) => s.updateSettings);
   const unit = weightUnitFor(settings.unitSystem);
   const maxMuscle = Math.max(1, ...Object.values(muscles));
@@ -62,12 +64,12 @@ function AnalyticsPage() {
       </div>
 
       <Card className="mt-4 h-64 p-3">
-        <p className="mb-2 px-1 text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Weekly hard sets</p>
+        <p className="mb-2 px-1 text-micro font-medium uppercase tracking-[0.16em] text-subtle">Weekly hard sets</p>
         <ResponsiveContainer width="100%" height="90%">
           <AreaChart data={chartData}>
             <CartesianGrid stroke="currentColor" strokeOpacity={0.08} vertical={false} />
-            <XAxis dataKey="name" tick={{ fill: "currentColor", fontSize: 11 }} stroke="transparent" />
-            <YAxis tick={{ fill: "currentColor", fontSize: 11 }} stroke="transparent" width={28} />
+            <XAxis dataKey="name" tick={{ fill: "currentColor", fontSize: tickPx }} stroke="transparent" />
+            <YAxis tick={{ fill: "currentColor", fontSize: tickPx }} stroke="transparent" width={tickPx > 11 ? 36 : 28} />
             <Tooltip
               contentStyle={{
                 background: "var(--rf-raised)",

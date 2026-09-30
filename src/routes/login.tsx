@@ -22,7 +22,7 @@ function Login() {
       <div>
         <LockdMark className="size-14" />
         <p className="mt-10 stamp text-7xl leading-[0.85] tracking-tight">LOCKD</p>
-        <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.28em] text-subtle">
+        <p className="mt-3 text-micro font-medium uppercase tracking-[0.28em] text-subtle">
           The log lives with you.
         </p>
         <p className="mt-6 max-w-sm text-base leading-relaxed text-muted">

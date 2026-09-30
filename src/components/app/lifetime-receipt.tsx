@@ -30,7 +30,7 @@ export function LifetimeReceiptView({
       <header className="flex items-start justify-between border-b border-dashed border-current/20 pb-4">
         <div>
           <p className="stamp text-4xl leading-none">LOCKD</p>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] opacity-60">
+          <p className="mt-1 text-micro uppercase tracking-[0.22em] opacity-60">
             Training receipt {firstYear === lastYear ? firstYear : `${firstYear}–${lastYear}`}
           </p>
         </div>
@@ -63,7 +63,7 @@ export function LifetimeReceiptView({
       ) : null}
 
       <div className="mt-5 border-t border-dashed border-current/20 pt-4">
-        <p className="text-[11px] uppercase tracking-[0.16em] opacity-55">Sessions by year</p>
+        <p className="text-micro uppercase tracking-[0.16em] opacity-55">Sessions by year</p>
         <ul className="mt-2 space-y-1" data-testid="web-receipt-years">
           {receipt.years.map((row) => (
             <li key={row.year} className="flex items-center gap-3 text-sm tabular">
@@ -82,7 +82,7 @@ export function LifetimeReceiptView({
 
       {receipt.topLifts.length ? (
         <div className="mt-5 border-t border-dashed border-current/20 pt-4">
-          <p className="text-[11px] uppercase tracking-[0.16em] opacity-55">Most-logged lifts</p>
+          <p className="text-micro uppercase tracking-[0.16em] opacity-55">Most-logged lifts</p>
           <ul className="mt-2 space-y-2 text-sm" data-testid="web-receipt-lifts">
             {receipt.topLifts.map((lift) => (
               <li key={lift.name}>
@@ -99,7 +99,7 @@ export function LifetimeReceiptView({
         </div>
       ) : null}
 
-      <p className="mt-6 border-t border-dashed border-current/20 pt-4 text-[11px] uppercase tracking-[0.18em] opacity-55">
+      <p className="mt-6 border-t border-dashed border-current/20 pt-4 text-micro uppercase tracking-[0.18em] opacity-55">
         Keep the receipt. Busiest {receipt.busiestYears.years.length > 1 ? "years" : "year"}{" "}
         {receipt.busiestYears.years.join(" and ")}, {plural(receipt.busiestYears.sessions, "session")}
         {receipt.busiestYears.years.length > 1 ? " each" : ""}.
@@ -114,7 +114,7 @@ export function LifetimeReceiptView({
 function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div>
-      <dt className="text-[11px] uppercase tracking-[0.16em] opacity-55">{label}</dt>
+      <dt className="text-micro uppercase tracking-[0.16em] opacity-55">{label}</dt>
       <dd className="mt-1 font-display text-3xl font-semibold tabular">{value}</dd>
     </div>
   );

@@ -29,7 +29,7 @@ export function Stat({
 }) {
   return (
     <div className="min-w-0">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">{label}</p>
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">{label}</p>
       <p className="mt-1 truncate font-display text-2xl font-semibold tracking-tight text-ink tabular">{value}</p>
       {hint ? <p className="mt-0.5 text-xs text-muted">{hint}</p> : null}
     </div>

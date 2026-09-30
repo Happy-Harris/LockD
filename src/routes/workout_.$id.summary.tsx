@@ -71,13 +71,13 @@ function SummaryPage() {
 
   return (
     <Page>
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Logged</p>
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Logged</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">Keep the receipt.</h1>
       <p className="mt-1 text-sm text-muted">The session is on the locker. Send the paper copy as a link, or keep a PNG.</p>
 
       {diff ? (
         <Card className="mt-6">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Workout diff</p>
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Workout diff</p>
           <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight">{diff.headline}</h2>
           {diff.ghost ? (
             <p className="mt-1 text-xs text-muted">
@@ -106,7 +106,7 @@ function SummaryPage() {
 
       {prs.length > 0 ? (
         <Card className="mt-5" data-testid="session-records">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">New records</p>
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">New records</p>
           <ul className="mt-2">
             {prs.map((pr) => (
               <li key={pr.exerciseId}>
@@ -198,7 +198,7 @@ function SummaryPage() {
             setLesson("");
           }}
         >
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Pin a lesson</p>
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Pin a lesson</p>
           <Input
             value={lesson}
             onChange={(event) => setLesson(event.target.value)}
