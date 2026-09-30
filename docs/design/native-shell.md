@@ -26,9 +26,7 @@ project is committed and nothing here has run on a device. The three Phase 4 fea
   `npx cap add android` were not run, so no `ios/` or `android/` folder is committed. Generating them is the owner's
   first step on a Mac (below).
 - Sign-in, sync, public shares and the Lab call server functions at relative URLs, which do not exist inside a static
-  bundle. **Default taken (owner can reverse):** the first native build is a guest and offline app; the cloud features are
-  a later step that needs an API origin supplied at build time (never committed). Until then the sign-in prompts should
-  be hidden on native. That hiding is not built yet.
+  bundle. Whether the first native build leaves them out is open question 2; nothing hides them yet.
 - The service worker and the install manifest were not exercised inside a native web view.
 
 ## Steps for the owner
@@ -39,11 +37,11 @@ project is committed and nothing here has run on a device. The three Phase 4 fea
 3. Android is the same with `npx cap add android` and Android Studio.
 4. Store setup, signing and an Apple Developer account are the owner's; none is in the repo.
 
-## Defaults taken
+## Open questions for the owner
 
-| Question | Default | Reversal |
-|---|---|---|
-| Bundle identifier | `app.lockd.app` (placeholder) | Edit `capacitor.config.ts` before the first signed build |
-| Cloud features in the first native build | Off; guest and offline only | Needs an API origin at build time |
-| Generated `ios/` and `android/` folders | Not committed until they have been built on a device | Run `npx cap add` and commit |
-| Other Capacitor plugins | Added by the feature that needs each one | n/a |
+These are not decided. The values in the repo (`appId` `app.lockd.app`, no `ios/` or `android/` folder) are placeholders
+so the build runs; none is a decision.
+
+1. The bundle identifier (`appId`). Recommended: choose it when the Apple Developer account exists; until then the placeholder stays.
+2. Cloud features (sign-in, sync, Lab, shares) in the first native build. Recommended: guest and offline first.
+3. Commit the generated `ios/` and `android/` folders, or generate them on each machine. Recommended: commit them once a device build works.

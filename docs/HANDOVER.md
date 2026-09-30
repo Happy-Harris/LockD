@@ -12,7 +12,7 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 ### 2026-09-30 — Phase 4 foundation: the Capacitor shell
 
 - **Plan:** Phase 4 dependency named in `docs/design/*.md` ("Capacitor project"). Owner's standing order: build the native
-  items back to back; take the smallest default where a design doc has an open question and write it down.
+  items back to back; where a design doc leaves a question open, stop and ask the owner (not decided by me).
 - **Shipped:** `@capacitor/core` and `@capacitor/cli`, `capacitor.config.ts` (placeholder `appId`), `npm run build:native`
   (a static single-page build through TanStack Start's SPA mode, selected by `--mode native`), and `src/lib/native/platform.ts`.
   The default web build and the default dev server are untouched.
