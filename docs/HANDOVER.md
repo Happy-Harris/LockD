@@ -9,6 +9,21 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Lift Math, step A: the maths, no screen
+
+- **Plan:** `PLAN-ADDENDUM.md` § 6 item 2 and A-5, built to the owner's *Text Size & Lift Math, Spec v2* build-order step 5:
+  "domain module and the test vectors, with no UI." The one-rep rule already lives in the shared core (`e1rmExact`, plan PR 4a).
+- **Shipped:** `src/domain/liftMath.ts`. `estimateMax` (load × reps with the RIR on that set; RIR above 0 marks the result
+  "RIR-adjusted"), `targetLoad` (the inverse), `effectiveReps` (reps + RIR, capped at 12; reps whole, RIR whole or a half),
+  `rirFromRpe`, `roundToLoadable` (nearest step, ties down, integer hundredths), `parseDecimal` (decimal comma) and
+  `percentTable` (loads only, no reps column). Everything works in the unit typed; whole effective reps go through
+  `e1rmExact`, so the calculator and the log agree.
+- **Decision recorded:** the spec's seven decisions are written in `docs/STATUS.md` § 5, as the spec recommends. One call
+  the spec leaves open: an RPE half step (8.5 → RIR 1.5) gives a half effective rep, and the formulas take it as it is.
+- **Tests:** `src/domain/liftMath.test.ts`: every vector in the spec, parity with analytics for reps 1–12 and both formulas,
+  the round-trip property (reps 1–12, both formulas, six loads), 87.50000000000001 → 87.5, `102,5` = `102.5`, and empty,
+  zero, negative and over-cap inputs giving no number.
+
 ### 2026-09-30 — Text size, step A: role tokens and a device-only setting, Standard unchanged
 
 - **Plan:** `PLAN-ADDENDUM.md` § 6 item 1 ("keeps legacy micro sizes", A-4), built to the owner's *Text Size & Lift Math, Spec v2*

@@ -138,7 +138,7 @@ Phase 3 items that are not an Opp (`PLAN-ADDENDUM.md` § 6):
 |---|---|---|---|
 | Lab, cited (item 10) | Audit that every Ask the Lab answer cites the log | **done** | `Lab, cited`: strength, training-volume and muscle answers link the sessions behind them; verdict and flag answers use the lifter's lens as the cards do; catalog answers are labelled as from the catalog; the model's note is labelled as not computed; the brief writes loads in the lifter's unit; the hit rate shows "—" when no tracked lift has sessions |
 | Text size, steps A and B (items 1, 9) | A text size setting; the 9 and 10 px elements raised to 11 px | **step A done**; step B not started | Spec: the owner's *Text Size & Lift Math, Spec v2* (Appendix A, received 2026-09-30; held by the owner, not in this repo). `Text size, step A`: role tokens (body, caption, micro, legacy micro, tab label), a pre-paint script, a device-only setting in Settings → Appearance, Standard as default and unchanged. Step B: flip to Comfortable, the one-time notice, the onboarding control (A-3) and palette entry, the 9 and 10 px elements to 11 px (A-4), contrast |
-| Lift Math, steps A and B (items 2, 8) | A calculator on the shared e1RM core (`e1rmExact`) | not started | Next. Spec as above |
+| Lift Math, steps A and B (items 2, 8) | A calculator on the shared e1RM core (`e1rmExact`) | **step A done**; step B not started | `Lift Math, step A`: `src/domain/liftMath.ts`, the maths with no screen (estimate from a set with its RIR, target load, loadable rounding with ties down, decimal comma), passing every vector in the spec. Step B: the screen, receipt line, copy, plate and warm-up links, palette, precache |
 
 The owner's document sets the order: stabilise first (Steps 1 to 13), then Opp 1's Chronicle,
 Opp 2, 8, 9, 3, then the native items. It says: finish the stabilise-and-QA work before adding any
@@ -168,6 +168,12 @@ handover entry says so. The open ones:
   floor of 3 observations per group).
 - **`percent_deload`** (I-41): a program rule kind that is accepted in files and does nothing. Keep as an alias of the
   default deload, or drop from the type and ignore it in files?
+- **Text size and Lift Math, the spec's seven decisions** (taken as the owner's spec recommends, 2026-09-30):
+  text size is device-local (in backups, never synced); presets are relative to the platform base with the Capacitor check
+  left to the native spike; role tokens in rem with the root untouched; the role table decides which surfaces scale
+  (set-row numerals and tab labels capped, display fixed); Lift Math takes RIR, or RPE as RIR = 10 − RPE in the log's
+  half steps; loads round to the nearest step with ties down, in the unit typed; Tools v1 is the Plate calculator, the
+  Warm-up generator and Lift Math, and a new tool must name the training decision it helps with.
 - **`eraSplits`** (I-17): the plan's hand-made era splits have no UI or data yet; not built.
 - **One-session eras** (Opp 1): decided 2026-09-30. Kept separate, never folded into a neighbour, and labelled a
   Brief Return.
