@@ -25,6 +25,8 @@ export interface LockScreenTimerPayload {
   setId?: string;
   startedAt: string;
   endsAt: string;
+  /** `endsAt` as epoch milliseconds, for native code that has no ISO parser on old phones. */
+  endsAtMs: number;
   durationSeconds: number;
   isRunning: boolean;
   /** Whole seconds left when paused; the phone shows this instead of counting down. */
@@ -62,6 +64,7 @@ export function payloadFor(timer: TimerState, nowMs: number): LockScreenTimerPay
     ...(timer.setId ? { setId: timer.setId } : {}),
     startedAt: timer.startedAt,
     endsAt: timer.endsAt,
+    endsAtMs: Date.parse(timer.endsAt),
     durationSeconds: timer.durationSeconds,
     isRunning: timer.isRunning,
     // A paused timer keeps its remainder in `durationSeconds`.

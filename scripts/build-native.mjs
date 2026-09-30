@@ -4,7 +4,11 @@ import { spawnSync } from "node:child_process";
 import { copyFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 
-const build = spawnSync("npx", ["vite", "build", "--mode", "native"], { stdio: "inherit", shell: process.platform === "win32" });
+const build = spawnSync("npx", ["vite", "build", "--mode", "native"], {
+  stdio: "inherit",
+  shell: process.platform === "win32",
+  env: { ...process.env, LOCKD_NATIVE: "1" },
+});
 if (build.status !== 0) process.exit(build.status ?? 1);
 
 const dir = join(process.cwd(), "dist", "client");

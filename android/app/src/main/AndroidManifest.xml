@@ -24,6 +24,10 @@
 
         </activity>
 
+        <receiver
+            android:name=".LockScreenActionReceiver"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -38,4 +42,6 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+: the rest-timer tile and the end-of-rest alert are notifications. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

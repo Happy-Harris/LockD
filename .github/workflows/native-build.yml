@@ -1,0 +1,99 @@
+name: Native build
+
+# Compile checks for the Capacitor shell's native code (docs/design/native-shell.md). They prove the Swift and Java
+# compile and that the Android unit tests pass. They do not prove anything runs on a device. Nothing here signs:
+# the iOS build is unsigned, for the simulator SDK, and Apple Developer signing is added by the owner later.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ios/**"
+      - "android/**"
+      - "capacitor.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/build-native.mjs"
+      - "scripts/native/**"
+      - "src/lib/native/**"
+      - ".github/workflows/native-build.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - "android/**"
+      - "capacitor.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/build-native.mjs"
+      - "scripts/native/**"
+      - "src/lib/native/**"
+      - ".github/workflows/native-build.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: native-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: android (debug build and unit tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: gradle/actions/setup-gradle@v4
+      - run: npm ci
+      - run: npm run build:native
+      - run: npx cap sync android
+      - name: Debug build and unit tests
+        working-directory: android
+        run: ./gradlew :app:assembleDebug :app:testDebugUnitTest
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+
+  ios:
+    name: ios (unsigned simulator build)
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:native
+      - name: Sync (installs the pods)
+        run: npx cap sync ios
+      - name: Xcode version
+        run: xcodebuild -version
+      - name: Build for the simulator, unsigned
+        working-directory: ios/App
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            | tee "$RUNNER_TEMP/xcodebuild.log" | tail -n 60
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: ${{ runner.temp }}/xcodebuild.log
+          retention-days: 7
