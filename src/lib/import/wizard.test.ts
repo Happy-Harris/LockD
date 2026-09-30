@@ -78,6 +78,14 @@ describe("the Resolve step", () => {
     expect(step.fresh).toEqual(["Zercher Thing"]);
   });
 
+  it("asks about a different piece of equipment instead of merging it", () => {
+    const step = resolveStep(["Bench Press (Dumbbell)", "Bench Press (Barbell)"], existing);
+    expect(step.matched).toEqual(["Bench Press (Barbell)"]);
+    expect(step.candidates.map((c) => [c.name, c.exercise.id])).toEqual([
+      ["Bench Press (Dumbbell)", "bench"],
+    ]);
+  });
+
   it("merges a near match only when it was confirmed", () => {
     const step = resolveStep(exerciseNames(analysis, all), existing);
     const options = {

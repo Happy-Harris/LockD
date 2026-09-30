@@ -86,6 +86,7 @@ State: **done**, **in flight**, **not started**. "GitHub" gives the pull request
 | 7d-1, 7d-2 | Importers for the two sister apps' backups; unsided girth metrics | done | LockD#25, #26 |
 | 7e | Import wizard and Bulk Classify | done | LockD#27 |
 | 7f | CSV export rewrite; seed library 66 to 93 with a versioned top-up | done | LockD#28 |
+| 7+ | Import keeps equipment variants apart: `Bench Press (Dumbbell)` no longer merges into the barbell Bench Press; a bracket matches the library only on that exercise's own equipment. Found on the owner's real export | **done** | branch `claude/project-thread-ycyz7c` |
 | 8a | Analytics engines ported and tested, not wired | done | LockD#29 |
 | 8b | Weekly verdict and change flags on screen | done | LockD#30 |
 | 8c-1 | Muscle sets and personal targets replace MEV/MAV/MRV | done | LockD#31 |
@@ -160,8 +161,9 @@ handover entry says so. The open ones:
   default deload, or drop from the type and ignore it in files?
 - **`eraSplits`** (I-17): the plan's hand-made era splits have no UI or data yet; not built.
 - **`short_rests`** (I-16): deleted in 12c.
-- **Real-file validation**: the Hevy, sister-app and Strong importers are verified against
-  synthetic or donor fixtures only. Say so if you extend them.
+- **Real-file validation**: the Strong importer was run on the owner's own export on 2026-09-30 (597 sessions,
+  13,319 sets, 2019 to 2025; the file is private and not in the repo). Hevy and the sister apps are still verified
+  against synthetic or donor fixtures only. Say so if you extend them.
 
 ## 6. Where things are checked
 

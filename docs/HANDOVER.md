@@ -9,6 +9,15 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Step 7+: import keeps equipment variants apart (found on a real export)
+
+- **Found by:** running the owner's own Strong export (597 sessions, 13,319 sets, Dec 2019 to Aug 2025) through `importStrongCsv` and the engines. The file is private: it is not in the repo, and no row of it is in a fixture.
+- **The bug:** matching used `normaliseExerciseName`, which drops brackets, so 275 names in that file became 212 exercises. `Bench Press (Dumbbell)` joined the barbell Bench Press, four Shrug variants became one, and the Chronicle's "biggest jump" was a 35 kg dumbbell set followed by the barbell bench (+54 kg).
+- **The rule now:** a name matches an exercise when it is the same name (`exerciseNameKey`: case and punctuation aside, brackets kept), or a library name plus a bracket naming that exercise's own equipment (`Bench Press (Barbell)` is the barbell Bench Press). Anything else is a new exercise, and still a near-match suggestion in the wizard's Resolve step. Same file now: 273 exercises, and the biggest jump is a real one (a 25 kg comeback bench to 60 kg).
+- **Unchanged on purpose:** session fingerprints still use the bracket-free name, so a file imported before this change still adds nothing (pinned by a test).
+- **Seen, not fixed:** Strong's `Squat (Barbell)` and `Deadlift (Barbell)` do not match the seed `Back Squat` and `Conventional Deadlift`, so the default goal lifts stay empty after a Strong import until the lifter picks theirs. Strong writes `0` in Distance and Seconds for weight sets and the importer keeps that 0 (not checked on screen). Eras on the real file look plausible (29), including a one-session "The Return · 2" era.
+- **Checked:** `npm run verify`; new tests in `strong.test.ts` and `wizard.test.ts`.
+
 ### 2026-09-30 — Step 12c: the D16 dead code is removed
 
 - **What:** deleted `counterfactual` (`queue.ts`), `wouldBePr` (`ghost.ts`), `sessionCountStreak` and `suggestNextLoad` (`analytics.ts`) and the `short_rests` autopsy code, about 110 lines. Re-grepped first: none had a production caller. `sessionCountStreak` returned the wrong value (it counted dates, not the streak it computed). The `wouldBePr` characterisation test, which pinned a bug, went with it.
