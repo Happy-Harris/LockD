@@ -1,6 +1,7 @@
 # Program from text (Opp 11)
 
-Status: design doc only (Phase 4). No code, no new dependencies and no change to `src/` ship with it.
+Status: **built** (Opp 11, 2026-09-30) to the owner's answers below. It was a design doc first (Phase 4); the sections
+below are kept as the design, and "Owner's answers" records what was decided.
 
 ## Goal
 
@@ -89,7 +90,29 @@ understood and every line it did not, and only saves after the lifter confirms. 
 - **One codebase:** pure TypeScript in the shared app.
 - **Brand:** copy says "Lock'd"; source apps are not named.
 
-## Open questions for the owner
+## Owner's answers (2026-09-30) and what was built
+
+The owner approved these answers in the project chat. The open questions they answer are kept below for the record.
+
+1. **Grammar:** "Week N" (optionally "deload"), "Day N: Name" / "Session A", and "Bench 3x8", "3 x 8-12" or
+   "4 sets of 6", with optional "@ RPE 8" (or "@8"), "rest 90s" (also "2:00", "2 min"), and "#" for comments. A note
+   goes after "|", ";" or " - ".
+2. **Loads ("@ 100 kg", "80%"):** kept verbatim in the row's notes and listed as not used.
+3. **Weeks that differ:** the first week is the program; the lines of a later week that differ are listed as not used.
+   A later week that repeats the first only counts as a week.
+4. **Defaults:** double progression, warm-ups on, the general lens, the lifter's default rest. Each one is labelled
+   "Filled in, not in your text" on the preview.
+5. **Spreadsheet columns:** line format only (tabs read as spaces).
+6. **The pasted text is not kept.** No stored field was added.
+7. **Supersets ("A1/A2"):** not in version 1. Those lines are listed as not used.
+
+Built in `src/lib/import/program-text.ts` (`parseProgramText`, `buildProgramFromText`, `programTextNames`) and
+`src/routes/programs_.from-text.tsx` (`/programs/from-text`, linked from Programs as "Paste a program"). Saving goes through
+the existing `importProgram`, so a text program is stored, exported and shared like any other file. Names go through
+`resolveStep`: exact and bracket-equipment matches link on their own, a near name is only suggested until a tap, and a
+new name is kept as an unresolved row (plan I-33).
+
+## The open questions, as asked
 
 1. The exact grammar for version 1: which set and rep shapes, which header words, which comment mark.
 2. Loads in text ("@ 100 kg", "@ 80%"): list as unused, keep verbatim in the row's notes, or wait for a v2
@@ -103,7 +126,6 @@ understood and every line it did not, and only saves after the lifter confirms. 
 
 ## Out of scope
 
-- Any code (this is a design doc).
 - A model or chatbot reading the text, or any fuzzy guess that is applied without a tap.
 - Reading PDFs or images.
 - Changing the `lockd-program` v1 format; a v2 is a separate decision and migration.
