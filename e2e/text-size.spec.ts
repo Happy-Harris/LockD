@@ -41,7 +41,8 @@ test.describe("text size", () => {
 
     for (const path of ["/", "/settings", "/analytics", "/chronicle", "/history", "/lab", "/more"]) {
       await goTo(page, path);
-      expect(await noSideScroll(page), path).toBe(true);
+      // Charts size themselves after the first render: wait for the layout to settle, then require no sideways scroll.
+      await expect.poll(() => noSideScroll(page), { message: path, timeout: 10_000 }).toBe(true);
     }
 
     const tabs = page.locator("nav a.text-tab");
@@ -59,7 +60,7 @@ test.describe("text size", () => {
     await page.getByRole("button", { name: /Repeat last/i }).click();
     const complete = page.getByRole("button", { name: "Complete set" }).first();
     await expect(complete).toBeVisible();
-    expect(await noSideScroll(page)).toBe(true);
+    await expect.poll(() => noSideScroll(page)).toBe(true);
     const box = await complete.boundingBox();
     expect(box!.x + box!.width).toBeLessThanOrEqual(320);
   });
