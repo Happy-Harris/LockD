@@ -9,6 +9,11 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Health settings copy says what syncs
+
+- **Shipped:** owner's decision recorded: Health-imported bodyweight stays an ordinary bodyweight row and syncs; sleep and HRV stay on the device
+  and in backups. The Settings "Health context" text used to imply every reading stays local; it now says which is which.
+
 ### 2026-09-30 — Fix: "Notify when rest ends" on the native app
 
 - **Shipped:** the Settings toggle asked for permission through the browser `Notification` API, which the iOS web view does not have, so it could
