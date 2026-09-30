@@ -9,7 +9,6 @@ import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { createServerFn } from "@tanstack/react-start";
 import { AuthProvider } from "@/lib/auth/provider";
-import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { ThemeSync } from "@/components/app/theme";
 import { Onboarding } from "@/components/app/onboarding";
 import { CommandPalette } from "@/components/app/command-palette";
@@ -78,7 +77,6 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body className="antialiased">
-        <PreviewHostBridge />
         <AuthProvider>
           <CloudSync>
             <GymGate />

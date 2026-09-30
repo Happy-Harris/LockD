@@ -16,7 +16,6 @@ export default defineConfig({
     // deleted with the scaffolding. They use node:test, not Vitest.
     exclude: [
       "node_modules/**",
-      "src/lib/app-data/**",
       "src/lib/auth/gate-identity.test.ts",
       "src/lib/auth/sign-in-gate.test.ts",
     ],
