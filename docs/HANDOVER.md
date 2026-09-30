@@ -9,6 +9,14 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Paused after Step 12a, for a new session
+
+- **State:** `main` has everything through `LockD#71`. Steps 1 to 11, 12a and 13 are done; nothing is open, in flight or scheduled for this work. The owner asked to pause here and continue in another Claude session.
+- **Resume with 12b.** The exact plan, with what imports what, is in `docs/STATUS.md` ("Step 12, what is left"): 12b preview bridge, app-data, multiplayer; 12c the five D16 dead-code items (none has a production caller); 12d the Grok auth broker with `with-app-env`, `app-env-plugin` and `check-auth-invariant` (they carry `VITE_AUTH_ENABLED`), which needs the owner's choice of real OAuth providers first.
+- **Owner decisions still open** are in `docs/STATUS.md` § 5: the era rules, the 5% autopsy load band, the pounds milestone ladder, the server size caps, D6's two readings, `percent_deload`, `eraSplits`, the default goal lifts. All are named constants; each is a one-line edit.
+- **Not verified** (also in `HANDOFF.md`): real importer files, a database round trip for sign-in, sync and shares (including a real published share's card), real devices, 1024 px for several late changes, long real histories, and a real unfurl preview of a share link.
+- **Working notes for the next session:** `CLAUDE.md` has the single-test commands and the working rules learned; read the decisions table in `docs/consolidation/PLAN.md` § 8 before choosing any number; with several PRs open every merge conflicts the top of this file and the in-flight row in STATUS, so grep for conflict markers before committing. `/plugin` is not available in the cloud environment, so the `codex@openai-codex` plugin install is a local step for the owner.
+
 ### 2026-09-29 — Step 12a: the routes state their own share-card tags; the head-injecting middleware is gone
 
 - **Owner go-ahead:** "Yes to both" (2026-09-29) to moving the OG tags into the routes and to the D16 dead-code deletions. This PR is the first: the tags. The deletions are 12c.
