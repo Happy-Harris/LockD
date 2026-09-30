@@ -68,31 +68,33 @@ function pgliteBootstrapPlugin(): Plugin {
 }
 
 // `0.0.0.0:8080` is the dev-server host and port the e2e config expects; keep them in step.
-export default defineConfig(({ command, isPreview, mode }) => ({
-  server: {
-    host: "0.0.0.0",
-    port: 8080,
-    strictPort: true,
-  },
-  preview: {
-    host: "127.0.0.1",
-    port: 8081,
-    strictPort: true,
-  },
-  resolve: { tsconfigPaths: true },
-  // Pre-bundle dependencies that only lazily loaded routes import, so the dev server never
-  // re-optimises and hard-reloads mid-session (it breaks e2e runs on a cold CI start).
-  optimizeDeps: { include: ["@radix-ui/react-alert-dialog", "dexie"] },
-  plugins: [
-    pgliteBootstrapPlugin(),
-    tailwindcss(),
-    tanstackStart(mode === "native" ? { spa: { enabled: true } } : undefined),
-    ...((command === "build" || isPreview) && mode !== "native"
-      ? [
-          nitro({ preset: "vercel" }),
-          copyPgliteAssetsPlugin(),
-        ]
-      : []),
-    viteReact(),
-  ],
-}));
+export default defineConfig(({ command, isPreview, mode: requestedMode }) => {
+  // The SPA prerender starts a preview server that reads this file again in the default mode, so `build:native` also
+  // sets LOCKD_NATIVE. Without it the preview asks for a server build that the native build does not make.
+  const mode = process.env.LOCKD_NATIVE === "1" ? "native" : requestedMode;
+  return {
+    server: {
+      host: "0.0.0.0",
+      port: 8080,
+      strictPort: true,
+    },
+    preview: {
+      host: "127.0.0.1",
+      port: 8081,
+      strictPort: true,
+    },
+    resolve: { tsconfigPaths: true },
+    // Pre-bundle dependencies that only lazily loaded routes import, so the dev server never
+    // re-optimises and hard-reloads mid-session (it breaks e2e runs on a cold CI start).
+    optimizeDeps: { include: ["@radix-ui/react-alert-dialog", "dexie"] },
+    plugins: [
+      pgliteBootstrapPlugin(),
+      tailwindcss(),
+      tanstackStart(mode === "native" ? { spa: { enabled: true } } : undefined),
+      ...((command === "build" || isPreview) && mode !== "native"
+        ? [nitro({ preset: "vercel" }), copyPgliteAssetsPlugin()]
+        : []),
+      viteReact(),
+    ],
+  };
+});
