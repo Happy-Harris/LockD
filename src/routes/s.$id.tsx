@@ -85,7 +85,7 @@ function ShareBody({ share }: { share: PublicShare }) {
           <header className="flex items-start justify-between border-b border-dashed border-current/20 pb-4">
             <div>
               <p className="stamp text-3xl leading-none">LOCKD</p>
-              <p className="mt-1 text-micro-legacy uppercase tracking-[0.22em] opacity-60">Session receipt</p>
+              <p className="mt-1 text-micro uppercase tracking-[0.22em] opacity-60">Session receipt</p>
             </div>
             <LockdMark className="size-9" />
           </header>
@@ -93,15 +93,15 @@ function ShareBody({ share }: { share: PublicShare }) {
           <p className="mt-1 text-sm opacity-70">{payload.date}</p>
           <dl className="mt-5 grid grid-cols-3 gap-2 border-y border-dashed border-current/20 py-4">
             <div>
-              <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Time</dt>
+              <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Time</dt>
               <dd className="mt-1 font-display text-xl font-semibold tabular">{formatDuration(payload.durationSec)}</dd>
             </div>
             <div>
-              <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Hard sets</dt>
+              <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Hard sets</dt>
               <dd className="mt-1 font-display text-xl font-semibold tabular">{payload.hardSets}</dd>
             </div>
             <div>
-              <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Tonnage</dt>
+              <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Tonnage</dt>
               <dd className="mt-1 font-display text-xl font-semibold tabular">{payload.tonnageLabel}</dd>
             </div>
           </dl>
@@ -110,7 +110,7 @@ function ShareBody({ share }: { share: PublicShare }) {
               <li key={line.name}>
                 <p className="text-sm font-medium">
                   {line.name}
-                  {line.pr ? <span className="ml-2 text-micro-legacy font-semibold uppercase tracking-[0.16em] text-accent">PR</span> : null}
+                  {line.pr ? <span className="ml-2 text-micro font-semibold uppercase tracking-[0.16em] text-accent">PR</span> : null}
                 </p>
                 <p className="mt-0.5 font-mono text-xs tabular opacity-70">{line.sets}</p>
               </li>
@@ -130,14 +130,14 @@ function ShareBody({ share }: { share: PublicShare }) {
         <Athlete athlete={athlete} handle={handle} date={share.createdAt} />
         <article className="receipt mt-6 px-5 py-6">
           <p className="stamp text-4xl leading-none">LOCKD</p>
-          <p className="mt-1 text-micro-legacy uppercase tracking-[0.22em] opacity-60">Training receipt {receipt.year}</p>
+          <p className="mt-1 text-micro uppercase tracking-[0.22em] opacity-60">Training receipt {receipt.year}</p>
           <dl className="mt-5 grid grid-cols-2 gap-4">
             <div>
-              <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Sessions</dt>
+              <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Sessions</dt>
               <dd className="mt-1 font-display text-3xl font-semibold tabular">{receipt.sessions}</dd>
             </div>
             <div>
-              <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Hard sets</dt>
+              <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Hard sets</dt>
               <dd className="mt-1 font-display text-3xl font-semibold tabular">{receipt.hardSets}</dd>
             </div>
           </dl>

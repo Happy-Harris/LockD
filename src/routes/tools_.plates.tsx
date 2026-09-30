@@ -118,7 +118,7 @@ function BarbellVisual({
           {plates.map((plate, index) => (
             <div
               key={`l-${index}`}
-              className="flex items-center justify-center rounded-sm text-[9px] font-semibold"
+              className="flex items-center justify-center rounded-sm text-micro font-semibold"
               style={{
                 width: 16,
                 height: plate.h,
@@ -135,7 +135,7 @@ function BarbellVisual({
           {plates.map((plate, index) => (
             <div
               key={`r-${index}`}
-              className="flex items-center justify-center rounded-sm text-[9px] font-semibold"
+              className="flex items-center justify-center rounded-sm text-micro font-semibold"
               style={{
                 width: 16,
                 height: plate.h,

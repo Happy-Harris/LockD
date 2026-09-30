@@ -67,7 +67,7 @@
   --rf-raised: #ece5d8;
   --rf-ink: #161412;
   --rf-muted: #48443c;
-  --rf-subtle: #6e685e;
+  --rf-subtle: #6b655b;
   --rf-line: color-mix(in oklab, var(--rf-ink) 14%, transparent);
   --rf-accent: #a04c2a;
   --rf-accent-ink: #faf7f1;
@@ -91,31 +91,28 @@
  *   Body and secondary  text-sm            14 / 16 / 18 px
  *   Caption             text-xs            12 / 14 / 16 px
  *   Micro               text-micro         11 / 13 / 15 px
- *   Micro, legacy       text-micro-legacy  today's 10 px at Standard, Micro above it (step B removes it)
- *   Tab bar label       text-tab           today's 10 px, +1 px at Comfortable and Large; never wraps
+ *   Tab bar label       text-tab           11 / 12 / 12 px; never wraps (icons carry the meaning)
+ * Nothing is below 11 px at any preset (step B raised the old 9 and 10 px elements, A-4).
  * Line heights stay unitless, so they scale with the preset. Receipts and posters are drawn artefacts
  * and keep Standard at every preset (`.type-fixed`).
  */
 :root {
   --type-micro: 0.6875rem;
-  --type-micro-legacy: 0.625rem;
-  --type-tab: 0.625rem;
+  --type-tab: 0.6875rem;
 }
 
 :root[data-text-size="comfortable"] {
   --text-sm: 1rem;
   --text-xs: 0.875rem;
   --type-micro: 0.8125rem;
-  --type-micro-legacy: 0.8125rem;
-  --type-tab: 0.6875rem;
+  --type-tab: 0.75rem;
 }
 
 :root[data-text-size="large"] {
   --text-sm: 1.125rem;
   --text-xs: 1rem;
   --type-micro: 0.9375rem;
-  --type-micro-legacy: 0.9375rem;
-  --type-tab: 0.6875rem;
+  --type-tab: 0.75rem;
 }
 
 :root .type-fixed,
@@ -124,16 +121,11 @@
   --text-sm: 0.875rem;
   --text-xs: 0.75rem;
   --type-micro: 0.6875rem;
-  --type-micro-legacy: 0.625rem;
-  --type-tab: 0.625rem;
+  --type-tab: 0.6875rem;
 }
 
 @utility text-micro {
   font-size: var(--type-micro);
-}
-
-@utility text-micro-legacy {
-  font-size: var(--type-micro-legacy);
 }
 
 :root[data-text-size="large"] .text-tab {

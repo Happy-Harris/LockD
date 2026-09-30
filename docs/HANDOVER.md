@@ -9,6 +9,29 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Text size, step B: Comfortable by default, the notice, and nothing below 11 px
+
+- **Plan:** `PLAN-ADDENDUM.md` § 6 item 9 and A-3, A-4, built to the owner's spec (Appendix A) build-order step 4: "flip the default to
+  Comfortable, add the one-time notice, the control and the palette entry."
+- **Default:** Comfortable, one line (`DEFAULT_TEXT_SIZE`), also in the pre-paint script, so a cold start shows it with no flash.
+- **Notice (spec fix 5):** a lifter with no stored size sees "Text is larger now. Change it in Settings → Appearance." once,
+  with "Keep previous size" (sets Standard) and "Dismiss" (keeps Comfortable). Either answer stores the size, so it never
+  returns. A new lifter picks a size on onboarding, which stores it, so they are never told. The stored size survives a cleared
+  mirror (it is restored from the device table before the notice decides).
+- **Control:** onboarding, beside units (A-3, no tour); the palette ("Text size: Standard / Comfortable / Large", found by
+  font, bigger, smaller).
+- **Floor (A-4):** the 39 elements at 10 px and 2 at 9 px are now `text-micro` (11 / 13 / 15 px); `text-micro-legacy` is gone.
+  Tab labels are 11 px at Standard and 12 px above it. A unit test fails if any component uses a 9 or 10 px class. Chart axis
+  labels are 12 px at Standard (were 11), 14 above.
+- **Contrast (spec):** measured against the surfaces: dark theme subtle text 5.7 to 6.5:1 and muted text 8 to 9:1; light-theme muted
+  7.7 to 9.2:1. Light-theme subtle text (`#6e685e`) was 4.41:1 on the raised surface, so it is now `#6b655b` (4.61:1 at worst).
+- **Not verified:** the full screen matrix (3 presets × both themes × 5 widths × every screen) was not captured; the 320 px
+  checks are in the e2e for seven screens and the active set row at Large. Real phones and tablets; iOS Dynamic Type and
+  Android font scale (spec: the Capacitor spike); the plate-label text in the plate calculator's drawing is now 11 px and was
+  not looked at on a device.
+- **Tests:** `src/lib/device/text-size.test.ts` (Comfortable default and pre-paint fallback, no class below 11 px), `e2e/text-size.spec.ts`
+  (onboarding control, the notice and "Keep previous size", the palette, and the earlier Large and 320 px cases).
+
 ### 2026-09-30 — Lift Math, step B: the screen
 
 - **Plan:** `PLAN-ADDENDUM.md` § 6 item 8, built to the owner's spec (Appendix A) build-order step 6: "the screen, receipt line,

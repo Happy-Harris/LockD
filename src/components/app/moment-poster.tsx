@@ -20,7 +20,7 @@ export function MomentPoster({
   return (
     <article className={cn("moment-poster relative overflow-hidden px-6 py-8")}>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-micro-legacy font-medium uppercase tracking-[0.28em] opacity-55">
+        <p className="text-micro font-medium uppercase tracking-[0.28em] opacity-55">
           {moment.kicker}
         </p>
         <LockdMark className="size-8 opacity-80" />

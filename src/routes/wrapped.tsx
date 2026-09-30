@@ -44,25 +44,25 @@ function WrappedPage() {
         <header className="flex items-start justify-between border-b border-dashed border-current/20 pb-4">
           <div>
             <p className="stamp text-4xl leading-none">LOCKD</p>
-            <p className="mt-1 text-micro-legacy uppercase tracking-[0.22em] opacity-60">Training receipt {receipt.year}</p>
+            <p className="mt-1 text-micro uppercase tracking-[0.22em] opacity-60">Training receipt {receipt.year}</p>
           </div>
           <LockdMark className="size-9" />
         </header>
         <dl className="mt-5 grid grid-cols-2 gap-4 border-b border-dashed border-current/20 pb-5">
           <div>
-            <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Sessions</dt>
+            <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Sessions</dt>
             <dd className="mt-1 font-display text-3xl font-semibold tabular">{receipt.sessions}</dd>
           </div>
           <div>
-            <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Hard sets</dt>
+            <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Hard sets</dt>
             <dd className="mt-1 font-display text-3xl font-semibold tabular">{receipt.hardSets}</dd>
           </div>
           <div>
-            <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Lifts</dt>
+            <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Lifts</dt>
             <dd className="mt-1 font-display text-3xl font-semibold tabular">{receipt.uniqueLifts}</dd>
           </div>
           <div>
-            <dt className="text-micro-legacy uppercase tracking-[0.16em] opacity-55">Longest gap</dt>
+            <dt className="text-micro uppercase tracking-[0.16em] opacity-55">Longest gap</dt>
             <dd className="mt-1 font-display text-3xl font-semibold tabular">{receipt.longestLayoffDays}d</dd>
           </div>
         </dl>
@@ -85,7 +85,7 @@ function WrappedPage() {
             Bodyweight {formatWeightWithUnit(receipt.bodyDelta.from, unit)} → {formatWeightWithUnit(receipt.bodyDelta.to, unit)}.
           </p>
         ) : null}
-        <p className="mt-6 border-t border-dashed border-current/20 pt-4 text-micro-legacy uppercase tracking-[0.18em] opacity-55">
+        <p className="mt-6 border-t border-dashed border-current/20 pt-4 text-micro uppercase tracking-[0.18em] opacity-55">
           Keep the receipt. Busiest month {receipt.busiestMonth}.
         </p>
       </article>

@@ -18,10 +18,11 @@ import { CloudSync, useCloud } from "@/lib/cloud/sync";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useGym } from "@/lib/gym/store";
 import { StorageNoticeBanner } from "@/components/app/storage-notice";
+import { TextSizeNotice } from "@/components/app/text-size-notice";
 import { bootStorage } from "@/lib/storage/boot";
 import { startServiceWorker } from "@/lib/pwa/start";
 import { siteOg } from "@/lib/og/tags";
-import { restoreTextSizeFromDevice, TEXT_SIZE_PREPAINT_SCRIPT } from "@/lib/device/text-size";
+import { TEXT_SIZE_PREPAINT_SCRIPT } from "@/lib/device/text-size";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Lockd";
@@ -133,7 +134,6 @@ function GymGate() {
       .then((result) => {
         if (!useGym.getState().hydrated) useGym.getState().setHydrated(true);
         startServiceWorker();
-        void restoreTextSizeFromDevice();
         // Test hook: how long reading the log took (see `BootResult.readMs`).
         if (result.readMs !== undefined) {
           document.documentElement.dataset.gymBootMs = String(result.readMs);
@@ -161,6 +161,7 @@ function GymGate() {
       ) : onboarded ? (
         <>
           <StorageNoticeBanner />
+          <TextSizeNotice />
           <Outlet />
           <CommandPalette />
         </>
@@ -187,7 +188,7 @@ function Splash({ locker }: { locker?: boolean }) {
       <div className="flex flex-col items-center gap-3">
         <LockdMark className="size-12" />
         <p className="stamp text-3xl">LOCKD</p>
-        <p className="text-micro-legacy font-medium uppercase tracking-[0.22em] text-subtle">
+        <p className="text-micro font-medium uppercase tracking-[0.22em] text-subtle">
           {locker ? "Opening the locker" : "Keep the receipt."}
         </p>
       </div>

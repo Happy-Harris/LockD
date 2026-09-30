@@ -237,7 +237,7 @@ export function LockerPage() {
               <Link to="/s/$id" params={{ id: share.id }}>
                 <Card className="flex items-center justify-between">
                   <span>
-                    <span className="block text-micro-legacy uppercase tracking-[0.16em] text-subtle">{share.kind}</span>
+                    <span className="block text-micro uppercase tracking-[0.16em] text-subtle">{share.kind}</span>
                     <span className="block font-medium">{share.title}</span>
                   </span>
                   <span className="font-mono text-micro text-subtle">{share.createdAt.slice(0, 10)}</span>

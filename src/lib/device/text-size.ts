@@ -18,8 +18,11 @@ export const TEXT_SIZE_LABEL: Record<TextSize, string> = {
   large: "Large",
 };
 
-/** Step A keeps Standard, so the token migration can be proved to change nothing. Step B flips it. */
-export const DEFAULT_TEXT_SIZE: TextSize = "standard";
+/**
+ * Comfortable since step B (spec: "flip the default to Comfortable as a one-line change that is trivial to revert").
+ * A lifter who never chose a size is told once, and can keep the previous one (`TextSizeNotice`).
+ */
+export const DEFAULT_TEXT_SIZE: TextSize = "comfortable";
 
 /** The mirror the pre-paint script reads, so a cold start never flashes another size. */
 export const TEXT_SIZE_STORAGE_KEY = "lockd-text-size";
@@ -31,11 +34,13 @@ export const isTextSize = (value: unknown): value is TextSize =>
 
 /**
  * Runs in `<head>` before the stylesheet paints anything: sets `data-text-size` on `<html>` from the
- * stored value. Kept tiny and dependency-free; a blocked `localStorage` leaves the default.
+ * stored value, or the default. Kept tiny and dependency-free; a blocked `localStorage` gets the default.
  */
-export const TEXT_SIZE_PREPAINT_SCRIPT = `(function(){try{var v=localStorage.getItem(${JSON.stringify(
+export const TEXT_SIZE_PREPAINT_SCRIPT = `(function(){var v=null;try{v=localStorage.getItem(${JSON.stringify(
   TEXT_SIZE_STORAGE_KEY,
-)});if(${TEXT_SIZES.map((size) => `v===${JSON.stringify(size)}`).join("||")})document.documentElement.setAttribute("data-text-size",v)}catch(e){}})();`;
+)})}catch(e){}if(!(${TEXT_SIZES.map((size) => `v===${JSON.stringify(size)}`).join("||")}))v=${JSON.stringify(
+  DEFAULT_TEXT_SIZE,
+)};document.documentElement.setAttribute("data-text-size",v)})();`;
 
 const listeners = new Set<() => void>();
 
@@ -102,8 +107,5 @@ export function useTextSize(): TextSize {
   return useSyncExternalStore(subscribe, currentTextSize, () => DEFAULT_TEXT_SIZE);
 }
 
-/**
- * Chart axis labels follow the caption role, capped at Comfortable (fewer ticks, not smaller text).
- * Standard keeps today's 11 px until step B.
- */
-export const CHART_TICK_PX: Record<TextSize, number> = { standard: 11, comfortable: 14, large: 14 };
+/** Chart axis labels follow the caption role, capped at Comfortable (fewer ticks, not smaller text). */
+export const CHART_TICK_PX: Record<TextSize, number> = { standard: 12, comfortable: 14, large: 14 };

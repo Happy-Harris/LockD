@@ -737,7 +737,7 @@ function SetRow({
             >
               {choice}
               {effortTarget === choice ? (
-                <span className="block text-micro-legacy font-normal">target</span>
+                <span className="block text-micro font-normal">target</span>
               ) : null}
             </button>
           ))}
