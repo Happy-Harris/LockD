@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router";
 import { sendEmailLink, signInWith } from "@/lib/auth/client";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState, useSignInMethods } from "@/lib/auth/use-current-user";
@@ -10,16 +10,12 @@ import { FieldLabel, Input } from "@/components/ui/input";
 export const Route = createFileRoute("/login")({ component: Login });
 
 function Login() {
-  const { user, isPending } = useCurrentUserState();
+  const { user } = useCurrentUserState();
+  // The server already read the session for this page load. Waiting on the client's own session
+  // check instead rendered a placeholder on the server and the form on the client (a hydration mismatch).
+  const sessionUser = useRouteContext({ from: "__root__", select: (context) => context.sessionUser });
   const methods = useSignInMethods();
-  if (isPending) {
-    return (
-      <main className="grid min-h-dvh place-items-center bg-canvas px-6 text-ink">
-        <div className="h-12 w-48 animate-pulse rounded-xl bg-raised" />
-      </main>
-    );
-  }
-  if (user) return <RedirectToSignIn to="/" />;
+  if (user || sessionUser) return <RedirectToSignIn to="/" />;
 
   return (
     <main className="relative mx-auto flex min-h-dvh max-w-md flex-col justify-between overflow-hidden bg-canvas px-6 py-10 text-ink">

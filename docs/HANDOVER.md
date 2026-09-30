@@ -9,6 +9,16 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 1: Chronicle after import
+
+- **Owner's ask (2026-09-30):** "Start opp1", after Step 12 closed. The import half of Opp 1 was already done (Steps 7b to 7f); this is the other half from `PLAN-ADDENDUM.md`: "Import your history" as the first onboarding path, and a post-import landing on the Chronicle.
+- **Onboarding:** "Import your history" is now the first and primary choice. It completes onboarding with an empty log (as "Start empty" does) and opens `/import`. "Open with a sample log" and "Start empty" keep their labels, so every e2e helper still finds them. The sign-in lines on this screen ("Sign in and it follows you", "Sign in first") now hide when sign-in is off, which 12d missed here.
+- **After an import:** the wizard's last step shows a "Your Chronicle" card: how many eras, from when to when (with years), sessions, layoffs and PR runs, the newest five eras with their dates and session counts, and one line on how an era boundary is decided (a gap of 14 days or more, or a lasting change in weekly sets or PR rate, `ERA_MIN_SEGMENT_WEEKS`). Its button opens `/chronicle`. The card reads `summariseChronicle` (`src/lib/gym/chronicle-summary.ts`) straight off the same `buildChronicle` the Chronicle page uses, over the whole log, so the two cannot disagree. No engine changed and nothing new is stored.
+- **Also fixed (12d follow-up):** `/login` rendered a placeholder on the server and the form on the client, a hydration mismatch the e2e dev server logged. It now trusts the session the root route already read, and redirects when either that or the client session has a user.
+- **Tests:** `src/lib/gym/chronicle-summary.test.ts` (3), `e2e/import-first.spec.ts` (fresh guest, Import your history, a Strong CSV, the card says 2 eras, 1 layoff and 1 PR run, then the Chronicle).
+- **Screens:** onboarding and the import's last step at 390 and 1024 px. Onboarding gains one button and a line above the old two; nothing else on either screen moved.
+- **Not done:** the one-session era the owner's real file produces ("The Return · 2", a single session between two layoffs) still shows as its own era, on the card too; whether a stretch that short should fold into its neighbour is a product call for the owner. Strong's `Squat (Barbell)` / `Deadlift (Barbell)` still don't match the seed goal lifts, so an imported log's era tones read without goal-lift climb until the lifter picks theirs.
+
 ### 2026-09-30 — Step 12d: sign-in through Google, Apple and an email link; the Grok auth broker is gone
 
 - **Owner's choice (2026-09-30):** "Google, Apple, email, and other options I might be missing". Email is a one-tap link (Better Auth's magic link) sent through Resend's HTTP API, with no SDK. Passkeys were suggested as the one worth adding later; not built.
