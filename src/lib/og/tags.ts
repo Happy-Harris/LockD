@@ -68,6 +68,7 @@ const KIND_LINE: Record<PublicShare["kind"], string> = {
   receipt: "A session receipt, kept on Lock’d.",
   wrapped: "A year in the log, kept on Lock’d.",
   program: "A training block, shared on Lock’d.",
+  lifetime: "A whole training life on one receipt, kept on Lock’d.",
 };
 
 /** A public share (`/s/$id`): its own title and a line by kind. No numbers from the payload. */

@@ -28,6 +28,7 @@ import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WorkoutRouteImport } from './routes/workout'
 import { Route as WrappedRouteImport } from './routes/wrapped'
+import { Route as HTokenRouteImport } from './routes/h.$token'
 import { Route as HistoryIdRouteImport } from './routes/history_.$id'
 import { Route as LibraryIdRouteImport } from './routes/library_.$id'
 import { Route as MomentsIdRouteImport } from './routes/moments.$id'
@@ -135,6 +136,11 @@ const WrappedRoute = WrappedRouteImport.update({
   path: '/wrapped',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HTokenRoute = HTokenRouteImport.update({
+  id: '/h/$token',
+  path: '/h/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HistoryIdRoute = HistoryIdRouteImport.update({
   id: '/history_/$id',
   path: '/history/$id',
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/vault': typeof VaultRoute
   '/workout': typeof WorkoutRoute
   '/wrapped': typeof WrappedRoute
+  '/h/$token': typeof HTokenRoute
   '/history/$id': typeof HistoryIdRoute
   '/library/$id': typeof LibraryIdRoute
   '/moments/$id': typeof MomentsIdRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/vault': typeof VaultRoute
   '/workout': typeof WorkoutRoute
   '/wrapped': typeof WrappedRoute
+  '/h/$token': typeof HTokenRoute
   '/history/$id': typeof HistoryIdRoute
   '/library/$id': typeof LibraryIdRoute
   '/moments/$id': typeof MomentsIdRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/vault': typeof VaultRoute
   '/workout': typeof WorkoutRoute
   '/wrapped': typeof WrappedRoute
+  '/h/$token': typeof HTokenRoute
   '/history_/$id': typeof HistoryIdRoute
   '/library_/$id': typeof LibraryIdRoute
   '/moments/$id': typeof MomentsIdRoute
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/vault'
     | '/workout'
     | '/wrapped'
+    | '/h/$token'
     | '/history/$id'
     | '/library/$id'
     | '/moments/$id'
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/vault'
     | '/workout'
     | '/wrapped'
+    | '/h/$token'
     | '/history/$id'
     | '/library/$id'
     | '/moments/$id'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/vault'
     | '/workout'
     | '/wrapped'
+    | '/h/$token'
     | '/history_/$id'
     | '/library_/$id'
     | '/moments/$id'
@@ -407,6 +419,7 @@ export interface RootRouteChildren {
   VaultRoute: typeof VaultRoute
   WorkoutRoute: typeof WorkoutRoute
   WrappedRoute: typeof WrappedRoute
+  HTokenRoute: typeof HTokenRoute
   HistoryIdRoute: typeof HistoryIdRoute
   LibraryIdRoute: typeof LibraryIdRoute
   MomentsIdRoute: typeof MomentsIdRoute
@@ -555,6 +568,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WrappedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/h/$token': {
+      id: '/h/$token'
+      path: '/h/$token'
+      fullPath: '/h/$token'
+      preLoaderRoute: typeof HTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/history_/$id': {
       id: '/history_/$id'
       path: '/history/$id'
@@ -655,6 +675,7 @@ const rootRouteChildren: RootRouteChildren = {
   VaultRoute: VaultRoute,
   WorkoutRoute: WorkoutRoute,
   WrappedRoute: WrappedRoute,
+  HTokenRoute: HTokenRoute,
   HistoryIdRoute: HistoryIdRoute,
   LibraryIdRoute: LibraryIdRoute,
   MomentsIdRoute: MomentsIdRoute,

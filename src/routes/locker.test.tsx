@@ -12,6 +12,9 @@ const state = vi.hoisted(() => ({
   dismiss: vi.fn().mockResolvedValue({ ok: true }),
   unpublish: vi.fn().mockResolvedValue({ ok: true }),
   shares: vi.fn().mockResolvedValue([]),
+  links: vi.fn().mockResolvedValue([]),
+  createLink: vi.fn(),
+  revokeLink: vi.fn().mockResolvedValue({ ok: true }),
 }));
 vi.mock("@tanstack/react-router", () => ({
   createFileRoute: () => () => ({}),
@@ -32,6 +35,9 @@ vi.mock("@/lib/cloud/api", () => ({
   saveProfile: state.save,
   acknowledgePrivacyNotice: state.dismiss,
   unpublishShare: state.unpublish,
+  listHistoryLinks: state.links,
+  createHistoryLink: state.createLink,
+  revokeHistoryLink: state.revokeLink,
 }));
 import { LockerPage } from "./locker";
 afterEach(() => {
@@ -76,5 +82,21 @@ describe("locker controls", () => {
     fireEvent.click(screen.getByRole("button", { name: "Got it" }));
     await waitFor(() => expect(state.dismiss).toHaveBeenCalledOnce());
     expect(state.setProfile).toHaveBeenLastCalledWith({ ...profile, privacyNoticePending: false });
+  });
+
+  it("makes a read-only link, shows its URL, and revokes it", async () => {
+    state.profile = { ...profile, privacyNoticePending: false };
+    const token = "t".repeat(43);
+    state.createLink.mockResolvedValue({ ok: true, link: { token, label: "Coach", createdAt: "2026-09-30T05:00:00.000Z" } });
+    render(<LockerPage />);
+    expect(await screen.findByText("No read-only links. Nobody can see your log.")).toBeVisible();
+    fireEvent.change(screen.getByLabelText("Who is this link for?"), { target: { value: "Coach" } });
+    fireEvent.click(screen.getByRole("button", { name: "Make link" }));
+    await waitFor(() => expect(state.createLink).toHaveBeenCalledWith({ data: { label: "Coach" } }));
+    expect(await screen.findByText(`${window.location.origin}/h/${token}`)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Revoke Coach" }));
+    await waitFor(() => expect(state.revokeLink).toHaveBeenCalledWith({ data: { token } }));
+    expect(await screen.findByText("Link revoked. It no longer opens your log.")).toBeVisible();
+    expect(screen.queryByText(`${window.location.origin}/h/${token}`)).toBeNull();
   });
 });

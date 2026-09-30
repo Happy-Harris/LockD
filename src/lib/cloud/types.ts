@@ -22,6 +22,7 @@ import type {
 } from "@/domain/types";
 import type { TrainingMoment } from "@/lib/gym/moments";
 import type { YearReceipt } from "@/lib/gym/wrapped";
+import type { LifetimeReceipt } from "@/lib/receipt/web-receipt";
 import type { WeightUnit } from "@/domain/units";
 
 export type CloudGym = {
@@ -49,7 +50,7 @@ export type CloudGym = {
 
 export type CloudStatus = "guest" | "pulling" | "synced" | "saving" | "error";
 
-export type ShareKind = "moment" | "receipt" | "wrapped" | "program";
+export type ShareKind = "moment" | "receipt" | "wrapped" | "program" | "lifetime";
 
 export type ShareMomentPayload = {
   kind: "moment";
@@ -95,7 +96,21 @@ export type ShareProgramPayload = {
   file: ProgramFile;
 };
 
-export type SharePayload = ShareMomentPayload | ShareReceiptPayload | ShareWrappedPayload | ShareProgramPayload;
+/** Opp 9: the lifetime receipt (Opp 2), published. Only the receipt's own numbers; never the log it was read from. */
+export type ShareLifetimePayload = {
+  kind: "lifetime";
+  athlete: string;
+  handle?: string;
+  unit: WeightUnit;
+  receipt: LifetimeReceipt;
+};
+
+export type SharePayload =
+  | ShareMomentPayload
+  | ShareReceiptPayload
+  | ShareWrappedPayload
+  | ShareProgramPayload
+  | ShareLifetimePayload;
 
 export type PublicShare = {
   id: string;

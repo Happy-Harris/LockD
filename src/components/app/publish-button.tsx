@@ -12,11 +12,14 @@ export function PublishButton({
   title,
   payload,
   label = "Share a link",
+  note,
 }: {
   kind: ShareKind;
   title: string;
   payload: SharePayload;
   label?: string;
+  /** One line under the button saying what the link will carry. */
+  note?: string;
 }) {
   const { user, isPending } = useCurrentUserState();
   const canSignIn = useCanSignIn();
@@ -57,6 +60,7 @@ export function PublishButton({
       <Button className="w-full" variant="secondary" onClick={() => void share()} disabled={busy}>
         {busy ? "Stamping…" : url ? "Copy link again" : label}
       </Button>
+      {note && !url ? <p className="text-center text-xs leading-relaxed text-subtle">{note}</p> : null}
       {url ? (
         <p className="break-all font-mono text-[11px] text-subtle">
           <Link to="/s/$id" params={{ id: url.split("/").pop() ?? "" }} className="underline-offset-2 hover:underline">
