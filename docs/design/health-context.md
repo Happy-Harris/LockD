@@ -1,6 +1,6 @@
 # Health context (Opp 10)
 
-Status: TypeScript side built (Phase 4). The native half of `LockdHealth` (HealthKit, Health Connect) is not written.
+Status: TypeScript side built (Phase 4). The native half of `LockdHealth` is written (HealthKit on iOS, Health Connect on Android) and compiled in CI. It has not been run against a real Health store.
 
 ## Goal
 
@@ -114,10 +114,23 @@ Recorded 2026-09-30. The owner accepted the recommended answer on all eight.
 - Bodyweight read from Health is stored as ordinary bodyweight rows, so every existing reader works unchanged. Each carries its `source` and **stays out of the cloud vault** (owner's decision, 2026-09-30, which reversed the first answer): `cloudGymFromState` leaves out any row that has a `source` (typed rows have none), and a pull from the vault (`replaceFromCloud`) keeps this device's Health rows. Typed entries still sync. On the device nothing changes: `relativeStrength` keeps its latest-`recorded` rule over typed and Health rows alike. Sleep and HRV never sync either. The Settings copy says so.
 - The evidence catalog has a claim for the 3-reading minimum (`health-overlay-min-samples`).
 
-## Not built, not verified
+## Native half
 
-- The native half of `LockdHealth`: HealthKit and Health Connect reads, the permission prompts, the Info.plist and manifest entries.
-- Everything that needs a device: the permission flow, real samples, sleep stage handling, and whether the read finishes quickly on a long history.
+- **iOS** (`ios/App/App/Native/LockdHealthPlugin.swift`, `SleepIntervals.swift`): read-only HealthKit queries for bodyweight, sleep and HRV. Asleep stages are raw values 1, 3, 4, 5; overlapping intervals are merged so a night is not double counted. HealthKit never reveals whether a read was denied, so `requestAccess` reports every requested type as granted and an empty result reads as "no data". `App.entitlements` carries the HealthKit capability; `NSHealthShareUsageDescription` is in `Info.plist`. `scripts/native/add-healthkit.rb` wired the files into the project.
+- **Android** (`LockdHealthPlugin.kt`, `SleepIntervals.kt`, `HealthPermissionsRationaleActivity.kt`): Health Connect `connect-client:1.1.0-beta01` (1.1.0 needs AGP 8.9.1 and compileSdk 36; ours are 8.7.2 and 35). The library needs minSdk 26 and the app keeps 23, so the manifest overrides the library's minSdk and the plugin returns "unavailable" below API 28. Permissions: read weight, sleep, HRV and read-history. Asleep stages are 2, 4, 5, 6; a session with no stages counts as asleep for its whole duration. A rationale activity and alias are declared as Health Connect requires.
+
+## Checks
+
+| Check | Status |
+|---|---|
+| Code written | iOS and Android |
+| Compile check | CI jobs `ios` and `android`. Android also runs the sleep-interval unit tests (3) |
+| Device check | **Not run.** The permission flow, real samples, sleep stage handling, and whether a long history reads quickly |
+
+## Needs the owner
+
+- **Apple:** a Developer account and team, and the HealthKit capability enabled on the App ID `com.happyharris.lockd`. The simulator build is unsigned, so the entitlement is not exercised there.
+- **Google:** a Play Console account, the Health Connect permissions declaration and its review before release. A debug build on a device works without it.
 
 ## Out of scope
 
