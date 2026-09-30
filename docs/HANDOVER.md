@@ -9,6 +9,19 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Phase 4 design docs: lock-screen timer, watch, health context, program from text
+
+- **Plan:** `PLAN-ADDENDUM.md` § 4 puts the lock-screen rest timer (Opp 6, native half), the watch companion (Opp 7),
+  health context (Opp 10) and program from text (Opp 11) in Phase 4, as design docs first. Built under the owner's
+  standing instruction to work through the plan and merge when green.
+- **Shipped:** four docs in `docs/design/`, each with the goal, what exists today (read from the code), the design, data
+  and storage, a principles check, open questions and what is out of scope. No code, no dependency, no stored-data change.
+- **Found while reading the code:** the web half of Opp 6 (warm-up and working rest, typed values win) shipped in Step 9,
+  so STATUS now says so; program files are matched to the library by exact name only (`importProgramFile`), and the
+  programs screen checks only the `format` field; bodyweight measurements already sync to the cloud vault.
+- **Open for the owner** (listed in each doc, none blocks Phase 3): whether to fund the native watch project; which
+  health sources to read first; how much of a pasted program Lock'd should guess versus ask.
+
 ### 2026-09-30 — Lab, cited: every Ask the Lab answer shows the sessions it used
 
 - **Plan:** `PLAN-ADDENDUM.md` § 6 item 10, "Lab, cited: deterministic Lab already ported in PR 8; this is the audit", against principle 4 ("Lab answers cite the log"). Built under the owner's standing instruction to work through the plan and merge when green.
