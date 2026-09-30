@@ -1,5 +1,6 @@
 import { fingerprint } from "@/domain/ids";
 import type {
+  Equipment,
   Exercise,
   ImportIssue,
   ImportSource,
@@ -245,12 +246,80 @@ export function autoMap(header: readonly string[], profile: SourceProfile): Colu
 const cell = (row: readonly string[], index: number | undefined): string =>
   index === undefined ? "" : (row[index] ?? "");
 
+/**
+ * A name with its bracketed qualifiers dropped: "Bench Press (Dumbbell)" reads "bench press". Used
+ * for session fingerprints (so a file imported before still de-duplicates) and for suggesting near
+ * matches. It is not an identity: two names that differ only in brackets are different exercises.
+ */
 export function normaliseExerciseName(name: string): string {
   return name
     .toLowerCase()
     .replace(/\(.*?\)/g, " ")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+}
+
+/**
+ * The identity of a name in a file: every word, bracketed qualifiers included, case and punctuation
+ * aside. "Bench Press (Barbell)" and "Bench Press (Dumbbell)" are two exercises, and so are
+ * "Shrug (Machine)" and "Shrug (Smith Machine)".
+ */
+export function exerciseNameKey(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/** Equipment a bracketed qualifier can name, as Strong and Hevy write it: "Bench Press (Barbell)". */
+const BRACKET_EQUIPMENT: Readonly<Record<string, Equipment>> = {
+  barbell: "barbell",
+  dumbbell: "dumbbell",
+  machine: "machine",
+  cable: "cable",
+  bodyweight: "bodyweight",
+  kettlebell: "kettlebell",
+  band: "band",
+  "smith machine": "smith machine",
+  "plate loaded": "plate",
+};
+
+/** The equipment a name's brackets say, when they say nothing else. "(Single Leg)" says none. */
+export function bracketEquipment(name: string): Equipment | undefined {
+  const brackets = [...name.matchAll(/\((.*?)\)/g)].map((match) => exerciseNameKey(match[1] ?? ""));
+  if (brackets.length !== 1) return undefined;
+  return BRACKET_EQUIPMENT[brackets[0]!];
+}
+
+/**
+ * Finds the exercise a name in a file already is. A name matches when it is the same name, or when
+ * it is a library name plus a bracket naming that exercise's own equipment: "Bench Press (Barbell)"
+ * is the barbell Bench Press. "Bench Press (Dumbbell)" is not, and neither is "Lat Pulldown (Single
+ * Arm)"; those become their own exercises unless a person confirms otherwise.
+ */
+export function exerciseMatcher(
+  existing: readonly Exercise[],
+): (name: string) => Exercise | undefined {
+  const byKey = new Map<string, Exercise>();
+  const byBase = new Map<string, Exercise[]>();
+  for (const exercise of existing) {
+    const key = exerciseNameKey(exercise.name);
+    if (!byKey.has(key)) byKey.set(key, exercise);
+    const base = normaliseExerciseName(exercise.name);
+    byBase.set(base, [...(byBase.get(base) ?? []), exercise]);
+  }
+  return (name) => {
+    const exact = byKey.get(exerciseNameKey(name));
+    if (exact) return exact;
+    const equipment = bracketEquipment(name);
+    if (!equipment) return undefined;
+    // Only a library name with no brackets of its own, on the equipment the bracket names.
+    return (byBase.get(normaliseExerciseName(name)) ?? []).find(
+      (exercise) =>
+        exercise.equipment === equipment &&
+        exerciseNameKey(exercise.name) === normaliseExerciseName(exercise.name),
+    );
+  };
 }
 
 function toMetres(value: number, unit: "m" | "km" | "mi"): number {

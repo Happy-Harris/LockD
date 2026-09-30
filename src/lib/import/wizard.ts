@@ -1,6 +1,6 @@
 import type { Exercise } from "@/domain/types";
 import type { ImportAnalysis, ParsedWorkout } from "./engine";
-import { normaliseExerciseName } from "./engine";
+import { exerciseMatcher, exerciseNameKey } from "./engine";
 import { findExerciseCandidates, type ExerciseCandidate } from "./batch";
 
 /**
@@ -40,7 +40,7 @@ export function exerciseNames(analysis: ImportAnalysis, selected: ReadonlySet<st
   const seen = new Set<string>();
   const out: string[] = [];
   const add = (name: string) => {
-    const key = normaliseExerciseName(name);
+    const key = exerciseNameKey(name);
     if (!key || seen.has(key)) return;
     seen.add(key);
     out.push(name);
@@ -67,18 +67,18 @@ export interface ResolveStep {
 
 /** What the Resolve step shows: which names match, which might, and which are new. */
 export function resolveStep(names: readonly string[], existing: readonly Exercise[]): ResolveStep {
-  const exact = new Set(existing.map((exercise) => normaliseExerciseName(exercise.name)));
-  const matched = names.filter((name) => exact.has(normaliseExerciseName(name)));
-  const unmatched = names.filter((name) => !exact.has(normaliseExerciseName(name)));
+  const matchExisting = exerciseMatcher(existing);
+  const matched = names.filter((name) => matchExisting(name));
+  const unmatched = names.filter((name) => !matchExisting(name));
   const candidates = findExerciseCandidates(unmatched, existing);
-  const suggested = new Set(candidates.map((candidate) => normaliseExerciseName(candidate.name)));
-  const fresh = unmatched.filter((name) => !suggested.has(normaliseExerciseName(name)));
+  const suggested = new Set(candidates.map((candidate) => exerciseNameKey(candidate.name)));
+  const fresh = unmatched.filter((name) => !suggested.has(exerciseNameKey(name)));
   return { matched, candidates, fresh };
 }
 
 /** The confirmed "same exercise" choices as the batch wants them, keyed by normalised name. */
 export function nameOverridesFrom(confirmed: ReadonlyMap<string, string>): Map<string, string> {
   const out = new Map<string, string>();
-  for (const [name, exerciseId] of confirmed) out.set(normaliseExerciseName(name), exerciseId);
+  for (const [name, exerciseId] of confirmed) out.set(exerciseNameKey(name), exerciseId);
   return out;
 }

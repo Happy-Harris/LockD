@@ -376,6 +376,58 @@ describe("buildImportBatch", () => {
     expect(batch.newExercises.map((e) => e.name)).toEqual(["Barbell Bench Press Wide"]);
   });
 
+  it("keeps equipment variants apart: a bracket matches the library only on that exercise's own equipment", () => {
+    const variants = analyseStrongCsv(
+      [
+        "Date,Exercise Name,Weight,Reps",
+        "2026-01-01,Bench Press (Barbell),100,5",
+        "2026-01-01,Bench Press (Dumbbell),35,8",
+        "2026-01-01,Shrug (Machine),80,12",
+        "2026-01-01,Shrug (Smith Machine),100,12",
+        "2026-01-01,Shrug (Dumbbell),40,12",
+        "2026-01-02,Bench Press (Dumbbell),37.5,8",
+        "2026-01-02,Shrug (Machine),85,12",
+      ].join("\n"),
+    );
+    const batch = buildImportBatch(variants, options());
+    const ids = (date: string) =>
+      batch.workouts
+        .find((w) => w.workout.localDate === date)!
+        .exercises.map((e) => e.exercise.exerciseNameSnapshot + "=" + e.exercise.exerciseId);
+    expect(batch.newExercises.map((e) => e.name)).toEqual([
+      "Bench Press (Dumbbell)",
+      "Shrug (Machine)",
+      "Shrug (Smith Machine)",
+      "Shrug (Dumbbell)",
+    ]);
+    expect(ids("2026-01-01")[0]).toBe("Bench Press=seed-bench-press");
+    // The same name on a later day is the exercise the first one created, not a new one.
+    const dumbbell = batch.newExercises[0]!.id;
+    expect(ids("2026-01-02")[0]).toBe(`Bench Press (Dumbbell)=${dumbbell}`);
+  });
+
+  it("does not treat a bracket that names no equipment as a match", () => {
+    const qualified = analyseStrongCsv(
+      "Date,Exercise Name,Reps\n2026-01-01,Bench Press (Paused),5\n2026-01-01,Bench Press (Barbell) (Wide),5\n",
+    );
+    expect(buildImportBatch(qualified, options()).newExercises.map((e) => e.name)).toEqual([
+      "Bench Press (Paused)",
+      "Bench Press (Barbell) (Wide)",
+    ]);
+    // It is still suggested, so a person can say it is the same lift.
+    expect(
+      findExerciseCandidates(["Bench Press (Dumbbell)", "Bench Press (Paused)"], library).map(
+        (c) => c.exercise.id,
+      ),
+    ).toEqual(["seed-bench-press", "seed-bench-press"]);
+  });
+
+  it("fingerprints a session the same way as before, so a file imported earlier still adds nothing", () => {
+    const first = analyseStrongCsv("Date,Exercise Name,Reps\n2026-01-01 10:00:00,Bench Press (Dumbbell),5\n");
+    const again = analyseStrongCsv("Date,Exercise Name,Reps\n2026-01-01 10:00:00,Bench Press,5\n");
+    expect(first.workouts[0]!.fingerprint).toBe(again.workouts[0]!.fingerprint);
+  });
+
   it("infers how a new exercise is tracked from its values, without inventing a load", () => {
     const batch = buildImportBatch(analysis, options());
     const byName = Object.fromEntries(batch.newExercises.map((e) => [e.name, e.trackingType]));

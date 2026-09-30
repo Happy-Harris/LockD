@@ -14,6 +14,8 @@ import type {
   WorkoutSet,
 } from "@/domain/types";
 import {
+  exerciseMatcher,
+  exerciseNameKey,
   fingerprintSession,
   normaliseExerciseName,
   type ExerciseHints,
@@ -53,7 +55,7 @@ export interface BuildBatchOptions {
   /** Import only these sessions (the preview's selection). */
   selectedKeys?: ReadonlySet<string>;
   /**
-   * "Same exercise" decisions a person confirmed, keyed by `normaliseExerciseName(name in the file)`.
+   * "Same exercise" decisions a person confirmed, keyed by `exerciseNameKey(name in the file)`.
    * Checked before the exact-name match. A name that is not here and is not an exact match becomes a
    * new exercise: nothing is merged that nobody confirmed.
    */
@@ -79,9 +81,9 @@ export function buildImportBatch(
   const now = (options.now?.() ?? new Date()).toISOString();
   const newId = options.newId ?? uuid;
   const jobId = newId();
+  const matchExisting = exerciseMatcher(options.existingExercises);
+  /** Names already resolved in this file, by `exerciseNameKey`. */
   const byName = new Map<string, Exercise>();
-  for (const exercise of options.existingExercises)
-    byName.set(normaliseExerciseName(exercise.name), exercise);
   const byId = new Map(options.existingExercises.map((exercise) => [exercise.id, exercise]));
 
   const newExercises: Exercise[] = [];
@@ -95,8 +97,8 @@ export function buildImportBatch(
     hints: ExerciseHints | undefined,
     sets: ParsedExercise["sets"],
   ): Exercise => {
-    const key = normaliseExerciseName(name);
-    let exercise = byName.get(key);
+    const key = exerciseNameKey(name);
+    let exercise = byName.get(key) ?? matchExisting(name);
     if (!exercise) {
       const confirmed = options.nameOverrides?.get(key);
       const chosen = confirmed ? byId.get(confirmed) : undefined;
@@ -128,9 +130,9 @@ export function buildImportBatch(
         createdAt: now,
         updatedAt: now,
       };
-      byName.set(key, exercise);
       newExercises.push(exercise);
     }
+    byName.set(key, exercise);
     return exercise;
   };
 
@@ -412,7 +414,7 @@ export function findExerciseCandidates(
   names: readonly string[],
   existing: readonly Exercise[],
 ): ExerciseCandidate[] {
-  const exact = new Set(existing.map((exercise) => normaliseExerciseName(exercise.name)));
+  const matchExisting = exerciseMatcher(existing);
   const pool = existing
     .map((exercise) => ({ exercise, tokens: words(exercise.name) }))
     .filter((entry) => entry.tokens.size >= CANDIDATE_MIN_WORDS);
@@ -420,8 +422,8 @@ export function findExerciseCandidates(
   const out: ExerciseCandidate[] = [];
   const seen = new Set<string>();
   for (const name of names) {
-    const key = normaliseExerciseName(name);
-    if (seen.has(key) || exact.has(key)) continue;
+    const key = exerciseNameKey(name);
+    if (seen.has(key) || matchExisting(name)) continue;
     seen.add(key);
     const tokens = words(name);
     if (tokens.size < CANDIDATE_MIN_WORDS) continue;

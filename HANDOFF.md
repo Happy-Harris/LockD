@@ -25,7 +25,7 @@ Logger (sets, rest timer, previous values, ghost, unilateral pairs, supersets, R
 
 ## What is not verified
 
-- **Real files.** The Hevy, sister-app and Strong importers are checked against synthetic or donor fixtures only, not against a fresh real export.
+- **Real files.** The Strong importer has been run on one real export (the owner's, 2026-09-30, not in the repo). Hevy and the sister-app importers are checked against synthetic or donor fixtures only.
 - **A database.** Sign-in, sync, shares and the server Lab have not been exercised end to end against a database in the recent sessions (none was available); the server input validators are unit-tested, the handlers are unchanged.
 - **Real devices.** Rest-timer notifications and vibration, clip storage against a real recording, and the service worker on a phone were tested in headless Chromium only.
 - **Screens at 1024 px** for several late changes (Chronicle eras, program-complete, the unit-aware Today milestones) were not looked at.
