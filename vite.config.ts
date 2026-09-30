@@ -68,7 +68,7 @@ function pgliteBootstrapPlugin(): Plugin {
 }
 
 // `0.0.0.0:8080` is the dev-server host and port the e2e config expects; keep them in step.
-export default defineConfig(({ command, isPreview }) => ({
+export default defineConfig(({ command, isPreview, mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 8080,
@@ -86,8 +86,8 @@ export default defineConfig(({ command, isPreview }) => ({
   plugins: [
     pgliteBootstrapPlugin(),
     tailwindcss(),
-    tanstackStart(),
-    ...(command === "build" || isPreview
+    tanstackStart(mode === "native" ? { spa: { enabled: true } } : undefined),
+    ...((command === "build" || isPreview) && mode !== "native"
       ? [
           nitro({ preset: "vercel" }),
           copyPgliteAssetsPlugin(),

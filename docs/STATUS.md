@@ -132,6 +132,10 @@ are the ones the Step 4 to 8 work has been building underneath.
 | 10 | Health context: bodyweight, sleep, HRV overlays in Chronicle, no readiness score | design doc only | Phase 4: `docs/design/health-context.md` |
 | 11 | Program from text: paste a program or spreadsheet, get a routine with progression | **done** | Line grammar, preview with every unused line listed, saved only on Save program. Owner's seven answers recorded in `docs/design/program-from-text.md`. Spreadsheet columns, loads, differing weeks and supersets are not in version 1 |
 
+**Phase 4 foundation: the native shell.** Capacitor config, a static single-page build (`npm run build:native`) and the
+platform check are built; nothing has run on a device and no `ios/` or `android/` folder is committed. See
+`docs/design/native-shell.md`, which lists the defaults taken (owner can reverse) and the owner-only steps.
+
 Phase 3 items that are not an Opp (`PLAN-ADDENDUM.md` § 6):
 
 | Item | What | State | Done by / next |
