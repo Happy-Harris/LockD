@@ -99,7 +99,12 @@ function RootDocument() {
 }
 
 function isPublicPath(pathname: string) {
-  return pathname === "/login" || pathname.startsWith("/s/") || pathname.startsWith("/u/");
+  return (
+    pathname === "/login" ||
+    pathname === "/receipt" ||
+    pathname.startsWith("/s/") ||
+    pathname.startsWith("/u/")
+  );
 }
 
 function GymGate() {

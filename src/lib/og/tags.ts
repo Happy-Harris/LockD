@@ -52,6 +52,17 @@ export function siteOg(origin: string, path = "/"): MetaTag[] {
   return ogMeta({ origin, path, title: SITE_NAME, description: SITE_DESCRIPTION });
 }
 
+/** The web receipt (`/receipt`, Opp 2): the same card for everyone, since the page holds no one's data until a file is dropped. */
+export function receiptOg(origin: string): MetaTag[] {
+  return ogMeta({
+    origin,
+    path: "/receipt",
+    title: `Your training receipt · ${SITE_NAME}`,
+    description:
+      "Drop a Strong or Hevy export and read your whole training life back. It stays on your device; no account needed.",
+  });
+}
+
 const KIND_LINE: Record<PublicShare["kind"], string> = {
   moment: "A moment from a lifter’s record, kept on Lock’d.",
   receipt: "A session receipt, kept on Lock’d.",

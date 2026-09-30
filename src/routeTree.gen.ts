@@ -21,6 +21,7 @@ import { Route as LockerRouteImport } from './routes/locker'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MoreRouteImport } from './routes/more'
 import { Route as ProgramsRouteImport } from './routes/programs'
+import { Route as ReceiptRouteImport } from './routes/receipt'
 import { Route as RoutinesRouteImport } from './routes/routines'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ToolsRouteImport } from './routes/tools'
@@ -97,6 +98,11 @@ const MoreRoute = MoreRouteImport.update({
 const ProgramsRoute = ProgramsRouteImport.update({
   id: '/programs',
   path: '/programs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReceiptRoute = ReceiptRouteImport.update({
+  id: '/receipt',
+  path: '/receipt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RoutinesRoute = RoutinesRouteImport.update({
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/more': typeof MoreRoute
   '/programs': typeof ProgramsRoute
+  '/receipt': typeof ReceiptRoute
   '/routines': typeof RoutinesRoute
   '/settings': typeof SettingsRoute
   '/tools': typeof ToolsRoute
@@ -229,6 +236,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/more': typeof MoreRoute
   '/programs': typeof ProgramsRoute
+  '/receipt': typeof ReceiptRoute
   '/routines': typeof RoutinesRoute
   '/settings': typeof SettingsRoute
   '/tools': typeof ToolsRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/more': typeof MoreRoute
   '/programs': typeof ProgramsRoute
+  '/receipt': typeof ReceiptRoute
   '/routines': typeof RoutinesRoute
   '/settings': typeof SettingsRoute
   '/tools': typeof ToolsRoute
@@ -294,6 +303,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/more'
     | '/programs'
+    | '/receipt'
     | '/routines'
     | '/settings'
     | '/tools'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/more'
     | '/programs'
+    | '/receipt'
     | '/routines'
     | '/settings'
     | '/tools'
@@ -356,6 +367,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/more'
     | '/programs'
+    | '/receipt'
     | '/routines'
     | '/settings'
     | '/tools'
@@ -388,6 +400,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MoreRoute: typeof MoreRoute
   ProgramsRoute: typeof ProgramsRoute
+  ReceiptRoute: typeof ReceiptRoute
   RoutinesRoute: typeof RoutinesRoute
   SettingsRoute: typeof SettingsRoute
   ToolsRoute: typeof ToolsRoute
@@ -491,6 +504,13 @@ declare module '@tanstack/react-router' {
       path: '/programs'
       fullPath: '/programs'
       preLoaderRoute: typeof ProgramsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/receipt': {
+      id: '/receipt'
+      path: '/receipt'
+      fullPath: '/receipt'
+      preLoaderRoute: typeof ReceiptRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/routines': {
@@ -628,6 +648,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MoreRoute: MoreRoute,
   ProgramsRoute: ProgramsRoute,
+  ReceiptRoute: ReceiptRoute,
   RoutinesRoute: RoutinesRoute,
   SettingsRoute: SettingsRoute,
   ToolsRoute: ToolsRoute,
