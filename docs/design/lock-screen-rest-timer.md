@@ -1,7 +1,7 @@
 # Lock-screen rest timer (Opp 6, native half)
 
-Status: **TypeScript side built** (2026-09-30); the native side is not written and nothing has run on a device. It was a
-design doc first; the sections below are kept as the design, and "Defaults taken" records the answers.
+Status: **TypeScript side built with placeholder values** (2026-09-30), awaiting the owner's answers below; the native side is not
+written and nothing has run on a device.
 
 ## Goal
 
@@ -98,20 +98,20 @@ Opp 6 (warm-up and working rest, precedence, typed values) shipped in Step 9 and
    alert and say so?
 7. Is a home-screen widget in scope for this Opp, or later?
 
-## Defaults taken (owner can reverse) and what was built
+## Open questions: not decided, waiting for the owner
 
-The owner was not asked; the standing order was to take the smallest default consistent with this doc and the principles.
+The seven questions above stand. The code below uses placeholder values so it runs and can be tested; none is a decision,
+and each changes when the owner answers. Recommended answers are in the thread.
 
-| # | Question | Default taken |
+| # | Question | Placeholder in the code |
 |---|---|---|
-| 1 | Controls | Plus, minus and stop. No "complete next set" (it would write history from a lock screen) |
-| 2 | Step | 15 s, the in-app and Media Session step (`LOCK_SCREEN_STEP_SECONDS`) |
-| 3 | Media Session tile | Off in the native build (it would be a second tile); unchanged on the web |
-| 4 | End alert settings | Follows the existing "Rest timer notification" setting; the sound and vibration settings still apply in the app |
-| 5 | "Rest done" lifetime | 60 s, then it clears (`LOCK_SCREEN_DONE_LINGER_SECONDS`) |
-| 6 | Android exact alarms | Not requested; the alert is scheduled with `allowWhileIdle` and may be a little late on Android |
-| 7 | Home-screen widget | Later, not in this Opp |
-| n/a | Stored native activity id | None stored; `show` must be safe to call again for a timer that is already showing |
+| 1 | Controls | plus, minus, stop |
+| 2 | Step | 15 s (`LOCK_SCREEN_STEP_SECONDS`) |
+| 3 | Media Session tile in the native build | off in native, unchanged on the web |
+| 4 | End alert settings | follows "Rest timer notification" |
+| 5 | "Rest done" lifetime | 60 s (`LOCK_SCREEN_DONE_LINGER_SECONDS`) |
+| 6 | Android exact alarms | not requested |
+| 7 | Home-screen widget | none |
 
 Built:
 
