@@ -9,6 +9,22 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 7: watch companion (TypeScript side)
+
+- **Plan:** `PLAN-ADDENDUM.md` § 4 row 7; the design and the owner's seven answers are in `docs/design/watch-companion.md`.
+- **Shipped:** the phone side of the Apple Watch protocol. The watch gets a snapshot of the active workout (current set, previous values,
+  the engine's target when it made one, rest, the vibrate setting) and sends back three intents: complete set, adjust rest, stop rest. The
+  phone applies them through the store's own actions, drops a complete-set tap for a set that is no longer current and re-sends the watch a
+  fresh snapshot, and sends a short record line (lift and value). Sync sends only on a real change; failures are swallowed. `WatchSync` is
+  mounted in the shell and does nothing off native iOS.
+- **Stored data:** none.
+- **Not written:** the SwiftUI watch app and the `LockdWatch` plugin (WatchConnectivity). **Not verified:** everything native; tap latency; the
+  watch's own weight formatting.
+- **Tests:** `src/lib/native/watch.test.ts`.
+- **Plan status:** with this, every plan item's TypeScript side is built. What remains needs the owner or a device: the Apple Developer account,
+  signing and store setup, the native Swift and Kotlin halves (Live Activity, Android notification, HealthKit, Health Connect, watch app) through
+  cloud CI, and the Android locked-screen lateness test.
+
 ### 2026-09-30 — Opp 10: health context (TypeScript side)
 
 - **Plan:** `PLAN-ADDENDUM.md` § 4 row 10; the design and the owner's eight answers are in `docs/design/health-context.md`.
