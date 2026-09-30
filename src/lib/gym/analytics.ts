@@ -316,23 +316,6 @@ export function streakDays(slices: SessionSlice[], reference = new Date()): numb
   return streak;
 }
 
-export function sessionCountStreak(slices: SessionSlice[]): number {
-  if (slices.length === 0) return 0;
-  const dates = [...new Set(slices.map((slice) => slice.workout.localDate))].sort();
-  let best = 1;
-  let current = 1;
-  for (let i = 1; i < dates.length; i += 1) {
-    const gap = localDateToOrdinal(dates[i]!) - localDateToOrdinal(dates[i - 1]!);
-    if (gap <= 3) {
-      current += 1;
-      best = Math.max(best, current);
-    } else {
-      current = 1;
-    }
-  }
-  return dates.length;
-}
-
 export interface PreviousSet {
   weightG?: number;
   reps?: number;
@@ -360,29 +343,6 @@ export function previousSetsForExercise(
     return sets.map((set) => ({ weightG: set.weightG, reps: set.reps, rpe: set.rpe, side: set.side }));
   }
   return [];
-}
-
-export function suggestNextLoad(
-  previous: PreviousSet[],
-  incrementG: number,
-  targetRepMax?: number,
-): { weightG?: number; reps?: number; reason: string } {
-  if (previous.length === 0) return { reason: "No prior working sets on file." };
-  const last = previous[previous.length - 1]!;
-  const allHitTop =
-    targetRepMax != null && previous.every((set) => (set.reps ?? 0) >= targetRepMax);
-  if (allHitTop && last.weightG) {
-    return {
-      weightG: last.weightG + incrementG,
-      reps: previous[0]?.reps,
-      reason: `All sets hit ${targetRepMax}. Add one increment.`,
-    };
-  }
-  return {
-    weightG: last.weightG,
-    reps: last.reps,
-    reason: "Repeat last load.",
-  };
 }
 
 export function e1rmSeries(

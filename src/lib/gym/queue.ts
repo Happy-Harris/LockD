@@ -213,34 +213,3 @@ export function nearMisses(opts: {
   }
   return misses.slice(0, 6);
 }
-
-export function counterfactual(opts: {
-  weightG?: number;
-  reps?: number;
-  extraReps: number;
-  extraWeightG: number;
-  exerciseId: string;
-  slices: SessionSlice[];
-  formula: OneRepMaxFormula;
-  excludeWarmups: boolean;
-  unit: WeightUnit;
-}): string {
-  const reps = (opts.reps ?? 0) + opts.extraReps;
-  const weight = (opts.weightG ?? 0) + opts.extraWeightG;
-  const estimate = estimateOneRepMax(weight, reps, opts.formula);
-  if (!estimate) return "Not a valid estimate.";
-  let best = 0;
-  for (const slice of opts.slices) {
-    const row = slice.exercises.find((exercise) => exercise.exerciseId === opts.exerciseId);
-    if (!row) continue;
-    for (const set of slice.sets) {
-      if (set.workoutExerciseId !== row.id || !set.isCompleted) continue;
-      if (opts.excludeWarmups && set.setType === "warmup") continue;
-      const value = estimateOneRepMax(set.weightG ?? 0, set.reps ?? 0, opts.formula);
-      if (value && value.value > best) best = value.value;
-    }
-  }
-  const label = `${formatWeight(weight, opts.unit)}×${reps}`;
-  if (estimate.value > best) return `${label} would have been a new estimated 1RM.`;
-  return `${label} would not have been a record.`;
-}

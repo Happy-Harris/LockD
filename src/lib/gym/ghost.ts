@@ -1,5 +1,4 @@
-import { estimateOneRepMax } from "@/domain/oneRepMax";
-import type { OneRepMaxFormula, Workout, WorkoutSet } from "@/domain/types";
+import type { Workout, WorkoutSet } from "@/domain/types";
 import { formatWeight, type WeightUnit } from "@/domain/units";
 import type { SessionSlice } from "./analytics";
 
@@ -167,37 +166,6 @@ function bestGhost(sets: GhostSet[]): GhostSet {
     const current = (best.weightG ?? 0) * 100 + (best.reps ?? 0);
     return score >= current ? set : best;
   });
-}
-
-export function wouldBePr(opts: {
-  weightG?: number;
-  reps?: number;
-  extraReps?: number;
-  extraWeightG?: number;
-  exerciseId: string;
-  slices: SessionSlice[];
-  formula: OneRepMaxFormula;
-  excludeWarmups: boolean;
-}): { would: boolean; label: string } | null {
-  const reps = (opts.reps ?? 0) + (opts.extraReps ?? 0);
-  const weight = (opts.weightG ?? 0) + (opts.extraWeightG ?? 0);
-  const estimate = estimateOneRepMax(weight, reps, opts.formula);
-  if (!estimate) return null;
-  let best = 0;
-  for (const slice of opts.slices) {
-    const row = slice.exercises.find((exercise) => exercise.exerciseId === opts.exerciseId);
-    if (!row) continue;
-    for (const set of slice.sets) {
-      if (set.workoutExerciseId !== row.id || !set.isCompleted) continue;
-      if (opts.excludeWarmups && set.setType === "warmup") continue;
-      const value = estimateOneRepMax(set.weightG ?? 0, set.reps ?? 0, opts.formula);
-      if (value && value.value > best) best = value.value;
-    }
-  }
-  if (estimate.value > best) {
-    return { would: true, label: "new e1RM" };
-  }
-  return { would: false, label: "not a record" };
 }
 
 export function ghostHeader(workout: Workout, ghost?: SessionSlice): string {

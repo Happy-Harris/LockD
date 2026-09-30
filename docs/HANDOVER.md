@@ -9,6 +9,12 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Step 12c: the D16 dead code is removed
+
+- **What:** deleted `counterfactual` (`queue.ts`), `wouldBePr` (`ghost.ts`), `sessionCountStreak` and `suggestNextLoad` (`analytics.ts`) and the `short_rests` autopsy code, about 110 lines. Re-grepped first: none had a production caller. `sessionCountStreak` returned the wrong value (it counted dates, not the streak it computed). The `wouldBePr` characterisation test, which pinned a bug, went with it.
+- **Checked:** `npm run verify`; no snapshot changed.
+- **Next:** 12d, the auth broker. It needs the owner's choice of real sign-in providers first.
+
 ### 2026-09-30 — Step 12b: the preview bridge, app-data and multiplayer are removed
 
 - **What:** deleted `src/components/preview-host-bridge.tsx`, `src/lib/preview-host-bridge.ts`, `src/lib/preview-embedder-origin.ts`, `src/lib/app-data/` and `src/lib/multiplayer/`, and `PreviewHostBridge` from the root route. Also dropped the app-data suites from `test:legacy`, the `src/lib/app-data/**` Vitest exclude and the three app-data rows in the brand allowlist. About 2,000 lines, no behaviour change: only the root route imported any of it, and nothing imported app-data or multiplayer.
