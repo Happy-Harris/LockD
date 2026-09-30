@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Play, RotateCcw } from "lucide-react";
+import { ComebackCard } from "@/components/app/comeback-card";
 import { Page } from "@/components/app/shell";
 import { WeeklyVerdictCard } from "@/components/app/weekly-verdict-card";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ function TodayPage() {
     lens,
     board,
     easier,
+    comeback,
     chronicle,
     moments,
     intelligence,
@@ -147,6 +149,10 @@ function TodayPage() {
           </p>
           <p className="mt-2 text-sm leading-relaxed text-muted">{easier.why}</p>
         </Card>
+      ) : null}
+
+      {comeback ? (
+        <ComebackCard comeback={comeback} calls={board} unit={unit} rule={settings.comebackRule} />
       ) : null}
 
       {autopsies.some((row) => row.stalled) ? (

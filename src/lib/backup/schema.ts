@@ -253,6 +253,8 @@ const barProfile = z.object({
 
 const band = z.object({ min: z.number().min(0).max(1000), max: z.number().min(0).max(1000) });
 
+const comebackPct = z.number().int().min(50).max(100);
+
 const settings = z.object({
   unitSystem: z.enum(["metric", "imperial"]),
   oneRepMaxFormula: z.enum(["epley", "brzycki"]),
@@ -268,6 +270,9 @@ const settings = z.object({
   warmupRestSeconds: seconds.optional(),
   restTimerVibrate: z.boolean().optional(),
   restTimerNotification: z.boolean().optional(),
+  comebackRule: z
+    .object({ shortPct: comebackPct, midPct: comebackPct, longPct: comebackPct })
+    .optional(),
   goalLiftIds: z.array(id).max(50),
   defaultBarProfileId: id,
   defaultPlateInventoryId: id,

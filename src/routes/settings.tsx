@@ -20,6 +20,15 @@ import { EquipmentEditor } from "@/components/app/equipment-editor";
 import { GoalLiftPicker } from "@/components/app/goal-lift-picker";
 import { csvFiles } from "@/lib/export/csv";
 import { useGym } from "@/lib/gym/store";
+import {
+  COMEBACK_LAYOFF_DAYS,
+  COMEBACK_LONG_DAYS,
+  COMEBACK_MID_DAYS,
+  COMEBACK_PCT_MAX,
+  COMEBACK_PCT_MIN,
+  DEFAULT_COMEBACK_RULE,
+} from "@/lib/gym/comeback";
+import type { ComebackRule } from "@/domain/types";
 import { describeImport } from "@/lib/import/summary";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
 import { SafetyBackups } from "@/components/app/safety-backups";
@@ -205,6 +214,7 @@ function SettingsPage() {
       <Section title="Equipment">
         <EquipmentEditor />
       </Section>
+      <ComebackSection />
       <Section title="Rest timer">
         <Segment
           value={String(settings.defaultRestSeconds)}
@@ -491,12 +501,78 @@ function SettingsPage() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+/** Opp 8: the three comeback percentages. The bands are fixed; the numbers are the lifter's. */
+function ComebackSection() {
+  const rule = useGym((s) => s.settings.comebackRule) ?? DEFAULT_COMEBACK_RULE;
+  const updateSettings = useGym((s) => s.updateSettings);
+  const options: number[] = [];
+  for (let pct = COMEBACK_PCT_MAX; pct >= COMEBACK_PCT_MIN; pct -= 5) options.push(pct);
+  const rows: Array<[keyof ComebackRule, string]> = [
+    ["shortPct", `${COMEBACK_LAYOFF_DAYS} to ${COMEBACK_MID_DAYS - 1} days away`],
+    ["midPct", `${COMEBACK_MID_DAYS} to ${COMEBACK_LONG_DAYS - 1} days away`],
+    ["longPct", `${COMEBACK_LONG_DAYS} or more days away`],
+  ];
+  const isDefault =
+    rule.shortPct === DEFAULT_COMEBACK_RULE.shortPct &&
+    rule.midPct === DEFAULT_COMEBACK_RULE.midPct &&
+    rule.longPct === DEFAULT_COMEBACK_RULE.longPct;
   return (
-    <Card className="mt-4">
-      <h2 className="mb-3 font-display text-xl font-semibold tracking-tight">{title}</h2>
-      {children}
-    </Card>
+    <Section title="Comeback" id="comeback">
+      <p className="text-xs leading-relaxed text-subtle">
+        After a layoff, each lift restarts at a share of its last working load, rounded down to a
+        load you can build. This is a rule, not a prediction; set the numbers you trust.
+      </p>
+      <div className="mt-3 space-y-2">
+        {rows.map(([key, label]) => (
+          <label key={key} className="flex items-center justify-between gap-3 text-sm">
+            <span>{label}</span>
+            <select
+              value={rule[key]}
+              data-testid={`comeback-${key}`}
+              onChange={(event) =>
+                updateSettings({ comebackRule: { ...rule, [key]: Number(event.target.value) } })
+              }
+              className="h-11 rounded-xl bg-raised px-3 text-sm text-ink hairline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
+            >
+              {options.map((pct) => (
+                <option key={pct} value={pct}>
+                  {pct}%
+                </option>
+              ))}
+            </select>
+          </label>
+        ))}
+      </div>
+      {!isDefault ? (
+        <button
+          type="button"
+          className="mt-3 text-sm text-accent underline-offset-2 hover:underline"
+          onClick={() => updateSettings({ comebackRule: undefined })}
+        >
+          Back to {DEFAULT_COMEBACK_RULE.shortPct}, {DEFAULT_COMEBACK_RULE.midPct} and{" "}
+          {DEFAULT_COMEBACK_RULE.longPct}%
+        </button>
+      ) : null}
+    </Section>
+  );
+}
+
+function Section({
+  title,
+  id,
+  children,
+}: {
+  title: string;
+  id?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div id={id} className="scroll-mt-4">
+      <Card className="mt-4">
+        <h2 className="mb-3 font-display text-xl font-semibold tracking-tight">{title}</h2>
+        {children}
+      </Card>
+    </div>
   );
 }
 

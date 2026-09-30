@@ -127,7 +127,7 @@ are the ones the Step 4 to 8 work has been building underneath.
 | 5 | History never paywalled: a public promise, full history, charts and export free forever; a read-only API or MCP connector later | **done** except the connector | promise in Settings, guard test `src/test/history-never-paywalled.test.ts`, CSV export (Step 7f) |
 | 6 | In-set speed parity: separate warm-up and working rest timers, lock-screen rest timer, repeat last session, typed values win | not started | Step 9. "Repeat last session" already exists. Lock-screen timer needs native code (Phase 4 doc) |
 | 7 | Watch companion (native SwiftUI, then Wear OS) | design doc only | Phase 4 |
-| 8 | Comeback mode: detect layoffs, suggest re-entry loads, PRs "since comeback" | not started | |
+| 8 | Comeback mode: detect layoffs, suggest re-entry loads, PRs "since comeback" | **done** | `Opp 8: comeback mode`: after 14+ days away each lift restarts at 90 / 80 / 70 % of its last working load by the length of the break (A-7, DA-3), rounded down to a buildable load, stated as a rule and editable in Settings; a Comeback card on Today with the records set since the return |
 | 9 | Shareable receipts: private by default, a share card, a read-only link | not started as new work (share cards already existed) | |
 | 10 | Health context: bodyweight, sleep, HRV overlays in Chronicle, no readiness score | design doc only | Phase 4 |
 | 11 | Program from text: paste a program or spreadsheet, get a routine with progression | not started | |

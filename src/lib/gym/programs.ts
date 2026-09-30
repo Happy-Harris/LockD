@@ -418,7 +418,8 @@ export function applyProgramLoad(opts: {
     !suggestion ||
     (suggestion.missStreak === 0 &&
       suggestion.action !== "deload" &&
-      suggestion.action !== "easier_week");
+      suggestion.action !== "easier_week" &&
+      suggestion.action !== "re_entry");
   // Step from the heaviest working load of the last session, not from a warm-up set.
   const lastLoadG = suggestion?.lastWeightG ?? previousWeightG;
   if (rule.kind === "linear" && !isDeload && lastLoadG && wentToPlan) {
@@ -429,7 +430,8 @@ export function applyProgramLoad(opts: {
   if (rule.kind === "hold" && !isDeload && lastLoadG && wentToPlan) {
     weightG = lastLoadG;
   }
-  if (isDeload && weightG) {
+  // After a layoff the comeback load already stands in for a lighter week; a deload does not cut it again.
+  if (isDeload && weightG && suggestion?.action !== "re_entry") {
     const pct = rule.deloadPercent ?? 0.85;
     weightG = stepDownG(weightG, pct, increment, snap);
   }

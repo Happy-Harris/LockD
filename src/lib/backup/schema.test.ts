@@ -112,6 +112,19 @@ describe("parseBackup refuses what it cannot trust", () => {
     expect(parseBackup(file).ok).toBe(false);
   });
 
+  it("takes a comeback rule in whole percents from 50 to 100, and refuses anything else (Opp 8)", () => {
+    const withRule = (comebackRule: unknown) => {
+      const file = base();
+      (file.settings as unknown as Record<string, unknown>).comebackRule = comebackRule;
+      return parseBackup(file);
+    };
+    const ok = withRule({ shortPct: 95, midPct: 85, longPct: 60 });
+    expect(ok.ok && ok.backup.settings.comebackRule).toEqual({ shortPct: 95, midPct: 85, longPct: 60 });
+    expect(withRule({ shortPct: 120, midPct: 80, longPct: 70 }).ok).toBe(false);
+    expect(withRule({ shortPct: 90, midPct: 80.5, longPct: 70 }).ok).toBe(false);
+    expect(withRule({ shortPct: 90, midPct: 80 }).ok).toBe(false);
+  });
+
   it("refuses infinite numbers (JSON.parse cannot make them, but a caller could)", () => {
     const file = base();
     (file.workoutSets[0] as unknown as Record<string, unknown>).weightG = Number.POSITIVE_INFINITY;
