@@ -111,7 +111,7 @@ Recorded 2026-09-30. The owner accepted the recommended answer on all eight.
 - Storage: `BodyMeasurement.source` and `sourceId` (optional), `HealthSample` and `healthSamples` (optional in `GymData` and the backup, empty by default), a Dexie table added in database version 4, `settings.health` (which types are on, and the overlay switch). The `localStorage` copy leaves an empty `healthSamples` out, so a lifter with no readings keeps the exact format earlier builds wrote and read.
 - `src/lib/native/health.ts`: the `LockdHealth` plugin contract with a web no-op, and the pure `planHealthImport` (reads each sample once by the health store's own id; a sleep night is updated when more sleep arrives for it). `src/lib/native/health-sync.ts` reads on app open and on "Read now", one batch, never during a set.
 - Screens: a Settings "Health context" section (native build only), a Chronicle overlay under each era with a receipt of the readings behind each number, and a source line on the Body page.
-- Bodyweight read from Health is stored as ordinary bodyweight rows, so every existing reader works unchanged. Those rows sync in the cloud vault like typed ones; sleep and HRV do not. (Raised with the owner, not decided here.)
+- Bodyweight read from Health is stored as ordinary bodyweight rows, so every existing reader works unchanged. Those rows sync in the cloud vault like typed ones; sleep and HRV do not. **Owner decided (2026-09-30):** keep it that way; the Settings copy says so.
 - The evidence catalog has a claim for the 3-reading minimum (`health-overlay-min-samples`).
 
 ## Not built, not verified
