@@ -9,6 +9,23 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 10: health context (TypeScript side)
+
+- **Plan:** `PLAN-ADDENDUM.md` § 4 row 10; the design and the owner's eight answers are in `docs/design/health-context.md`.
+- **Shipped:** read-only bodyweight, sleep and HRV context. A `LockdHealth` plugin contract with a web no-op and the pure import planner
+  (each sample read once by the health store's id; a sleep night keyed to the date it ended and updated if more sleep arrives). A
+  Settings section (native only, every type off until switched on), a read on app open and a "Read now" button, and Chronicle overlays
+  under each era (off by default): counts, medians (3 readings minimum, HRV SDNN and RMSSD kept apart) and the readings behind each
+  number. No score, no advice, no good or bad colour; missing data reads as missing.
+- **Stored data:** optional `source` and `sourceId` on `BodyMeasurement`; a new optional `healthSamples` collection (backup schema,
+  store export and import, a Dexie table in database version 4, a v3-to-v4 upgrade test); optional `settings.health`. The `localStorage`
+  copy leaves an empty `healthSamples` out, so the old-format fixtures still load and write back byte for byte. Sleep and HRV are not in the
+  cloud vault; bodyweight rows read from Health are ordinary bodyweight rows and do sync (raised with the owner).
+- **Not written:** the native half of `LockdHealth` (HealthKit, Health Connect, permission prompts, Info.plist and manifest entries).
+- **Not verified:** everything native; a real read on a long history.
+- **Tests:** `src/domain/health.test.ts`, `src/lib/native/health.test.ts`, `src/lib/gym/health-context.test.ts`, the version-4 upgrade in
+  `src/lib/storage/db.test.ts`, and `e2e/health-context.spec.ts` (phone and desktop).
+
 ### 2026-09-30 — Opp 6, native half: the lock-screen rest timer (TypeScript side)
 
 - **Plan:** `PLAN-ADDENDUM.md` § 4 row 6; the design is `docs/design/lock-screen-rest-timer.md`. The owner accepted the recommended answer on all seven

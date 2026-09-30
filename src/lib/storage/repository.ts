@@ -29,6 +29,7 @@ export const ROW_COLLECTIONS = [
   "lessons",
   "namedPrs",
   "clips",
+  "healthSamples",
 ] as const;
 export type RowCollection = (typeof ROW_COLLECTIONS)[number];
 

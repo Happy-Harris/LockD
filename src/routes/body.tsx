@@ -101,6 +101,11 @@ function BodyPage() {
           <p className="mt-1 font-display text-3xl font-semibold tabular">
             {kind === "mass" ? `${formatWeight(latest.value, massUnit)} ${massUnit}` : `${formatLength(latest.value, lenUnit)} ${lenUnit}`}
           </p>
+          {latest.source ? (
+            <p className="mt-1 text-xs text-muted" data-testid="body-source">
+              Latest reading from {latest.source === "apple_health" ? "Apple Health" : "Health Connect"}, {latest.localDate}
+            </p>
+          ) : null}
           <p className="mt-1 text-xs text-muted">
             Change since first entry:{" "}
             {kind === "mass"

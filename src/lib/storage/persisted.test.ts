@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defaultSettings } from "@/lib/gym/settings";
-import { migratePersisted, PERSIST_KEY, PERSIST_VERSION, persistedSlice } from "./persisted";
+import { localStorageSlice, migratePersisted, PERSIST_KEY, PERSIST_VERSION, persistedSlice } from "./persisted";
 
 const dir = path.resolve(__dirname, "../../test/fixtures/persist");
 const read = (name: string) => fs.readFileSync(path.join(dir, name), "utf8");
@@ -28,7 +28,10 @@ const COLLECTIONS = [
   "lessons",
   "namedPrs",
   "clips",
+  "healthSamples",
 ] as const;
+// Collections added after the v3 fixtures were written: an old payload has none, and the store adds an empty one.
+const ADDED_SINCE_FIXTURES = ["healthSamples"];
 const PERSISTED_KEYS = [...COLLECTIONS, "settings", "restTimer", "labLast"].sort();
 const V3 = [
   "persist-v3-demo.json",
@@ -49,6 +52,16 @@ describe("migratePersisted", () => {
   it.each(V3)("leaves a current-version payload exactly as it is: %s", (name) => {
     const { state, version } = payload(name);
     expect(migratePersisted(state, version)).toEqual(state);
+  });
+
+  it("writes healthSamples to localStorage only once there is one, and reads it back", () => {
+    const base = payload("persist-v3-imperial-custom.json").state as never;
+    expect("healthSamples" in localStorageSlice({ ...(base as object), healthSamples: [] } as never)).toBe(false);
+    const sample = { id: "h1", kind: "sleep", value: 27_000 };
+    const kept = localStorageSlice({ ...(base as object), healthSamples: [sample] } as never);
+    expect(kept.healthSamples).toEqual([sample]);
+    // A payload that has them loads with them; the migration leaves them alone.
+    expect(migratePersisted(kept, 3).healthSamples).toEqual([sample]);
   });
 
   it("does not mutate what it is given", () => {
@@ -102,6 +115,8 @@ describe("migratePersisted", () => {
     const migrated = migratePersisted(state, version) as unknown as Record<string, unknown>;
     expect(migrated.programs).toEqual([]);
     expect(migrated.clips).toEqual([]);
+    // Not backfilled: the store starts it empty, so an old payload is left exactly as it was.
+    expect(migrated.healthSamples).toBeUndefined();
     expect(migrated.settings).toEqual(defaultSettings());
   });
 
@@ -152,15 +167,18 @@ describe("the real store still reads and writes the same format", () => {
     expect(state.hydrated).toBe(true);
 
     const fixture = JSON.parse(raw) as { state: Record<string, unknown> };
-    for (const key of COLLECTIONS)
+    for (const key of COLLECTIONS.filter((k) => !ADDED_SINCE_FIXTURES.includes(k)))
       expect(state[key as keyof typeof state], key).toEqual(fixture.state[key]);
+    expect(state.healthSamples).toEqual([]);
     expect(state.settings).toEqual(fixture.state.settings);
     expect(state.restTimer).toEqual(fixture.state.restTimer);
 
     useGym.setState({}); // any change makes persist write
     const written = JSON.parse(storage.data.get(PERSIST_KEY)!);
     expect(written.version).toBe(PERSIST_VERSION);
+    // A lifter with no health readings keeps the exact format every earlier build wrote.
     expect(written.state).toEqual(fixture.state);
+    expect("healthSamples" in written.state).toBe(false);
   });
 
   it("resumes the active workout with the same rest-timer end", async () => {
@@ -193,7 +211,8 @@ describe("the real store still reads and writes the same format", () => {
       useGym.setState({});
       const written = JSON.parse(storage.data.get(PERSIST_KEY)!);
       expect(written.version).toBe(PERSIST_VERSION);
-      expect(Object.keys(written.state).sort()).toEqual(PERSISTED_KEYS);
+      // healthSamples is left out of the localStorage copy while it is empty.
+      expect(Object.keys(written.state).sort()).toEqual(PERSISTED_KEYS.filter((k) => k !== "healthSamples"));
     },
   );
 

@@ -21,7 +21,7 @@ describe("the lockd database, version 2", () => {
 
     const db = new LockdDatabase(name);
     await db.open();
-    expect(db.verno).toBe(3);
+    expect(db.verno).toBe(4);
     const kept = await db.safetyBackups.toArray();
     expect(kept).toHaveLength(1);
     expect(kept[0]).toMatchObject({ sessions: 3, reason: "before-cloud-sign-in" });
@@ -85,12 +85,50 @@ describe("the lockd database, version 2", () => {
 
     const db = new LockdDatabase(name);
     await db.open();
-    expect(db.verno).toBe(3);
+    expect(db.verno).toBe(4);
     expect(await db.workoutSets.count()).toBe(2);
     expect((await db.workoutSets.get("s2"))?.reps).toBe(6);
     expect(await db.workoutExercises.count()).toBe(1);
     expect((await db.meta.get("migratedFrom"))?.value).toBe("fresh");
     expect(db.workoutSets.schema.indexes).toEqual([]);
+    // Version 4 added the health readings table; a database that never read health data has it empty.
+    expect(await db.healthSamples.count()).toBe(0);
+    db.close();
+  });
+
+  it("upgrades a version-3 database, keeping its rows, and adds an empty healthSamples table", async () => {
+    const name = `lockd-v3-${Math.random()}`;
+    const v3 = new Dexie(name);
+    v3.version(1).stores({ safetyBackups: "id, createdAt, reason" });
+    v3.version(3).stores({
+      workouts: "id, status, localDate, startedAt, templateId, programId, importFingerprint",
+      measurements: "id, [metric+recordedAt]",
+      workoutSets: "id",
+      workoutExercises: "id",
+      kv: "key",
+      meta: "key",
+      device: "key",
+    });
+    await v3.table("measurements").put({ id: "m1", metric: "bodyweight", value: 82_000 });
+    v3.close();
+
+    const db = new LockdDatabase(name);
+    await db.open();
+    expect(db.verno).toBe(4);
+    expect((await db.measurements.get("m1"))?.value).toBe(82_000);
+    expect(await db.healthSamples.count()).toBe(0);
+    await db.healthSamples.put({
+      id: "h1",
+      kind: "sleep",
+      value: 27_000,
+      startAt: "2026-09-29T22:30:00.000Z",
+      endAt: "2026-09-30T06:00:00.000Z",
+      localDate: "2026-09-30",
+      source: "apple_health",
+      sourceId: "night:2026-09-30",
+      createdAt: "2026-09-30T07:00:00.000Z",
+    });
+    expect(await db.healthSamples.count()).toBe(1);
     db.close();
   });
 });

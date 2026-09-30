@@ -18,6 +18,7 @@ import type {
   WorkoutExercise,
   WorkoutSet,
   ClipMeta,
+  HealthSample,
 } from "@/domain/types";
 
 /**
@@ -79,6 +80,7 @@ export class LockdDatabase extends Dexie {
   lessons!: Table<ExerciseLesson, string>;
   namedPrs!: Table<NamedPr, string>;
   clips!: Table<ClipMeta, string>;
+  healthSamples!: Table<HealthSample, string>;
   kv!: Table<KvRow, string>;
   meta!: Table<MetaRow, string>;
   /** Device-only values (for example text size). Never part of settings, sync or the cloud vault. */
@@ -118,6 +120,9 @@ export class LockdDatabase extends Dexie {
       workoutSets: "id",
       workoutExercises: "id",
     });
+    // Health context (Opp 10): raw sleep and HRV readings from Apple Health or Health Connect.
+    // Purely additive; a database that never reads health data has an empty table.
+    this.version(4).stores({ healthSamples: "id" });
   }
 }
 
