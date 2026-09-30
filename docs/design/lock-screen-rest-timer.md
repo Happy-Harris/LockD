@@ -1,6 +1,7 @@
 # Lock-screen rest timer (Opp 6, native half)
 
-Status: design doc only (Phase 4). No native code, no new dependencies and no change to `src/` ship with it.
+Status: **TypeScript side built with placeholder values** (2026-09-30), awaiting the owner's answers below; the native side is not
+written and nothing has run on a device.
 
 ## Goal
 
@@ -85,21 +86,44 @@ Opp 6 (warm-up and working rest, precedence, typed values) shipped in Step 9 and
   no-op.
 - **Brand:** "Lock'd" on the activity and notifications, as in `paintLockArt` today.
 
-## Open questions for the owner
+## Owner's answers
 
-1. Which lock-screen controls: plus and minus, stop, and should "complete next set" ever be there?
-2. The step size for plus and minus (the app uses 15 s today; keep it or make it a setting?).
-3. Keep the Media Session tile in the native build, or show only the native one?
-4. Should the native end-of-rest alert follow the existing sound, vibrate and notification settings, or
-   have its own?
-5. How long should a "Rest done" state stay on the lock screen before it clears itself?
-6. Android exact alarms need a user permission on recent versions. Ask for it, or accept a possibly late
-   alert and say so?
-7. Is a home-screen widget in scope for this Opp, or later?
+Recorded 2026-09-30. The owner accepted the recommended answer on all seven.
+
+| # | Question | Answer |
+|---|---|---|
+| 1 | Controls | Plus, minus and stop. No "complete next set" (it would write history from a lock screen) |
+| 2 | Step | 15 s, the in-app and Media Session step (`LOCK_SCREEN_STEP_SECONDS`) |
+| 3 | Media Session tile | Off in the native build (it would be a second tile); unchanged on the web |
+| 4 | End alert settings | Follows the existing "Rest timer notification" setting; the sound and vibration settings still apply in the app |
+| 5 | "Rest done" lifetime | 60 s, then it clears (`LOCK_SCREEN_DONE_LINGER_SECONDS`) |
+| 6 | Android exact alarms | Do not ask for the permission. The alert is scheduled with `allowWhileIdle`. **Test condition:** measure it on a real Android device with the screen locked. If the alert is more than about 5 s late, come back to the owner with a foreground-service option instead of the permission |
+| 7 | Home-screen widget | Later, not in this Opp |
+| n/a | Stored native activity id | None stored; `show` must be safe to call again for a timer that is already showing |
+
+The Android lateness test has not been run: there is no device here and native builds run in cloud CI.
+
+Built:
+
+- `src/lib/native/lock-screen-timer.ts`. `createLockScreenSync(bridge)` mirrors the store's `restTimer` to the phone and
+  only talks to it when something it shows has changed (a new end time, pause, label, or the rest ending). It shows
+  "done" at the end, clears after the linger, and clears at once when the timer goes (stop, finish or discard the
+  workout). A failed native call is dropped so it can never get in the way of logging.
+- `src/components/app/rest-timer.tsx` calls it only on native, and turns the Media Session tile off there. The plus, minus
+  and stop buttons on the phone come back as `action` events and go through `adjustRestTimer` and `stopRestTimer`, so the
+  store stays the only owner of the timer and writes the new timestamps.
+- **End-of-rest alert** uses the official `@capacitor/local-notifications` plugin (`schedule` with a fixed id, so a new
+  timer replaces the old alert). It asks for notification permission the first time it needs it.
+- **The `LockScreenTimer` plugin** is registered with a no-op web implementation. Its native half (an iOS Live Activity
+  through ActivityKit, an Android ongoing notification with a chronometer) is **not written**. Its contract:
+  `show(timer)`, `update(timer)`, `clear()` and an `action` event (`plus`, `minus`, `stop`); the payload is
+  `LockScreenTimerPayload` (`startedAt`, `endsAt`, `durationSeconds`, `isRunning`, `remainingSeconds`, `label`). Until it
+  exists, native calls fail quietly and only the scheduled end alert works.
+- **Not verified:** everything native. Tests use a fake bridge (`src/lib/native/lock-screen-timer.test.ts`).
 
 ## Out of scope
 
-- Any native code, Capacitor setup or new package (this is a design doc).
+- The native Live Activity and ongoing-notification code (native builds run in cloud CI; see `native-shell.md`).
 - Changes to rest precedence, warm-up rest or learned rest (Step 9, decision D7 and A-8).
 - The watch (see `watch-companion.md`).
 - Background audio or music control.
