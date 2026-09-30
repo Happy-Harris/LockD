@@ -3,6 +3,7 @@ import type { EraName, OneRepMaxFormula } from "@/domain/types";
 import { hardSetCount } from "@/domain/volume";
 import { computeRecords, type PersonalRecord, type SessionSlice } from "./analytics";
 import { e1rmSeries } from "./analytics";
+import { trainingPattern, wordEraNames, type EraNameInput } from "./era-names";
 
 export type ChronicleKind =
   "era" | "layoff" | "comeback" | "pr_run" | "exercise_change" | "peak" | "jump" | "block";
@@ -40,18 +41,6 @@ export interface Chronicle {
   current?: TrainingEra;
   strongest?: ChronicleEvent;
   biggestJump?: ChronicleEvent;
-}
-
-function seasonOf(date: string): string {
-  const month = Number(date.slice(5, 7));
-  if (month <= 2 || month === 12) return "Winter";
-  if (month <= 5) return "Spring";
-  if (month <= 8) return "Summer";
-  return "Autumn";
-}
-
-function yearOf(date: string): string {
-  return date.slice(0, 4);
 }
 
 function mean(values: number[]): number {
@@ -160,22 +149,22 @@ function splitRegimes(
   ];
 }
 
-function nameEra(args: {
+/** What an era is, before it is placed in time. See `era-names.ts` for how the final name is worded. */
+function eraBase(args: {
   index: number;
   tone: EraTone;
-  startDate: string;
   afterLayoff: boolean;
-  total: number;
-}): string {
-  if (args.index === 0) return "Foundation";
-  if (args.tone === "brief") return "Brief Return";
-  if (args.afterLayoff && args.tone === "comeback") return "The Return";
-  if (args.tone === "volume") return `Volume ${seasonOf(args.startDate)}`;
-  if (args.tone === "strength")
-    return args.index === args.total - 1 ? "Iron Block" : `Strength ${seasonOf(args.startDate)}`;
-  if (args.tone === "peak") return "PR Run";
-  if (args.tone === "rebuild") return "The Grind";
-  return `${seasonOf(args.startDate)} ${yearOf(args.startDate)}`;
+  pattern: string | undefined;
+}): EraNameInput {
+  if (args.index === 0) return { base: "Foundation", dated: false, startDate: "" };
+  if (args.tone === "brief") return { base: "Brief Return", dated: false, startDate: "" };
+  if (args.afterLayoff) return { base: args.pattern ? `${args.pattern} Run` : "Return", dated: true, startDate: "" };
+  if (args.tone === "volume") return { base: "High-Volume Block", dated: true, startDate: "" };
+  if (args.tone === "strength") return { base: "Strength Block", dated: true, startDate: "" };
+  if (args.tone === "peak") return { base: "PR Run", dated: true, startDate: "" };
+  if (args.tone === "rebuild") return { base: "Lower-Volume Block", dated: true, startDate: "" };
+  if (args.pattern) return { base: `${args.pattern} Run`, dated: true, startDate: "" };
+  return { base: "", dated: false, startDate: "" };
 }
 
 function classifyTone(
@@ -313,13 +302,17 @@ export function buildChronicle(
 
   // What "a lot of volume" means is the lifter's own: each era's weekly sets are read against the weeks trained before it.
   const overallWeekly = weeklySets(slices, firstDate, lastDate);
-  const autoNameUses = new Map<string, number>();
-  const eras: TrainingEra[] = expanded
+  const inEras = expanded.map((era) =>
+    slices.filter(
+      (slice) => slice.workout.localDate >= era.startDate && slice.workout.localDate <= era.endDate,
+    ),
+  );
+  // A split names an era only when it changed: five years of Push/Pull/Legs would otherwise be five identical names.
+  const patterns = inEras.map((inEra) => trainingPattern(inEra));
+  const drafts = expanded
     .map((era, index) => {
-      const inEra = slices.filter(
-        (slice) =>
-          slice.workout.localDate >= era.startDate && slice.workout.localDate <= era.endDate,
-      );
+      const inEra = inEras[index]!;
+      const pattern = patterns[index] !== patterns[index - 1] ? patterns[index] : undefined;
       const baseline = baselineWeeklySets(slices, era.startDate) ?? overallWeekly;
       // One session with a layoff on each side: the lifter came back once and stopped again. It stays its own stretch
       // so the record does not look more continuous than it was, but it is named for what it is, not as a full era.
@@ -334,30 +327,32 @@ export function buildChronicle(
         formula,
         baseline,
       );
-      const baseName = nameEra({
-        index,
-        tone: index === 0 ? "foundation" : tone,
-        startDate: era.startDate,
-        afterLayoff: era.afterLayoff,
-        total: expanded.length,
-      });
-      // Two eras that would share a name (two summers in a row) are told apart, not left identical.
-      const uses = (autoNameUses.get(baseName) ?? 0) + 1;
-      autoNameUses.set(baseName, uses);
-      const autoName = uses === 1 ? baseName : `${baseName} · ${uses}`;
-      const override = eraNames.find((row) => row.startDate === era.startDate)?.name;
       return {
-        id: `era-${era.startDate}`,
-        name: override || autoName,
-        autoName,
+        ...eraBase({ index, tone, afterLayoff: era.afterLayoff, pattern }),
         startDate: era.startDate,
         endDate: era.endDate,
         sessions: inEra.length,
         hardSets: inEra.reduce((sum, slice) => sum + hardSetCount(slice.sets), 0),
-        tone: index === 0 ? "foundation" : tone,
+        tone: index === 0 ? ("foundation" as const) : tone,
       };
     })
     .filter((era) => era.sessions > 0);
+  // Worded together: an era's date qualifier depends on which other eras share its base.
+  const autoNames = wordEraNames(drafts);
+  const eras: TrainingEra[] = drafts.map((era, index) => {
+    const autoName = autoNames[index]!;
+    const override = eraNames.find((row) => row.startDate === era.startDate)?.name;
+    return {
+      id: `era-${era.startDate}`,
+      name: override || autoName,
+      autoName,
+      startDate: era.startDate,
+      endDate: era.endDate,
+      sessions: era.sessions,
+      hardSets: era.hardSets,
+      tone: era.tone,
+    };
+  });
 
   for (const era of eras) {
     events.push({

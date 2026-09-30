@@ -79,7 +79,7 @@ describe("era detection reads the lifter's own training", () => {
     expect(result[0]!.name).toBe("Foundation");
   });
 
-  it("splits where weekly volume doubles, and calls the second stretch Volume", () => {
+  it("splits where weekly volume doubles, and calls the second stretch a High-Volume Block", () => {
     const slices = log([
       { weeks: 20, sets: 20 },
       { weeks: 20, sets: 40 },
@@ -87,7 +87,7 @@ describe("era detection reads the lifter's own training", () => {
     const result = eras(slices);
     expect(result).toHaveLength(2);
     expect(result[1]!.tone).toBe("volume");
-    expect(result[1]!.name.startsWith("Volume")).toBe(true);
+    expect(result[1]!.name).toBe("2025 High-Volume Block");
     expect(result.reduce((sum, era) => sum + era.sessions, 0)).toBe(slices.length);
   });
 
@@ -143,7 +143,7 @@ describe("era detection reads the lifter's own training", () => {
     expect(result.length).toBeGreaterThanOrEqual(3);
   });
 
-  it("a layoff still starts a new era, called The Return", () => {
+  it("a layoff still starts a new era, called a Return and dated by its year", () => {
     const result = eras(
       log([
         { weeks: 12, sets: 20 },
@@ -151,7 +151,7 @@ describe("era detection reads the lifter's own training", () => {
       ]),
     );
     expect(result).toHaveLength(2);
-    expect(result[1]!.name).toBe("The Return");
+    expect(result[1]!.name).toBe("2025 Return");
   });
 
   it("gives two eras that would share a name different names", () => {
@@ -207,7 +207,7 @@ describe("a single session between two layoffs (owner, 2026-09-30)", () => {
     expect(result.map((era) => [era.name, era.tone, era.sessions])).toEqual([
       ["Foundation", "foundation", 20],
       ["Brief Return", "brief", 1],
-      ["The Return", "comeback", 20],
+      ["2025 Return", "comeback", 20],
     ]);
     expect(result.reduce((sum, era) => sum + era.sessions, 0)).toBe(slices.length);
     // Both layoffs are still on the record.
@@ -217,14 +217,14 @@ describe("a single session between two layoffs (owner, 2026-09-30)", () => {
   it("two sessions back is an ordinary era", () => {
     expect(eras(log(plan)).map((era) => era.name)).toEqual([
       "Foundation",
-      "The Return",
-      "The Return · 2",
+      "April 2025 Return",
+      "May 2025 Return",
     ]);
   });
 
   it("one session after the last layoff is a comeback in progress, not a brief return", () => {
     const slices = log(plan.slice(0, 2)).filter((_, i) => i !== 21);
-    expect(eras(slices).at(-1)).toMatchObject({ name: "The Return", tone: "comeback", sessions: 1 });
+    expect(eras(slices).at(-1)).toMatchObject({ name: "2025 Return", tone: "comeback", sessions: 1 });
   });
 
   it("a name the lifter gave it still wins", () => {
