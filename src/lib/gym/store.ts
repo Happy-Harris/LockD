@@ -7,6 +7,9 @@ import type {
   BarProfile,
   BodyMeasurement,
   ClipMeta,
+  HealthSample,
+  HealthSettings,
+  HealthSource,
   EraName,
   Exercise,
   ExerciseLesson,
@@ -72,13 +75,14 @@ import { restSecondsAfter, restSuggestion } from "./rest";
 import { CLIP_PURGE_GRACE_MS, UNDO_WINDOW_MS, clipIdsForSets, withoutClips } from "./clips";
 import { deleteClipBlob } from "./vault";
 import { defaultSettings } from "./settings";
+import { planHealthImport, type HealthReading } from "@/lib/native/health";
 import { switchableStorage } from "@/lib/storage/backend";
 import { currentTextSize, setTextSize } from "@/lib/device/text-size";
 import {
   migratePersisted,
   PERSIST_KEY,
   PERSIST_VERSION,
-  persistedSlice,
+  localStorageSlice,
   type PersistedSlice,
 } from "@/lib/storage/persisted";
 
@@ -111,6 +115,15 @@ export interface GymData {
   lessons: ExerciseLesson[];
   namedPrs: NamedPr[];
   clips: ClipMeta[];
+  healthSamples: HealthSample[];
+}
+
+/** What one read from Apple Health or Health Connect added. */
+export interface HealthImportSummary {
+  bodyweight: number;
+  samples: number;
+  updated: number;
+  alreadyOnFile: number;
 }
 
 /** What an import did. Every importer returns it. */
@@ -192,6 +205,10 @@ interface GymActions {
     displayUnit: BodyMeasurement["displayUnit"],
   ) => void;
   deleteMeasurement: (id: string) => void;
+  /** Health context (Opp 10). Merges into `settings.health`; nothing is read until a type is switched on. */
+  setHealthSettings: (patch: Partial<HealthSettings>) => void;
+  /** Applies one reading from Apple Health or Health Connect as a single batch. Never writes back. */
+  importHealthReading: (reading: HealthReading, source: HealthSource) => HealthImportSummary;
   startRestTimer: (
     seconds: number,
     workoutId?: string,
@@ -261,6 +278,7 @@ export function freshData(): GymData {
     lessons: [],
     namedPrs: [],
     clips: [],
+    healthSamples: [],
   };
 }
 
@@ -1133,6 +1151,34 @@ export const useGym = create<GymState>()(
       deleteMeasurement: (id) =>
         set((state) => ({ measurements: state.measurements.filter((row) => row.id !== id) })),
 
+      setHealthSettings: (patch) =>
+        set((state) => ({ settings: { ...state.settings, health: { ...state.settings.health, ...patch } } })),
+
+      importHealthReading: (reading, source) => {
+        const state = get();
+        const plan = planHealthImport(reading, {
+          source,
+          displayUnit: weightUnitFor(state.settings.unitSystem),
+          measurements: state.measurements,
+          samples: state.healthSamples,
+          newId: uuid,
+          nowIso: new Date().toISOString(),
+        });
+        if (plan.measurements.length || plan.samples.length || plan.updatedSamples.length) {
+          const updated = new Map(plan.updatedSamples.map((row) => [row.id, row]));
+          set((current) => ({
+            measurements: [...current.measurements, ...plan.measurements],
+            healthSamples: [...current.healthSamples.map((row) => updated.get(row.id) ?? row), ...plan.samples],
+          }));
+        }
+        return {
+          bodyweight: plan.measurements.length,
+          samples: plan.samples.length,
+          updated: plan.updatedSamples.length,
+          alreadyOnFile: plan.alreadyOnFile,
+        };
+      },
+
       startRestTimer: (seconds, workoutId, setId, label, suggestedSeconds) => {
         const started = new Date();
         const ends = new Date(started.getTime() + seconds * 1000);
@@ -1428,6 +1474,7 @@ export const useGym = create<GymState>()(
           lessons: state.lessons,
           namedPrs: state.namedPrs,
           clips: state.clips,
+          healthSamples: state.healthSamples,
           device: { textSize: currentTextSize() },
         };
       },
@@ -1457,6 +1504,7 @@ export const useGym = create<GymState>()(
             lessons: backup.lessons ?? [],
             namedPrs: backup.namedPrs ?? [],
             clips: backup.clips ?? [],
+            healthSamples: backup.healthSamples ?? [],
           });
           return;
         }
@@ -1547,6 +1595,15 @@ export const useGym = create<GymState>()(
               ...state.clips,
               ...(backup.clips ?? []).filter(
                 (row) => !state.clips.some((item) => item.id === row.id),
+              ),
+            ],
+            healthSamples: [
+              ...state.healthSamples,
+              ...(backup.healthSamples ?? []).filter(
+                (row) =>
+                  !state.healthSamples.some(
+                    (item) => item.id === row.id || (item.source === row.source && item.sourceId === row.sourceId),
+                  ),
               ),
             ],
           };
@@ -1665,7 +1722,7 @@ export const useGym = create<GymState>()(
       skipHydration: true,
       storage: switchableStorage as PersistStorage<PersistedSlice>,
       migrate: (persisted, version) => migratePersisted(persisted, version),
-      partialize: (state) => persistedSlice(state),
+      partialize: (state) => localStorageSlice(state),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true);
       },

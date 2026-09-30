@@ -14,6 +14,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { LockdMark } from "@/components/app/mark";
+import { HealthAutoRead } from "@/components/app/health-auto-read";
 import { RestTimerBar } from "@/components/app/rest-timer";
 import { UserButton } from "@/lib/auth/gates";
 import { useCanSignIn, useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -92,6 +93,7 @@ export function AppShell({ children, hideNav }: { children: React.ReactNode; hid
       <div className="relative min-w-0 flex-1">
         {children}
         <RestTimerBar />
+        <HealthAutoRead />
       </div>
 
       {!hideNav ? (

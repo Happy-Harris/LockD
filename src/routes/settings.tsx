@@ -33,6 +33,9 @@ import { describeImport } from "@/lib/import/summary";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
 import { SafetyBackups } from "@/components/app/safety-backups";
 import { eraseAllOnDevice } from "@/lib/storage/boot";
+import { isNativePlatform } from "@/lib/native/platform";
+import { readHealthNow, requestHealthAccess } from "@/lib/native/health-sync";
+import type { HealthType } from "@/lib/native/health";
 import { isTextSize, setTextSize, TEXT_SIZE_LABEL, TEXT_SIZES, useTextSize } from "@/lib/device/text-size";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
@@ -272,6 +275,8 @@ function SettingsPage() {
           them, and some browsers (iPhone Safari) do not vibrate.
         </p>
       </Section>
+
+      {isNativePlatform() ? <HealthSection /> : null}
 
       <Section title="Appearance">
         <p className="mb-2 text-xs text-subtle">Theme</p>
@@ -555,6 +560,70 @@ function ComebackSection() {
           {DEFAULT_COMEBACK_RULE.longPct}%
         </button>
       ) : null}
+    </Section>
+  );
+}
+
+/**
+ * Opp 10: health context. Read-only, one type at a time, all off until switched on. Lock'd never writes to
+ * Apple Health or Health Connect and never turns what it reads into a score.
+ */
+function HealthSection() {
+  const health = useGym((s) => s.settings.health);
+  const setHealthSettings = useGym((s) => s.setHealthSettings);
+  const [busy, setBusy] = useState(false);
+  const rows: Array<[HealthType, string]> = [
+    ["bodyweight", "Bodyweight"],
+    ["sleep", "Sleep (time asleep)"],
+    ["hrv", "Heart rate variability"],
+  ];
+  const anyOn = rows.some(([type]) => health?.[type]);
+  const toggle = (type: HealthType, on: boolean) => {
+    if (!on) {
+      setHealthSettings({ [type]: false });
+      return;
+    }
+    void requestHealthAccess(type)
+      .then((allowed) => {
+        setHealthSettings({ [type]: allowed });
+        if (!allowed) toast("Not allowed. You can allow it in the phone's Health settings.");
+      })
+      .catch(() => toast("Could not ask for access."));
+  };
+  return (
+    <Section title="Health context" id="health">
+      <p className="text-xs leading-relaxed text-subtle">
+        Lock'd can read these from your phone's health app and show them beside your training in the Chronicle. It only
+        reads, keeps them on this device and in your backups, and never turns them into a score or advice.
+      </p>
+      {rows.map(([type, label]) => (
+        <Toggle key={type} label={label} checked={health?.[type] ?? false} onChange={(on) => toggle(type, on)} />
+      ))}
+      <Toggle
+        label="Show in the Chronicle"
+        checked={health?.overlays ?? false}
+        onChange={(overlays) => setHealthSettings({ overlays })}
+      />
+      <Button
+        className="mt-3 w-full"
+        variant="secondary"
+        disabled={!anyOn || busy}
+        onClick={() => {
+          setBusy(true);
+          void readHealthNow()
+            .then((summary) =>
+              toast(
+                summary
+                  ? `Read ${summary.bodyweight + summary.samples + summary.updated} new, ${summary.alreadyOnFile} already on file.`
+                  : "Nothing to read.",
+              ),
+            )
+            .catch(() => toast("Could not read from the health app."))
+            .finally(() => setBusy(false));
+        }}
+      >
+        Read now
+      </Button>
     </Section>
   );
 }

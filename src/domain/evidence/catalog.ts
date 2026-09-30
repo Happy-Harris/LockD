@@ -156,6 +156,20 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
     lastReviewed: "2026-09-29",
   },
   {
+    id: "health-overlay-min-samples",
+    statement:
+      "A Chronicle era shows a median for sleep or heart rate variability only when it has at least 3 readings of that kind (and, for heart rate variability, of one method). With fewer, the count is shown and the median is not.",
+    kind: "implementation_heuristic",
+    behaviors: ["health_overlays"],
+    sourceIds: [],
+    support: "context",
+    interpretation:
+      "A median of one or two nights says almost nothing, so the overlay shows how many readings exist and lets the lifter open them. Heart rate variability from Apple Health (SDNN) and from Health Connect (RMSSD) are different measures and are never combined or compared.",
+    limitations:
+      "The minimum of 3 is a product rule, not a research threshold. The overlay is context beside the training record: Lock’d makes no readiness, recovery or strain score from it and claims no link between sleep or heart rate variability and any result.",
+    lastReviewed: "2026-09-30",
+  },
+  {
     id: "e1rm-rep-cap-12",
     statement: "Sets above 12 reps are excluded from estimated 1RM.",
     kind: "implementation_heuristic",

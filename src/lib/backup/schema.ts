@@ -232,8 +232,23 @@ const measurement = z.object({
   recordedAt: isoDateTime,
   localDate,
   note: text.optional(),
+  source: z.enum(["apple_health", "health_connect"]).optional(),
+  sourceId: z.string().min(1).max(200).optional(),
   createdAt: isoDateTime,
   updatedAt: isoDateTime,
+});
+
+const healthSample = z.object({
+  id,
+  kind: z.enum(["sleep", "hrv"]),
+  method: z.enum(["sdnn", "rmssd"]).optional(),
+  value: whole(100_000_000),
+  startAt: isoDateTime,
+  endAt: isoDateTime,
+  localDate,
+  source: z.enum(["apple_health", "health_connect"]),
+  sourceId: z.string().min(1).max(200),
+  createdAt: isoDateTime,
 });
 
 const plateInventory = z.object({
@@ -290,6 +305,14 @@ const settings = z.object({
   presentationMode: z.enum(["loud", "calm"]),
   activeProgramId: id.optional(),
   onboardingCompletedAt: isoDateTime.optional(),
+  health: z
+    .object({
+      bodyweight: z.boolean().optional(),
+      sleep: z.boolean().optional(),
+      hrv: z.boolean().optional(),
+      overlays: z.boolean().optional(),
+    })
+    .optional(),
   demoLoaded: z.boolean(),
 });
 
@@ -397,6 +420,7 @@ export const backupSchema = z.object({
   lessons: optionalRows(lesson),
   namedPrs: optionalRows(namedPr),
   clips: optionalRows(clip),
+  healthSamples: optionalRows(healthSample),
   device: z.object({ textSize: z.enum(TEXT_SIZES).optional() }).optional(),
 });
 

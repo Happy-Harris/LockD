@@ -200,6 +200,9 @@ export type MeasurementMetric =
   | "thighs"
   | "calves";
 
+/** Where a reading came from when it did not come from the lifter's own hand. Absent means manual. */
+export type HealthSource = "apple_health" | "health_connect";
+
 export interface BodyMeasurement {
   id: UUID;
   metric: MeasurementMetric;
@@ -208,8 +211,36 @@ export interface BodyMeasurement {
   recordedAt: ISODateTime;
   localDate: ISODate;
   note?: string;
+  /** Set on rows read from a health store. Absent means the lifter typed it. */
+  source?: HealthSource;
+  /** The health store's own id for the sample, used to read it only once. */
+  sourceId?: string;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
+}
+
+export type HealthKind = "sleep" | "hrv";
+/** Apple Health reports SDNN and Health Connect reports RMSSD. They are different measures and are never merged. */
+export type HrvMethod = "sdnn" | "rmssd";
+
+/**
+ * One reading from Apple Health or Health Connect that is neither mass nor length (Opp 10). Raw, with its
+ * source; every median and count is derived on read.
+ */
+export interface HealthSample {
+  id: UUID;
+  kind: HealthKind;
+  /** HRV only. */
+  method?: HrvMethod;
+  /** Sleep: whole seconds asleep in one night. HRV: whole milliseconds. */
+  value: number;
+  startAt: ISODateTime;
+  endAt: ISODateTime;
+  /** Sleep: the date the night ended. HRV: the date of the reading. */
+  localDate: ISODate;
+  source: HealthSource;
+  sourceId: string;
+  createdAt: ISODateTime;
 }
 
 export interface PlateDenomination {
@@ -389,7 +420,17 @@ export interface AppSettings {
   presentationMode: PresentationMode;
   activeProgramId?: UUID;
   onboardingCompletedAt?: ISODateTime;
+  /** Health context (Opp 10), native build only. Missing means everything off. */
+  health?: HealthSettings;
   demoLoaded: boolean;
+}
+
+/** Which health types Lock'd reads, and whether the Chronicle shows them. All off until the lifter turns them on. */
+export interface HealthSettings {
+  bodyweight?: boolean;
+  sleep?: boolean;
+  hrv?: boolean;
+  overlays?: boolean;
 }
 
 export type ImportJobStatus = "pending" | "completed" | "failed" | "cancelled";
@@ -469,6 +510,8 @@ export interface LockdBackup {
   lessons?: ExerciseLesson[];
   namedPrs?: NamedPr[];
   clips?: ClipMeta[];
+  /** Read from Apple Health or Health Connect. On this device and in backups only; never in the cloud vault. */
+  healthSamples?: HealthSample[];
   /**
    * Device-only preferences (text size). Restored only when present, so an older backup never
    * resets a choice this device made. Never part of settings or the cloud vault.

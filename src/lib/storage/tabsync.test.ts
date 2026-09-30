@@ -7,8 +7,10 @@ import { applyChangeSet, diffSlices, keyOf, ROW_COLLECTIONS } from "./repository
 
 const raw = (name: string) =>
   fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/persist", name), "utf8");
-const slice = (name: string) =>
-  migratePersisted((JSON.parse(raw(name)) as { state: unknown }).state, 3) as PersistedSlice;
+const slice = (name: string): PersistedSlice => {
+  const migrated = migratePersisted((JSON.parse(raw(name)) as { state: unknown }).state, 3);
+  return { ...migrated, healthSamples: migrated.healthSamples ?? [] };
+};
 
 function canonical(s: PersistedSlice) {
   const out: Record<string, unknown> = {};

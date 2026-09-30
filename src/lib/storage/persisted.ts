@@ -36,6 +36,7 @@ export type PersistedSlice = Pick<
   | "lessons"
   | "namedPrs"
   | "clips"
+  | "healthSamples"
 >;
 
 /** What `persist` writes for a given store state (its `partialize`). */
@@ -62,7 +63,20 @@ export function persistedSlice(state: PersistedSlice): PersistedSlice {
     lessons: state.lessons,
     namedPrs: state.namedPrs,
     clips: state.clips,
+    healthSamples: state.healthSamples,
   };
+}
+
+/**
+ * What the `localStorage` copy holds: the persisted slice, except that an empty `healthSamples` is left
+ * out. A lifter who never read health data keeps a payload byte-for-byte in the format every earlier
+ * build wrote and read, and an old payload loads unchanged (the store starts the collection empty).
+ */
+export function localStorageSlice(state: PersistedSlice): PersistedSlice {
+  const slice = persistedSlice(state);
+  if (slice.healthSamples && slice.healthSamples.length > 0) return slice;
+  const { healthSamples: _empty, ...rest } = slice;
+  return rest as PersistedSlice;
 }
 
 /**

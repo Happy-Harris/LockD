@@ -11,15 +11,18 @@ import type { PersistedSlice } from "./persisted";
 import { migratePersisted } from "./persisted";
 import { keyOf, ROW_COLLECTIONS, type LockdRepository } from "./repository";
 
-const fixture = (name: string) =>
-  migratePersisted(
+// The old-format fixtures predate `healthSamples`; the migration runner adds it empty (`withFreshDefaults`).
+const fixture = (name: string): PersistedSlice => {
+  const migrated = migratePersisted(
     (
       JSON.parse(
         fs.readFileSync(path.resolve(__dirname, "../../test/fixtures/persist", name), "utf8"),
       ) as { state: unknown }
     ).state,
     3,
-  ) as PersistedSlice;
+  );
+  return { ...migrated, healthSamples: migrated.healthSamples ?? [] };
+};
 
 /** Row order is not part of the contract, so compare each collection sorted by key. */
 function canonical(slice: PersistedSlice): Record<string, unknown> & { workouts: unknown[] } {

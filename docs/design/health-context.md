@@ -1,6 +1,6 @@
 # Health context (Opp 10)
 
-Status: design doc only (Phase 4). No native code, no new dependencies and no change to `src/` ship with it.
+Status: TypeScript side built (Phase 4). The native half of `LockdHealth` (HealthKit, Health Connect) is not written.
 
 ## Goal
 
@@ -92,18 +92,32 @@ context. Lock'd never combines them into a score, a "ready" state or advice to t
   interface with a web no-op.
 - **Brand:** permission prompts and copy say "Lock'd".
 
-## Open questions for the owner
+## Owner's answers
 
-1. Should health samples sync to the cloud vault, stay on the device only, or be a separate choice?
-2. Overlays on by default, or off until the lifter turns them on?
-3. The fewest samples before a median is shown, per type.
-4. Sleep: total time asleep only, or also time in bed? Which night does a sleep belong to (the date it
-   ended is one option)?
-5. How far back to read on first permission: all history the store has, or a limit?
-6. If a manual bodyweight and a Health bodyweight fall on the same day, which one does `relativeStrength`
-   pick, or does it keep today's latest-`recordedAt` rule?
-7. Resting heart rate or steps: out of scope, or later?
-8. Should the watch (Opp 7) ever be a source?
+Recorded 2026-09-30. The owner accepted the recommended answer on all eight.
+
+1. **Cloud vault:** health samples (sleep, HRV) stay on the device and go in backups only. They are not in the cloud vault payload.
+2. **Overlays:** off until the lifter turns them on (Settings, "Show in the Chronicle").
+3. **Fewest readings before a median:** 3, per type (`HEALTH_MIN_SAMPLES`), and for HRV per method.
+4. **Sleep:** time asleep only. A night belongs to the date it ended.
+5. **First read:** the last 365 days (`HEALTH_FIRST_READ_DAYS`); later reads start a day before the newest reading of that type.
+6. **Same-day manual and Health bodyweight:** `relativeStrength` keeps its latest-`recordedAt` rule, unchanged.
+7. **Resting heart rate and steps:** out of scope.
+8. **Watch as a source:** no.
+
+## What is built
+
+- `src/domain/health.ts`: `eraHealthOverlay` (counts, medians and the readings behind them for an era's date range), `HEALTH_MIN_SAMPLES`, `formatAsleep`. Pure; nothing derived is stored.
+- Storage: `BodyMeasurement.source` and `sourceId` (optional), `HealthSample` and `healthSamples` (optional in `GymData` and the backup, empty by default), a Dexie table added in database version 4, `settings.health` (which types are on, and the overlay switch). The `localStorage` copy leaves an empty `healthSamples` out, so a lifter with no readings keeps the exact format earlier builds wrote and read.
+- `src/lib/native/health.ts`: the `LockdHealth` plugin contract with a web no-op, and the pure `planHealthImport` (reads each sample once by the health store's own id; a sleep night is updated when more sleep arrives for it). `src/lib/native/health-sync.ts` reads on app open and on "Read now", one batch, never during a set.
+- Screens: a Settings "Health context" section (native build only), a Chronicle overlay under each era with a receipt of the readings behind each number, and a source line on the Body page.
+- Bodyweight read from Health is stored as ordinary bodyweight rows, so every existing reader works unchanged. Those rows sync in the cloud vault like typed ones; sleep and HRV do not. (Raised with the owner, not decided here.)
+- The evidence catalog has a claim for the 3-reading minimum (`health-overlay-min-samples`).
+
+## Not built, not verified
+
+- The native half of `LockdHealth`: HealthKit and Health Connect reads, the permission prompts, the Info.plist and manifest entries.
+- Everything that needs a device: the permission flow, real samples, sleep stage handling, and whether the read finishes quickly on a long history.
 
 ## Out of scope
 

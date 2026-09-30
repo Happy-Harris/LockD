@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { EraHealth } from "@/components/app/era-health";
 import { Page } from "@/components/app/shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { eraHealthOverlay } from "@/domain/health";
 import { formatLocalDate } from "@/domain/time";
 import { formatWeightWithUnit, weightUnitFor } from "@/domain/units";
 import { useGymDerived } from "@/lib/gym/hooks";
@@ -17,6 +19,8 @@ export const Route = createFileRoute("/chronicle")({ component: ChroniclePage })
 function ChroniclePage() {
   const { chronicle, moments, slices, settings } = useGymDerived();
   const renameEra = useGym((s) => s.renameEra);
+  const measurements = useGym((s) => s.measurements);
+  const healthSamples = useGym((s) => s.healthSamples);
   const unit = weightUnitFor(settings.unitSystem);
   const years = availableYears(slices);
   const [editing, setEditing] = useState<string | null>(null);
@@ -123,6 +127,9 @@ function ChroniclePage() {
                   <p className="mt-2 text-micro text-subtle">Tap to rename · auto: {era.autoName}</p>
                 </button>
               )}
+              {settings.health?.overlays && editing !== era.startDate ? (
+                <EraHealth overlay={eraHealthOverlay(healthSamples, measurements, era.startDate, era.endDate)} unit={unit} />
+              ) : null}
             </Card>
           </div>
         ))}
