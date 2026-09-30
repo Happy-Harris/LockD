@@ -20,6 +20,7 @@ import { useGym } from "@/lib/gym/store";
 import { StorageNoticeBanner } from "@/components/app/storage-notice";
 import { bootStorage } from "@/lib/storage/boot";
 import { startServiceWorker } from "@/lib/pwa/start";
+import { siteOg } from "@/lib/og/tags";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Lockd";
@@ -28,6 +29,11 @@ const fetchSessionUser = createServerFn({ method: "GET" }).handler(async () => {
   const { getSessionUser } = await import("@/lib/auth/verify.server");
   const u = await getSessionUser();
   return u ? { id: u.id, email: u.email } : null;
+});
+
+const fetchOrigin = createServerFn({ method: "GET" }).handler(async () => {
+  const { requestOrigin } = await import("@/lib/og/origin.server");
+  return requestOrigin();
 });
 
 export const Route = createRootRoute({
@@ -41,17 +47,19 @@ export const Route = createRootRoute({
       throw error;
     }),
   }),
-  head: () => ({
+  // The origin for absolute share-card URLs: asked of the server while rendering there, read from the window
+  // in the browser, so a client-side move never needs the network.
+  loader: async () => ({
+    origin: typeof window !== "undefined" ? window.location.origin : await fetchOrigin(),
+  }),
+  head: ({ loaderData }) => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: APP_NAME },
       { name: "theme-color", content: "#0E0E0C" },
-      {
-        name: "description",
-        content:
-          "Lock’d — a training operating system that remembers a lifting life. Keep the receipt.",
-      },
+      { name: "apple-mobile-web-app-title", content: APP_NAME },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black" },
+      ...siteOg(loaderData?.origin ?? ""),
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },

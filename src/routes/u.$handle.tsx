@@ -1,29 +1,32 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { PaperShell } from "@/components/app/paper-shell";
 import { Button } from "@/components/ui/button";
 import { Card, Stat } from "@/components/ui/card";
 import { getLocker } from "@/lib/cloud/api";
 import type { LockerCard } from "@/lib/cloud/types";
+import { lockerOg } from "@/lib/og/tags";
 
-export const Route = createFileRoute("/u/$handle")({ component: LockerPublicPage });
+export const Route = createFileRoute("/u/$handle")({
+  // Loaded before the page renders so the card tags are in the server-rendered HTML. `getLocker` only answers for
+  // a public locker, so a private one gets the generic site tags and the same "no public locker" page.
+  loader: async ({ params, parentMatchPromise }) => {
+    const origin = (await parentMatchPromise).loaderData?.origin ?? "";
+    try {
+      return { origin, result: await getLocker({ data: { handle: params.handle } }) };
+    } catch {
+      return { origin, result: { ok: false as const, error: "That locker could not be loaded." } };
+    }
+  },
+  head: ({ loaderData, params }) => ({
+    meta: lockerOg(loaderData?.origin ?? "", params.handle, loaderData?.result.ok ? loaderData.result.card : null),
+  }),
+  component: LockerPublicPage,
+});
 
 function LockerPublicPage() {
-  const { handle } = Route.useParams();
-  const [card, setCard] = useState<LockerCard | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let live = true;
-    void getLocker({ data: { handle } }).then((result) => {
-      if (!live) return;
-      if (!result.ok) setError(result.error);
-      else setCard(result.card);
-    });
-    return () => {
-      live = false;
-    };
-  }, [handle]);
+  const { result } = Route.useLoaderData();
+  const error = result.ok ? null : result.error;
+  const card: LockerCard | null = result.ok ? result.card : null;
 
   if (error) {
     return (

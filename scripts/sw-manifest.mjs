@@ -4,7 +4,7 @@ import { join, relative, sep } from "node:path";
 
 /** Files in the built static output that are not part of the app: the worker itself, source maps,
  * and the scaffolding's install page. */
-const SKIP = [/^sw\.js$/, /\.map$/, /^__grok\//];
+const SKIP = [/^sw\.js$/, /\.map$/];
 
 function walk(dir) {
   const out = [];

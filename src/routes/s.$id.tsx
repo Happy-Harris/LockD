@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useImportProgram } from "@/lib/gym/program-hooks";
-import { useEffect, useState } from "react";
 import { MomentPoster } from "@/components/app/moment-poster";
 import { PaperShell } from "@/components/app/paper-shell";
 import { LockdMark } from "@/components/app/mark";
@@ -11,25 +10,29 @@ import { getShare } from "@/lib/cloud/api";
 import type { PublicShare } from "@/lib/cloud/types";
 import { useGym } from "@/lib/gym/store";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { shareOg } from "@/lib/og/tags";
 
-export const Route = createFileRoute("/s/$id")({ component: SharePage });
+export const Route = createFileRoute("/s/$id")({
+  // Loaded before the page renders so the share's card tags are in the server-rendered HTML. A failed or
+  // unreachable lookup is carried to the page, which says so, instead of throwing.
+  loader: async ({ params, parentMatchPromise }) => {
+    const origin = (await parentMatchPromise).loaderData?.origin ?? "";
+    try {
+      return { origin, result: await getShare({ data: { id: params.id } }) };
+    } catch {
+      return { origin, result: { ok: false as const, error: "That receipt could not be loaded." } };
+    }
+  },
+  head: ({ loaderData, params }) => ({
+    meta: shareOg(loaderData?.origin ?? "", params.id, loaderData?.result.ok ? loaderData.result.share : null),
+  }),
+  component: SharePage,
+});
 
 function SharePage() {
-  const { id } = Route.useParams();
-  const [share, setShare] = useState<PublicShare | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let live = true;
-    void getShare({ data: { id } }).then((result) => {
-      if (!live) return;
-      if (!result.ok) setError(result.error);
-      else setShare(result.share);
-    });
-    return () => {
-      live = false;
-    };
-  }, [id]);
+  const { result } = Route.useLoaderData();
+  const error = result.ok ? null : result.error;
+  const share: PublicShare | null = result.ok ? result.share : null;
 
   if (error) {
     return (

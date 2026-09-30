@@ -7,19 +7,9 @@ test.describe("the app carries what it needs", () => {
   }) => {
     const foreign: string[] = [];
     const appOrigin = new URL(test.info().project.use.baseURL ?? "http://127.0.0.1:8080").origin;
-    // The one known exception: a script the app-builder scaffolding injects into every page. It is
-    // removed with the scaffolding (plan PR 12), and this test then loses the exemption. Anything
-    // else from another origin, a font CDN included, fails.
-    const scaffolding = "https://grok.com/grok-app-builder/extensions.js";
     page.on("request", (request) => {
       const url = new URL(request.url());
-      if (
-        url.protocol.startsWith("http") &&
-        url.origin !== appOrigin &&
-        request.url() !== scaffolding
-      ) {
-        foreign.push(request.url());
-      }
+      if (url.protocol.startsWith("http") && url.origin !== appOrigin) foreign.push(request.url());
     });
     await openWithSampleLog(page);
     await goTo(page, "/settings");
