@@ -31,7 +31,7 @@ export function LockerPage() {
   }, [profile]);
 
   useEffect(() => {
-    if (!user || user.isDevFallback) return;
+    if (!user) return;
     void listMyShares()
       .then(setShares)
       .catch(() => setShares([]));
@@ -45,16 +45,6 @@ export function LockerPage() {
     );
   }
   if (!user) return <RedirectToSignIn />;
-  if (user.isDevFallback) {
-    return (
-      <Page>
-        <h1 className="font-display text-3xl">Your locker stays private.</h1>
-        <p className="mt-3 text-sm text-muted">
-          Cloud lockers need a signed-in account. Guest training stays on this device.
-        </p>
-      </Page>
-    );
-  }
 
   const save = async () => {
     if (!profile || busy) return;

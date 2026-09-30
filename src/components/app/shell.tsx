@@ -16,7 +16,7 @@ import {
 import { LockdMark } from "@/components/app/mark";
 import { RestTimerBar } from "@/components/app/rest-timer";
 import { UserButton } from "@/lib/auth/gates";
-import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { useCanSignIn, useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useCloud } from "@/lib/cloud/sync";
 import { cn } from "@/lib/utils";
 
@@ -169,7 +169,12 @@ function LockerChip() {
   const label =
     status === "saving" ? "Saving…" : status === "pulling" ? "Opening locker…" : status === "error" ? "Sync missed" : "On the locker";
 
+  const canSignIn = useCanSignIn();
+
   if (isPending) return <div className="mt-auto h-16 animate-pulse rounded-xl bg-raised" />;
+  if (!user && !canSignIn) {
+    return <p className="mt-auto px-3 pt-8 font-mono text-[10px] tracking-wide text-subtle">⌘K to jump</p>;
+  }
   if (!user) {
     return (
       <div className="mt-auto px-2 pt-8">

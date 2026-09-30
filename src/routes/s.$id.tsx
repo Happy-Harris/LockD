@@ -9,7 +9,7 @@ import { formatDuration, formatWeightWithUnit } from "@/domain/units";
 import { getShare } from "@/lib/cloud/api";
 import type { PublicShare } from "@/lib/cloud/types";
 import { useGym } from "@/lib/gym/store";
-import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { useCanSignIn, useCurrentUserState } from "@/lib/auth/use-current-user";
 import { shareOg } from "@/lib/og/tags";
 
 export const Route = createFileRoute("/s/$id")({
@@ -158,6 +158,7 @@ function ShareBody({ share }: { share: PublicShare }) {
 
 function ProgramShare({ share }: { share: PublicShare }) {
   const { user, isPending } = useCurrentUserState();
+  const canSignIn = useCanSignIn();
   const importProgram = useImportProgram();
   const navigate = useNavigate();
   const payload = share.payload;
@@ -190,7 +191,7 @@ function ProgramShare({ share }: { share: PublicShare }) {
           Install this block
         </Button>
       ) : null}
-      {!isPending && !user ? (
+      {!isPending && !user && canSignIn ? (
         <Button className="mt-4 w-full" asChild>
           <Link to="/login">Sign in to install</Link>
         </Button>

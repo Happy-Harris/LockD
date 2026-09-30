@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { useCanSignIn, useCurrentUserState } from "@/lib/auth/use-current-user";
 import { publishShare } from "@/lib/cloud/api";
 import { useCloud } from "@/lib/cloud/sync";
 import type { ShareKind, SharePayload } from "@/lib/cloud/types";
@@ -19,12 +19,15 @@ export function PublishButton({
   label?: string;
 }) {
   const { user, isPending } = useCurrentUserState();
+  const canSignIn = useCanSignIn();
   const { profile } = useCloud();
   const [busy, setBusy] = useState(false);
   const [url, setUrl] = useState<string | null>(null);
 
   if (isPending) return <div className="h-11 animate-pulse rounded-xl bg-raised" />;
   if (!user) {
+    // Public links need an account; with sign-in off there is nothing to offer.
+    if (!canSignIn) return null;
     return (
       <Button className="w-full" variant="secondary" asChild>
         <Link to="/login">Sign in to share a link</Link>

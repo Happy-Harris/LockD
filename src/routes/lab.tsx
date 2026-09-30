@@ -10,7 +10,7 @@ import { consultLab } from "@/lib/lab/ask";
 import { actionLabel } from "@/lib/gym/progression";
 import { useGymDerived } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
-import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { useCanSignIn, useCurrentUserState } from "@/lib/auth/use-current-user";
 import { listLabNotes } from "@/lib/cloud/api";
 import type { LabHistoryNote } from "@/lib/cloud/types";
 
@@ -21,6 +21,7 @@ function LabPage() {
   const labLast = useGym((s) => s.labLast);
   const setLabLast = useGym((s) => s.setLabLast);
   const { user, isPending } = useCurrentUserState();
+  const canSignIn = useCanSignIn();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
@@ -241,7 +242,7 @@ function LabPage() {
             {busy ? "Reading the locker…" : labLast ? "Ask again" : "Ask the Lab"}
           </Button>
         </form>
-      ) : (
+      ) : !canSignIn ? null : (
         <p className="mt-8 text-sm text-muted" data-testid="lab-guest-note">
           <Link to="/login" className="text-accent underline-offset-2 hover:underline">
             Sign in

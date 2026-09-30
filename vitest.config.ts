@@ -12,13 +12,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.ts"],
-    // Legacy app-builder suites run under `node --test` (`npm run test:legacy`) and are
-    // deleted with the scaffolding. They use node:test, not Vitest.
-    exclude: [
-      "node_modules/**",
-      "src/lib/auth/gate-identity.test.ts",
-      "src/lib/auth/sign-in-gate.test.ts",
-    ],
+    exclude: ["node_modules/**"],
     globalSetup: ["./src/test/global-setup.ts"],
     setupFiles: ["./src/test/setup.ts"],
   },

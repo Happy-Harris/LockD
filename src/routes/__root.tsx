@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { createServerFn } from "@tanstack/react-start";
 import { AuthProvider } from "@/lib/auth/provider";
+import type { SignInMethod } from "@/lib/auth/methods";
 import { ThemeSync } from "@/components/app/theme";
 import { Onboarding } from "@/components/app/onboarding";
 import { CommandPalette } from "@/components/app/command-palette";
@@ -24,11 +25,18 @@ import appCss from "../styles.css?url";
 
 const APP_NAME = "Lockd";
 
-const fetchSessionUser = createServerFn({ method: "GET" }).handler(async () => {
+const fetchAuthState = createServerFn({ method: "GET" }).handler(async () => {
   const { getSessionUser } = await import("@/lib/auth/verify.server");
+  const { authConfig, signInMethods } = await import("@/lib/auth/config.server");
   const u = await getSessionUser();
-  return u ? { id: u.id, email: u.email } : null;
+  return {
+    sessionUser: u ? { id: u.id, email: u.email } : null,
+    signInMethods: signInMethods(authConfig),
+  };
 });
+
+/** What the server last said about sign-in, so an offline move keeps showing the same prompts. */
+let lastSignInMethods: SignInMethod[] = [];
 
 const fetchOrigin = createServerFn({ method: "GET" }).handler(async () => {
   const { requestOrigin } = await import("@/lib/og/origin.server");
@@ -38,14 +46,16 @@ const fetchOrigin = createServerFn({ method: "GET" }).handler(async () => {
 export const Route = createRootRoute({
   // Offline, the session lookup cannot reach the server. Carry on as a guest, which always works:
   // the log lives on this device. A real server error still surfaces.
-  beforeLoad: async () => ({
-    sessionUser: await fetchSessionUser().catch((error: unknown) => {
+  beforeLoad: async () => {
+    const state = await fetchAuthState().catch((error: unknown) => {
       const offline =
         typeof window !== "undefined" && (navigator.onLine === false || error instanceof TypeError);
-      if (offline) return null;
+      if (offline) return { sessionUser: null, signInMethods: lastSignInMethods };
       throw error;
-    }),
-  }),
+    });
+    lastSignInMethods = state.signInMethods;
+    return state;
+  },
   // The origin for absolute share-card URLs: asked of the server while rendering there, read from the window
   // in the browser, so a client-side move never needs the network.
   loader: async () => ({

@@ -34,5 +34,14 @@ export default defineConfig({
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
+    // Sign-in on, with placeholder values that never reach a provider: the specs see the signed-out
+    // prompts a real deployment shows. Apple is left off so a partial setup is covered too.
+    env: {
+      BETTER_AUTH_SECRET: "e2e-placeholder-not-a-secret",
+      GOOGLE_CLIENT_ID: "e2e-placeholder",
+      GOOGLE_CLIENT_SECRET: "e2e-placeholder",
+      RESEND_API_KEY: "e2e-placeholder",
+      AUTH_EMAIL_FROM: "Lockd <e2e@example.com>",
+    },
   },
 });
