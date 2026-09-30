@@ -12,6 +12,8 @@ Three separate things are kept apart: code written, a compile check, and a devic
 |---|---|---|---|---|
 | Lock-screen rest timer, Android | yes | built and unit tested here; also in CI job `android` | not run; the lateness test is outstanding | nothing for a debug build; a Play Console account and a signing key for release |
 | Lock-screen rest timer, iOS (Live Activity) | yes | CI job `ios` only (no Xcode here) | not run | an Apple Developer account and team for signing; the widget extension needs its own App ID (`com.happyharris.lockd.RestTimerWidget`) |
+| Health reads, Android (Health Connect) | yes | built and unit tested here; also in CI job `android` | not run | nothing for a debug build; a Play Console account and Google's Health Connect declaration for release |
+| Health reads, iOS (HealthKit) | yes | CI job `ios` only | not run | an Apple Developer account and the HealthKit capability on the App ID |
 
 CI: `.github/workflows/native-build.yml` builds the debug APK and runs the Android unit tests on Ubuntu, and builds the iOS app and widget extension
 unsigned for the simulator on macOS. It runs on changes under `ios/`, `android/`, `src/lib/native/`, the Capacitor config and the native scripts.

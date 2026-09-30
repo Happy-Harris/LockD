@@ -9,6 +9,13 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 10: the native Health reads
+
+- **Shipped:** the native half of `LockdHealth`. iOS: a HealthKit plugin (read-only bodyweight, sleep, HRV) with merged sleep intervals, the HealthKit entitlement and usage string, wired in by `scripts/native/add-healthkit.rb`. Android: a Kotlin Health Connect plugin on `connect-client:1.1.0-beta01`, the read permissions, a rationale activity, and unit tests for the sleep-interval maths.
+- **Choices worth knowing:** the newer Health Connect releases need AGP 8.9.1 and compileSdk 36, so the beta01 release is pinned; the library's minSdk 26 is overridden in the manifest and the plugin returns unavailable below API 28. HealthKit cannot report a denied read, so an empty result says "no data", never "denied".
+- **Compiled:** Android here and in CI; iOS in CI only. **Not verified on a device.** The Android locked-screen lateness test from Opp 6 is still outstanding.
+- **Needs the owner:** Apple Developer account and the HealthKit capability; Play Console and Google's Health Connect declaration.
+
 ### 2026-09-30 — Health-sourced bodyweight stays out of the cloud vault
 
 - **Owner's decision (reverses the one recorded earlier the same day):** bodyweight read from Health is tagged with its source and excluded from vault sync; typed entries still sync; the latest-recorded rule on the device is unchanged. Sleep and HRV were already device-only.

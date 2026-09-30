@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -24,6 +25,25 @@
 
         </activity>
 
+        <!-- Health Connect asks the app to explain why it reads health data (Opp 10). -->
+        <activity
+            android:name=".HealthPermissionsRationaleActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
+            </intent-filter>
+        </activity>
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".HealthPermissionsRationaleActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
+            </intent-filter>
+        </activity-alias>
+
         <receiver
             android:name=".LockScreenActionReceiver"
             android:exported="false" />
@@ -39,9 +59,22 @@
         </provider>
     </application>
 
+    <!-- The Health Connect client needs Android 9; the app still installs on older phones and skips it there. -->
+    <uses-sdk tools:overrideLibrary="androidx.health.connect.client" />
+
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- Android 13+: the rest-timer tile and the end-of-rest alert are notifications. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Health context (Opp 10): read only. Nothing is ever written to Health Connect. -->
+    <uses-permission android:name="android.permission.health.READ_WEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE_VARIABILITY" />
+    <!-- Lets the first read reach back 365 days instead of 30. -->
+    <uses-permission android:name="android.permission.health.READ_HEALTH_DATA_HISTORY" />
 </manifest>
