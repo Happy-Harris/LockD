@@ -11,6 +11,7 @@ import type { GoalLens } from "@/domain/types";
 import { titleCase } from "@/domain/taxonomy";
 import { formatWeight, formatWeightWithUnit, roundEstimateG, weightUnitFor } from "@/domain/units";
 import { e1rmSeries } from "@/lib/gym/analytics";
+import { recordChancesDuringComeback } from "@/lib/gym/comeback";
 import { useStartProgramSession } from "@/lib/gym/program-hooks";
 import { LENSES, lensShows } from "@/lib/gym/lenses";
 import { formatSets, stateLabel } from "@/lib/gym/muscle-labels";
@@ -67,6 +68,7 @@ function TodayPage() {
     startFromTemplate(templateId);
     void navigate({ to: "/workout" });
   };
+  const recordChances = recordChancesDuringComeback(queue, comeback, board);
   const visibleRoutines = templates.filter((row) => !row.isArchived).slice(0, 4);
   const notableFirsts = moments.filter((row) => row.kind === "first");
   const featuredFirsts = notableFirsts.filter((row) => row.featured);
@@ -189,8 +191,8 @@ function TodayPage() {
         </div>
       ) : null}
 
-      {queue.length > 0 ? (
-        <section className="mb-6">
+      {recordChances.length > 0 ? (
+        <section className="mb-6" data-testid="within-reach">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-2xl font-semibold tracking-tight">Within reach</h2>
             <Link to="/lab" className="text-sm text-muted hover:text-ink">
@@ -198,7 +200,7 @@ function TodayPage() {
             </Link>
           </div>
           <div className="space-y-2">
-            {queue.slice(0, 3).map((row) => (
+            {recordChances.slice(0, 3).map((row) => (
               <Link key={row.id} to="/library/$id" params={{ id: row.exerciseId }}>
                 <Card>
                   <p className="text-sm font-medium">{row.name}</p>

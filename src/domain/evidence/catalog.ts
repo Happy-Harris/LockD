@@ -211,7 +211,7 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
   {
     id: "comeback-reentry-rule",
     statement:
-      "After a layoff of 14 days or more since a lift's last session, its next target starts from that session's top working load: 90% after 14 to 27 days away, 80% after 28 to 55, 70% after 56 or more, rounded down to a load the lifter can build, with reps at the bottom of the prescribed range (or the last session's reps). The lifter can change the three percentages in Settings. Today shows the comeback while the lifter is away and for 56 days after the first session back, with the estimated-1RM records set since the return.",
+      "After a layoff of 14 days or more since a lift's last session, its next target starts from that session's top working load: 90% after 14 to 27 days away, 80% after 28 to 55, 70% after 56 or more, rounded down to a load the lifter can build, with reps at the bottom of the prescribed range (or the last session's reps). The lifter can change the three percentages in Settings. Today shows the comeback while the lifter is away and for 56 days after the first session back, with the estimated-1RM records set since the return. While the comeback shows, Today's \"Within reach\" record chances leave out every lift still restarting (all of them while away), so no record attempt at the pre-layoff load competes with the re-entry target.",
     kind: "implementation_heuristic",
     behaviors: ["comeback_reentry_load", "comeback_card"],
     sourceIds: [],

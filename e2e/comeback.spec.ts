@@ -43,6 +43,8 @@ test.describe("comeback mode (Opp 8)", () => {
     // 45 days away is the 28 to 55 band: 80 % of 100 kg.
     await expect(page.getByTestId("comeback-restarts")).toContainText("Bench Press 80 kg × 5, from 100 kg");
     await expect(card).toContainText("Rule, not a prediction");
+    // No record attempt at the pre-layoff load competes with the restart.
+    await expect(page.getByTestId("within-reach")).toHaveCount(0);
 
     await card.getByRole("link", { name: "Change it in Settings" }).click();
     await expect(page).toHaveURL(/\/settings/);
@@ -72,5 +74,6 @@ test.describe("comeback mode (Opp 8)", () => {
     await waitForApp(page);
     await expect(page.getByRole("heading", { name: "Today", level: 1 })).toBeVisible();
     await expect(page.getByTestId("comeback-card")).toHaveCount(0);
+    await expect(page.getByTestId("within-reach")).toBeVisible();
   });
 });

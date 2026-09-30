@@ -117,3 +117,20 @@ export function currentComeback(
   }
   return undefined;
 }
+
+/**
+ * "Within reach" record chances read from each lift's last session. During a comeback a lift whose
+ * next target is the re-entry load would be offered a record attempt at its pre-layoff load, which
+ * contradicts the restart. While away every lift is in that state, so none are kept; once back, only
+ * the lifts already trained since the return keep theirs.
+ */
+export function recordChancesDuringComeback<T extends { exerciseId: string }>(
+  rows: T[],
+  comeback: ComebackState | undefined,
+  calls: Array<{ exerciseId: string; action: string }>,
+): T[] {
+  if (!comeback) return rows;
+  if (comeback.phase === "away") return [];
+  const restarting = new Set(calls.filter((call) => call.action === "re_entry").map((call) => call.exerciseId));
+  return rows.filter((row) => !restarting.has(row.exerciseId));
+}

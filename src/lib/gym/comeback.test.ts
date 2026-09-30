@@ -4,7 +4,9 @@ import {
   comebackPercent,
   currentComeback,
   DEFAULT_COMEBACK_RULE,
+  recordChancesDuringComeback,
   reEntryLoadG,
+  type ComebackState,
 } from "./comeback";
 import { applyProgramLoad } from "./programs";
 import { progressExercise } from "./progression";
@@ -124,5 +126,29 @@ describe("where the lifter stands", () => {
     expect(currentComeback(log, "2026-03-27", "epley")).toBeUndefined();
     expect(currentComeback([session("2026-04-01", 100), session("2026-04-08", 100)], "2026-04-10", "epley")).toBeUndefined();
     expect(currentComeback([], "2026-04-10", "epley")).toBeUndefined();
+  });
+});
+
+describe("record chances during a comeback", () => {
+  const rows = [
+    { exerciseId: "bench", how: "+1 rep opens a new 6RM" },
+    { exerciseId: "squat", how: "+2.5 kg is a new 5RM" },
+  ];
+  const calls = [
+    { exerciseId: "bench", action: "re_entry" },
+    { exerciseId: "squat", action: "progress_load" },
+  ];
+  const back: ComebackState = { phase: "back", daysAway: 40, lastDate: "2026-01-12", returnDate: "2026-02-21", sessionsSince: 2, prs: [] };
+
+  it("offers none while away: every lift restarts, so no attempt at the pre-layoff load", () => {
+    expect(recordChancesDuringComeback(rows, { phase: "away", daysAway: 45, lastDate: "2026-01-12" }, calls)).toEqual([]);
+  });
+
+  it("once back, drops only the lifts still restarting", () => {
+    expect(recordChancesDuringComeback(rows, back, calls).map((row) => row.exerciseId)).toEqual(["squat"]);
+  });
+
+  it("leaves them alone with no comeback", () => {
+    expect(recordChancesDuringComeback(rows, undefined, calls)).toEqual(rows);
   });
 });
