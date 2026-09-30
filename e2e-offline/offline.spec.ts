@@ -58,6 +58,13 @@ test.describe("the app works with no network", () => {
     await expect(page.getByRole("heading", { name: "The lifting life.", level: 1 })).toBeVisible();
     await expect(page.getByText("Something went wrong")).toHaveCount(0);
 
+    // Lift Math, opened for the first time with the network off (spec, Appendix A).
+    await page.goto("/tools/lift-math");
+    await waitForApp(page);
+    await page.getByLabel("Load (kg)").fill("100");
+    await page.getByLabel("Reps").fill("5");
+    await expect(page.getByTestId("lift-math-result")).toContainText("116.67 kg");
+
     // Reload offline: the log is still there.
     await page.reload();
     await waitForApp(page);

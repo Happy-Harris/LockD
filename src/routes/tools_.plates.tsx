@@ -4,11 +4,19 @@ import { Page } from "@/components/app/shell";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { calculatePlates } from "@/domain/plateCalculator";
-import { formatWeight, parseWeightInput, weightUnitFor } from "@/domain/units";
+import { formatWeight, parseWeightInput, weightUnitFor, type WeightUnit } from "@/domain/units";
+import { handedLoad } from "@/lib/gym/handed-load";
 import { useGym } from "@/lib/gym/store";
 import { BRAND } from "@/lib/brand";
 
-export const Route = createFileRoute("/tools_/plates")({ component: PlatesPage });
+export const Route = createFileRoute("/tools_/plates")({
+  // Lift Math hands its rounded load over in the address (`?load=87.5&unit=kg`); nothing is stored.
+  validateSearch: (search: Record<string, unknown>): { load?: string; unit?: WeightUnit } => ({
+    load: typeof search.load === "string" || typeof search.load === "number" ? String(search.load).slice(0, 12) : undefined,
+    unit: search.unit === "kg" || search.unit === "lb" ? search.unit : undefined,
+  }),
+  component: PlatesPage,
+});
 
 function PlatesPage() {
   const settings = useGym((s) => s.settings);
@@ -17,7 +25,8 @@ function PlatesPage() {
   const unit = weightUnitFor(settings.unitSystem);
   const inventory = plates.find((row) => row.id === settings.defaultPlateInventoryId) ?? plates[0];
   const bar = bars.find((row) => row.id === settings.defaultBarProfileId) ?? bars[0];
-  const [raw, setRaw] = useState(unit === "kg" ? "100" : "225");
+  const handed = Route.useSearch();
+  const [raw, setRaw] = useState(() => handedLoad(handed, unit) ?? (unit === "kg" ? "100" : "225"));
 
   const result = useMemo(() => {
     if (!inventory || !bar) return null;

@@ -9,6 +9,26 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Lift Math, step B: the screen
+
+- **Plan:** `PLAN-ADDENDUM.md` § 6 item 8, built to the owner's spec (Appendix A) build-order step 6: "the screen, receipt line,
+  copy deck, plate and warm-up links, palette entry, precache."
+- **Shipped:** `/tools/lift-math` (`src/routes/tools_.lift-math.tsx`), linked from Tools and the palette (found by 1RM, one rep
+  max, e1RM, percent, RIR, RPE). Two modes: an estimated 1RM from a set, and the load for a target set. The effort field follows
+  the log: "RPE on that set" for an RPE lifter (RIR = 10 − RPE), "RIR on that set" otherwise; blank is RIR 0. Under each result:
+  the receipt line (formula and inputs) and the other formula's answer. A target shows "Nearest loadable · 2.5 kg steps" (5 lb in
+  pounds), ties down. An estimate shows a loads-only percentage table and "Use as 1RM for a target". A target links to the plate
+  calculator and the warm-up generator with the load in the address (`?load=87.5&unit=kg`); both pages accept it, converting
+  when the units differ. Copy is the spec's copy deck. Empty input shows nothing in the result slot; errors are linked to their
+  field; a polite live region announces one result per settled input.
+- **Nothing saved:** inputs live in the address (so Back from the plate calculator returns them), never in the store.
+- **Offline:** every build file is already precached by the worker; the offline suite now opens Lift Math for the first time
+  with the network off.
+- **Not in this step:** seeding from history (the spec's "next slice"); real phones and tablets.
+- **Tests:** `e2e/lift-math.spec.ts` (receipt and other formula, decimal comma, RPE adjustment, over-cap message on the field,
+  plate hand-off and Back, nothing written to the log, plates or settings, palette synonyms), `e2e-offline/offline.spec.ts`.
+- **Screens:** `lift-math-phone.png` and `lift-math-desktop.png` in the project files (not in the repo).
+
 ### 2026-09-30 — Fix: the bottom tab bar was one pixel too wide at Large and 320 px
 
 - Found by `e2e/text-size.spec.ts` on CI after Text size step A merged (`/analytics` was only the first screen it measured):
