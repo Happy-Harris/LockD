@@ -153,8 +153,11 @@ export function buildMoments(
       kind: "era",
       date: era.startDate,
       title: era.name,
-      kicker: "Named era",
-      detail: `${era.sessions} sessions from ${era.startDate} to ${era.endDate}.`,
+      kicker: era.tone === "brief" ? "Brief return" : "Named era",
+      detail:
+        era.tone === "brief"
+          ? `One session on ${era.startDate}, between two layoffs.`
+          : `${era.sessions} sessions from ${era.startDate} to ${era.endDate}.`,
       eraName: era.name,
     });
   }

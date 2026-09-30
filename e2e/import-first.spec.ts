@@ -44,4 +44,32 @@ test.describe("import-first onboarding (Opp 1)", () => {
     await expect(page).toHaveURL(/\/chronicle$/);
     await expect(page.getByRole("heading", { name: "The lifting life." })).toBeVisible();
   });
+
+  test("a single session between two layoffs is kept apart as a brief return", async ({ page }) => {
+    const days = ["2026-01-05", "2026-01-08", "2026-01-12", "2026-02-10", "2026-03-16", "2026-03-19"];
+    const csv = [
+      "Date,Workout Name,Exercise Name,Set Order,Weight (kg),Reps",
+      ...days.map((date) => `${date} 10:00:00,Full Body,Bench Press (Barbell),1,80,5`),
+    ].join("\n");
+    await page.goto("/");
+    await waitForApp(page);
+    await page.getByTestId("onboarding-import").click();
+    await page.getByTestId("import-kind-strong").click();
+    await page
+      .getByTestId("import-file")
+      .setInputFiles({ name: "strong.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+    await page.getByTestId("import-next-sessions").click();
+    await page.getByTestId("import-next-resolve").click();
+    await page.getByTestId("import-next-confirm").click();
+    await page.getByTestId("import-run").click();
+
+    const card = page.getByTestId("import-chronicle");
+    await expect(card).toContainText("2 eras and 1 brief return");
+    await expect(card).toContainText("one session between two layoffs");
+    await expect(page.getByTestId("import-chronicle-summary")).toContainText("6 sessions in your log, 2 layoffs");
+
+    await page.getByTestId("import-open-chronicle").click();
+    await expect(page.getByTestId("brief-return")).toHaveCount(1);
+    await expect(page.getByText("Brief Return", { exact: true })).toBeVisible();
+  });
 });
