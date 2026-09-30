@@ -9,6 +9,13 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 7: the Apple Watch app and the LockdWatch plugin
+
+- **Shipped:** a watchOS 9 SwiftUI app (`LockdWatch`) that shows the snapshot and sends intents, the phone-side `LockdWatch` Capacitor plugin over WatchConnectivity, and `scripts/native/add-watch-app.rb`. The snapshot gained phone-written `display` text so the watch never formats a weight.
+- **CI:** the iOS job no longer pins the iPhone SDK, so the embedded watch target builds; a new step fails the job if the watch app or the Live Activity extension is missing from the products.
+- **Compiled in CI only; not run on a watch.** Open risks for the device check: a tap from the watch is dropped while the phone's web layer is suspended; the watch app needs an icon catalog before distribution.
+- **Needs the owner:** Apple Developer account and team, App IDs for the watch app and widget extension. The Android locked-screen lateness test is still outstanding and parked.
+
 ### 2026-09-30 — Opp 10: the native Health reads
 
 - **Shipped:** the native half of `LockdHealth`. iOS: a HealthKit plugin (read-only bodyweight, sleep, HRV) with merged sleep intervals, the HealthKit entitlement and usage string, wired in by `scripts/native/add-healthkit.rb`. Android: a Kotlin Health Connect plugin on `connect-client:1.1.0-beta01`, the read permissions, a rationale activity, and unit tests for the sleep-interval maths.

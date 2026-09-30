@@ -86,10 +86,15 @@ jobs:
             -workspace App.xcworkspace \
             -scheme App \
             -configuration Debug \
-            -sdk iphonesimulator \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             | tee "$RUNNER_TEMP/xcodebuild.log" | tail -n 60
+      - name: Check the extension and the watch app were built
+        run: |
+          app=$(find ~/Library/Developer/Xcode/DerivedData -path '*Debug-iphonesimulator/App.app' -maxdepth 6 -type d | head -n 1)
+          echo "app: $app"
+          test -d "$app/PlugIns/RestTimerWidgetExtension.appex" || { echo 'missing the Live Activity extension'; exit 1; }
+          test -d "$app/Watch/LockdWatch.app" || { echo 'missing the watch app'; exit 1; }
       - name: Upload build log on failure
         if: failure()
         uses: actions/upload-artifact@v4

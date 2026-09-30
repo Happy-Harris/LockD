@@ -6,5 +6,6 @@ class MainViewController: CAPBridgeViewController {
     override open func capacitorDidLoad() {
         bridge?.registerPluginInstance(LockScreenTimerPlugin())
         bridge?.registerPluginInstance(LockdHealthPlugin())
+        bridge?.registerPluginInstance(LockdWatchPlugin())
     }
 }
