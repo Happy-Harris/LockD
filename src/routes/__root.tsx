@@ -103,6 +103,7 @@ function isPublicPath(pathname: string) {
     pathname === "/login" ||
     pathname === "/receipt" ||
     pathname.startsWith("/s/") ||
+    pathname.startsWith("/h/") ||
     pathname.startsWith("/u/")
   );
 }

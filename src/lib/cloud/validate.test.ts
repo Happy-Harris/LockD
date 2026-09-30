@@ -4,7 +4,9 @@ import { computeRecords, sliceSessions } from "@/lib/gym/analytics";
 import { useGym } from "@/lib/gym/store";
 import { seedExercises } from "@/lib/gym/seed";
 import { cloudGymFromState } from "./payload";
-import { momentShare, programShare, receiptShare, wrappedShare } from "./shares";
+import { readFileSync } from "node:fs";
+import { receiptFromExport } from "@/lib/receipt/web-receipt";
+import { lifetimeShare, momentShare, programShare, receiptShare, wrappedShare } from "./shares";
 import {
   MAX_SHARE_BYTES,
   validateHandleInput,
@@ -136,6 +138,7 @@ describe("publishing a share", () => {
       },
       { kind: "wrapped", title: "A year", payload: wrappedShare(receipt, "kg") },
       { kind: "program", title: "A block", payload: programShare(program) },
+      { kind: "lifetime", title: "A training life", payload: lifetimeShare(lifetime(), "kg") },
     ] as const;
     for (const share of shares) {
       const out = validateShareInput(JSON.parse(JSON.stringify(share)));
@@ -187,5 +190,42 @@ describe("publishing a share", () => {
       payload: { kind: "program", athlete: "L", file: { format: "other" } },
     };
     expect(() => validateShareInput(share)).toThrow();
+  });
+});
+
+/** Opp 9: the lifetime receipt from a real (synthetic) export, as the web receipt builds it. */
+function lifetime() {
+  const text = readFileSync("src/test/fixtures/hevy/hevy-synthetic-kg-km.csv", "utf8");
+  const result = receiptFromExport(text, "hevy.csv", "kg");
+  if (!result.ok) throw new Error("fixture did not read");
+  return result.receipt;
+}
+
+describe("the lifetime receipt share", () => {
+  it("carries the receipt's own numbers and nothing from the log it was read from", () => {
+    const payload = lifetimeShare(lifetime(), "kg");
+    const out = validateShareInput({ kind: "lifetime", title: "Training receipt", payload });
+    expect(out.payload).toEqual(JSON.parse(JSON.stringify(payload)));
+    expect(Object.keys(payload.receipt).sort()).toEqual(
+      ["busiestYears", "chronicle", "firstDate", "formula", "hardSets", "lastDate", "lifts", "longestGap", "sessions", "topLifts", "years"].sort(),
+    );
+    const text = JSON.stringify(payload);
+    for (const field of ["workoutId", "workoutExerciseId", "importFingerprint", "\"sets\"", "notes"]) expect(text).not.toContain(field);
+  });
+
+  it("refuses a lifetime payload with an unknown formula or too many eras", () => {
+    const payload = lifetimeShare(lifetime(), "kg");
+    expect(() =>
+      validateShareInput({ kind: "lifetime", title: "x", payload: { ...payload, receipt: { ...payload.receipt, formula: "guess" } } }),
+    ).toThrow(/lifetime share is not valid/);
+    const era = payload.receipt.chronicle.eras[0]!;
+    const eras = Array.from({ length: 21 }, () => era);
+    expect(() =>
+      validateShareInput({
+        kind: "lifetime",
+        title: "x",
+        payload: { ...payload, receipt: { ...payload.receipt, chronicle: { ...payload.receipt.chronicle, eras } } },
+      }),
+    ).toThrow();
   });
 });

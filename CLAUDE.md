@@ -120,8 +120,9 @@ npm run test:e2e:offline  # builds, then the service-worker suite in e2e-offline
 
 **Live identifiers** (renaming any is a migration, never a cleanup): the persist key `lockd-v1`,
 IndexedDB names `lockd-vault` (and `lockd` once storage lands), backup formats `lockd-backup` and
-`lockd-program`, URLs `/s/$id` and `/u/$handle`, tables `lockd_vaults`, `lockd_profiles`,
-`lockd_shares`, `lockd_lab_notes`.
+`lockd-program`, URLs `/s/$id`, `/u/$handle` and `/h/$token`, tables `lockd_vaults`, `lockd_profiles`,
+`lockd_shares`, `lockd_lab_notes`, `lockd_history_links`, and the share kinds stored in `lockd_shares.kind`
+(`moment`, `receipt`, `wrapped`, `program`, `lifetime`).
 
 ## Subagents
 

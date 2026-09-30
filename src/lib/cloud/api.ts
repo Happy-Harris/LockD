@@ -4,9 +4,13 @@ import { getSql } from "@/lib/db";
 import { uuid } from "@/domain/ids";
 import { defaultSettings } from "@/lib/gym/store";
 import { buildLockerCard } from "./card";
+import { historyView, MAX_HISTORY_LINKS, newHistoryToken, type HistoryView } from "./history-link";
 import { asJson, slugHandle, vaultHasLog } from "./payload";
 import {
   validateHandleInput,
+  validateHistoryLinkInput,
+  validateHistoryRevokeInput,
+  validateHistoryTokenInput,
   validateIdInput,
   validateProfileInput,
   validatePullInput,
@@ -169,6 +173,8 @@ export const saveProfile = createServerFn({ method: "POST" })
         display_name = excluded.display_name,
         bio = excluded.bio,
         is_public = excluded.is_public,
+        -- Publishing on purpose answers the "your locker is now private" notice.
+        privacy_notice_pending = lockd_profiles.privacy_notice_pending and not excluded.is_public,
         updated_at = now()
     `;
     const vault = await sql<{
@@ -327,4 +333,78 @@ export const listLabNotes = createServerFn({ method: "GET" })
       createdAt: row.created_at,
     }));
     return notes;
+  });
+
+/** Drivers differ on timestamptz (a Date or text); links always carry ISO text. */
+function isoTime(value: unknown): string {
+  const date = value instanceof Date ? value : new Date(String(value ?? ""));
+  return Number.isNaN(date.getTime()) ? "" : date.toISOString();
+}
+
+export type HistoryLinkRow = { token: string; label: string; createdAt: string };
+
+/** Opp 9: a new read-only history link. The token is the whole secret; the owner can revoke it at any time. */
+export const createHistoryLink = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator(validateHistoryLinkInput)
+  .handler(async ({ context, data }) => {
+    await requireCloudOwner(context.userId);
+    const sql = await getSql();
+    const count = await sql<{ n: number }>`
+      select count(*)::int as n from lockd_history_links where user_id = ${context.userId}
+    `;
+    if ((count[0]?.n ?? 0) >= MAX_HISTORY_LINKS) {
+      return {
+        ok: false as const,
+        error: `You already have ${MAX_HISTORY_LINKS} read-only links. Revoke one to make another.`,
+      };
+    }
+    const token = newHistoryToken();
+    const rows = await sql<{ created_at: string }>`
+      insert into lockd_history_links (id, user_id, label) values (${token}, ${context.userId}, ${data.label})
+      returning created_at
+    `;
+    const link: HistoryLinkRow = { token, label: data.label, createdAt: isoTime(rows[0]?.created_at) };
+    return { ok: true as const, link };
+  });
+
+export const listHistoryLinks = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    await requireCloudOwner(context.userId);
+    const sql = await getSql();
+    const rows = await sql<{ id: string; label: string; created_at: string }>`
+      select id, label, created_at from lockd_history_links
+      where user_id = ${context.userId}
+      order by created_at desc
+    `;
+    return rows.map((row): HistoryLinkRow => ({ token: row.id, label: row.label, createdAt: isoTime(row.created_at) }));
+  });
+
+export const revokeHistoryLink = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator(validateHistoryRevokeInput)
+  .handler(async ({ context, data }) => {
+    await requireCloudOwner(context.userId);
+    const sql = await getSql();
+    const removed = await sql<{ id: string }>`delete from lockd_history_links
+      where id = ${data.token} and user_id = ${context.userId} returning id`;
+    return { ok: removed.length > 0 };
+  });
+
+/**
+ * The public read of a history link. An unknown or revoked token and a link whose owner has no synced log get the
+ * same answer, so the page confirms nothing about who is behind a token.
+ */
+export const getHistoryView = createServerFn({ method: "GET" })
+  .validator(validateHistoryTokenInput)
+  .handler(async ({ data }) => {
+    const missing = { ok: false as const, error: "This link doesn’t open a training log. It may have been revoked." };
+    const sql = await getSql();
+    const links = await sql<{ user_id: string }>`select user_id from lockd_history_links where id = ${data.token}`;
+    if (!links[0]) return missing;
+    const vault = await sql<{ payload: unknown }>`select payload from lockd_vaults where user_id = ${links[0].user_id}`;
+    if (!vault[0]) return missing;
+    const view: HistoryView = historyView(asJson<CloudGym>(vault[0].payload), data.offset);
+    return { ok: true as const, view };
   });

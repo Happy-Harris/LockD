@@ -43,6 +43,9 @@ test.describe("web receipt, no account (Opp 2)", () => {
       expect(request.url()).not.toContain("Receipt%20Marker");
       expect(request.url()).not.toContain(MARKER);
     }
+    // Sharing a link needs an account (Opp 9): signed out, the page offers sign-in and nothing that publishes.
+    await expect(page.getByRole("button", { name: /Share a link/ })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Sign in to share a link" })).toBeVisible();
     // Nor was anything saved: the browser's own log is still empty.
     expect((await readLog(page)).workouts).toHaveLength(0);
 

@@ -128,7 +128,7 @@ are the ones the Step 4 to 8 work has been building underneath.
 | 6 | In-set speed parity: separate warm-up and working rest timers, lock-screen rest timer, repeat last session, typed values win | not started | Step 9. "Repeat last session" already exists. Lock-screen timer needs native code (Phase 4 doc) |
 | 7 | Watch companion (native SwiftUI, then Wear OS) | design doc only | Phase 4 |
 | 8 | Comeback mode: detect layoffs, suggest re-entry loads, PRs "since comeback" | **done** | `Opp 8: comeback mode`: after 14+ days away each lift restarts at 90 / 80 / 70 % of its last working load by the length of the break (A-7, DA-3), rounded down to a buildable load, stated as a rule and editable in Settings; a Comeback card on Today with the records set since the return; "Within reach" leaves out lifts still restarting |
-| 9 | Shareable receipts: private by default, a share card, a read-only link | not started as new work (share cards already existed) | |
+| 9 | Shareable receipts: private by default, a share card, a read-only link | **done** | Private by default and unpublish: the privacy PR (29 Sep). `Opp 9: shareable receipts`: a read-only history link for a coach or partner (`/h/$token`, unguessable, revocable from the Locker, sessions and sets only, no locker), and the lifetime receipt (Opp 2) as a share (`/s/$id`, kind `lifetime`, owner's choice 2026-09-30). The "your locker is now private" notice now clears when the owner publishes on purpose |
 | 10 | Health context: bodyweight, sleep, HRV overlays in Chronicle, no readiness score | design doc only | Phase 4 |
 | 11 | Program from text: paste a program or spreadsheet, get a routine with progression | not started | |
 
@@ -155,7 +155,8 @@ handover entry says so. The open ones:
 - **Step 11 numbers that are the owner's to approve** (all named constants, one edit each): the era-detection rules
   (`ERA_*` in `chronicle.ts`, catalog claim `era-detection-rules`); the autopsy "similar load" band of 5%
   (`SIMILAR_LOAD_TOLERANCE`); the pounds milestone ladder (`LADDERS` in `moments.ts`); the server size caps
-  (`validate.ts`: vault 64 MB, public share 256 KB); and D6's two readings (3% measured against the lift's e1RM, and a
+  (`validate.ts`: vault 64 MB, public share 256 KB; `history-link.ts`: 10 live read-only links per lifter, 30 sessions a
+  page); and D6's two readings (3% measured against the lift's e1RM, and a
   floor of 3 observations per group).
 - **`percent_deload`** (I-41): a program rule kind that is accepted in files and does nothing. Keep as an alias of the
   default deload, or drop from the type and ignore it in files?

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useImportProgram } from "@/lib/gym/program-hooks";
+import { LifetimeReceiptView } from "@/components/app/lifetime-receipt";
 import { MomentPoster } from "@/components/app/moment-poster";
 import { PaperShell } from "@/components/app/paper-shell";
 import { LockdMark } from "@/components/app/mark";
@@ -148,6 +149,16 @@ function ShareBody({ share }: { share: PublicShare }) {
           {receipt.eras.length ? <p className="mt-3 text-sm">Eras: {receipt.eras.join(" · ")}.</p> : null}
           {receipt.firsts.length ? <p className="mt-3 text-sm">Firsts: {receipt.firsts.join("; ")}.</p> : null}
         </article>
+        <OpenLockd />
+      </>
+    );
+  }
+
+  if (payload.kind === "lifetime") {
+    return (
+      <>
+        <Athlete athlete={athlete} handle={handle} date={share.createdAt} />
+        <LifetimeReceiptView receipt={payload.receipt} unit={payload.unit} />
         <OpenLockd />
       </>
     );

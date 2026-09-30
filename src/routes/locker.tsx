@@ -6,7 +6,17 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { RedirectToSignIn } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { acknowledgePrivacyNotice, listMyShares, saveProfile, unpublishShare } from "@/lib/cloud/api";
+import {
+  acknowledgePrivacyNotice,
+  createHistoryLink,
+  listHistoryLinks,
+  listMyShares,
+  revokeHistoryLink,
+  saveProfile,
+  unpublishShare,
+  type HistoryLinkRow,
+} from "@/lib/cloud/api";
+import { MAX_LINK_LABEL_LENGTH } from "@/lib/cloud/history-link";
 import { useCloud } from "@/lib/cloud/sync";
 
 export const Route = createFileRoute("/locker")({ component: LockerPage });
@@ -30,11 +40,18 @@ export function LockerPage() {
     setIsPublic(profile.isPublic);
   }, [profile]);
 
+  const [links, setLinks] = useState<HistoryLinkRow[]>([]);
+  const [linkLabel, setLinkLabel] = useState("");
+  const [copied, setCopied] = useState<string | null>(null);
+
   useEffect(() => {
     if (!user) return;
     void listMyShares()
       .then(setShares)
       .catch(() => setShares([]));
+    void listHistoryLinks()
+      .then(setLinks)
+      .catch(() => setLinks([]));
   }, [user]);
 
   if (isPending) {
@@ -90,6 +107,53 @@ export function LockerPage() {
       setNote("Receipt unpublished. Its public link no longer works.");
     } catch {
       setNote("Could not unpublish that receipt. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const linkUrl = (token: string) =>
+    `${typeof window === "undefined" ? "" : window.location.origin}/h/${token}`;
+
+  const createLink = async () => {
+    setBusy(true);
+    try {
+      const result = await createHistoryLink({ data: { label: linkLabel } });
+      if (!result.ok) {
+        setNote(result.error);
+        return;
+      }
+      setLinks((current) => [result.link, ...current]);
+      setLinkLabel("");
+      setNote("Read-only link made. Copy it and send it to the person you trust with your log.");
+    } catch {
+      setNote("Could not make a link. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const copyLink = async (token: string) => {
+    try {
+      await navigator.clipboard.writeText(linkUrl(token));
+      setCopied(token);
+    } catch {
+      setNote(`Copy this link: ${linkUrl(token)}`);
+    }
+  };
+
+  const revokeLink = async (token: string) => {
+    setBusy(true);
+    try {
+      const result = await revokeHistoryLink({ data: { token } });
+      if (!result.ok) {
+        setNote("Could not revoke that link.");
+        return;
+      }
+      setLinks((current) => current.filter((link) => link.token !== token));
+      setNote("Link revoked. It no longer opens your log.");
+    } catch {
+      setNote("Could not revoke that link. Try again.");
     } finally {
       setBusy(false);
     }
@@ -183,6 +247,47 @@ export function LockerPage() {
                 Unpublish {share.title}
               </Button>
             </div>
+          ))
+        )}
+      </div>
+
+      <h2 className="mt-10 font-display text-2xl font-semibold tracking-tight">Read-only links</h2>
+      <p className="mt-2 text-sm leading-relaxed text-muted">
+        For a coach or training partner: a private link to your synced sessions and sets, kept current. It does not show
+        your locker, name, notes, bodyweight or videos. Anyone holding the link can read it until you revoke it.
+      </p>
+      <div className="mt-3 flex gap-2">
+        <Input
+          aria-label="Who is this link for?"
+          value={linkLabel}
+          maxLength={MAX_LINK_LABEL_LENGTH}
+          onChange={(event) => setLinkLabel(event.target.value)}
+          placeholder="Who is it for? (only you see this)"
+        />
+        <Button disabled={busy} onClick={() => void createLink()} data-testid="history-link-create">
+          Make link
+        </Button>
+      </div>
+      <div className="mt-3 space-y-2" data-testid="history-links">
+        {links.length === 0 ? (
+          <p className="text-sm text-muted">No read-only links. Nobody can see your log.</p>
+        ) : (
+          links.map((link) => (
+            <Card key={link.token} className="space-y-2">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="font-medium">{link.label || "Read-only link"}</span>
+                <span className="font-mono text-[11px] text-subtle">{link.createdAt.slice(0, 10)}</span>
+              </div>
+              <p className="break-all font-mono text-xs text-muted">{linkUrl(link.token)}</p>
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={() => void copyLink(link.token)}>
+                  {copied === link.token ? "Copied" : "Copy link"}
+                </Button>
+                <Button variant="secondary" disabled={busy} onClick={() => void revokeLink(link.token)}>
+                  Revoke {link.label || "link"}
+                </Button>
+              </div>
+            </Card>
           ))
         )}
       </div>

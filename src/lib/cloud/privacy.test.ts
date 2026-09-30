@@ -49,6 +49,13 @@ describe("locker privacy", () => {
     expect((await api.getLocker({ data: { handle: "oldpublic" } })).ok).toBe(false);
     await api.acknowledgePrivacyNotice();
     expect((await api.pullVault()).profile.privacyNoticePending).toBe(false);
+    // Publishing on purpose also answers the notice.
+    await db.exec(`update lockd_profiles set privacy_notice_pending = true where user_id = 'old-public'`);
+    const { profile: noticed } = await api.pullVault();
+    await api.saveProfile({ data: { ...noticed, isPublic: false } });
+    expect((await api.pullVault()).profile.privacyNoticePending).toBe(true);
+    await api.saveProfile({ data: { ...noticed, isPublic: true } });
+    expect((await api.pullVault()).profile).toMatchObject({ isPublic: true, privacyNoticePending: false });
     state.userId = "old-private";
     expect((await api.pullVault()).profile).toMatchObject({
       isPublic: false,

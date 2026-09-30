@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PROGRAM_FORMAT } from "@/domain/types";
+import { HISTORY_TOKEN_PATTERN, MAX_LINK_LABEL_LENGTH } from "./history-link";
 import type { CloudGym, ShareKind, SharePayload } from "./types";
 
 /**
@@ -108,6 +109,31 @@ export function validateIdInput(input: unknown): { id: string } {
   return parse(z.object({ id: z.uuid() }), input, "id");
 }
 
+export function validateHistoryLinkInput(input: unknown): { label: string } {
+  const data = parse(
+    z.object({ label: z.string().max(MAX_LINK_LABEL_LENGTH).optional() }).optional(),
+    input,
+    "link",
+  );
+  return { label: data?.label?.trim() ?? "" };
+}
+
+export function validateHistoryTokenInput(input: unknown): { token: string; offset: number } {
+  const data = parse(
+    z.object({
+      token: z.string().regex(HISTORY_TOKEN_PATTERN, "not a history link"),
+      offset: z.number().int().min(0).max(1_000_000).optional(),
+    }),
+    input,
+    "link",
+  );
+  return { token: data.token, offset: data.offset ?? 0 };
+}
+
+export function validateHistoryRevokeInput(input: unknown): { token: string } {
+  return parse(z.object({ token: z.string().regex(HISTORY_TOKEN_PATTERN, "not a history link") }), input, "link");
+}
+
 export function validateHandleInput(input: unknown): { handle: string } {
   return parse(z.object({ handle: z.string().min(1).max(MAX_NAME_LENGTH) }), input, "handle");
 }
@@ -163,6 +189,58 @@ const payloads = {
       })
       .passthrough(),
   }),
+  lifetime: z.object({
+    kind: z.literal("lifetime"),
+    ...person,
+    unit,
+    receipt: z.object({
+      firstDate: z.string(),
+      lastDate: z.string(),
+      sessions: count,
+      hardSets: count,
+      lifts: count,
+      years: z.array(z.object({ year: count, sessions: count })).max(200),
+      busiestYears: z.object({ years: z.array(count).max(200), sessions: count }),
+      longestGap: z.object({ days: count, from: z.string(), to: z.string() }).optional(),
+      chronicle: z.object({
+        eraCount: count,
+        briefReturns: count,
+        sessions: count,
+        firstDate: z.string(),
+        lastDate: z.string(),
+        layoffs: count,
+        prRuns: count,
+        eras: z
+          .array(
+            z.object({
+              id: z.string(),
+              name: z.string().max(MAX_TITLE_LENGTH),
+              startDate: z.string(),
+              endDate: z.string(),
+              sessions: count,
+              hardSets: count,
+              tone: z.string(),
+              autoName: z.string().max(MAX_TITLE_LENGTH),
+            }),
+          )
+          .max(20),
+        earlier: count,
+      }),
+      topLifts: z
+        .array(
+          z.object({
+            name: z.string().max(MAX_TITLE_LENGTH),
+            sessions: count,
+            e1rmG: count,
+            weightG: count,
+            reps: count,
+            date: z.string(),
+          }),
+        )
+        .max(10),
+      formula: z.enum(["epley", "brzycki"]),
+    }),
+  }),
 } as const;
 
 export function validateShareInput(input: unknown): {
@@ -172,7 +250,7 @@ export function validateShareInput(input: unknown): {
 } {
   const head = parse(
     z.object({
-      kind: z.enum(["moment", "receipt", "wrapped", "program"]),
+      kind: z.enum(["moment", "receipt", "wrapped", "program", "lifetime"]),
       title: z.string().max(MAX_TITLE_LENGTH),
       payload: z.unknown(),
     }),
