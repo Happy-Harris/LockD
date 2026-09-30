@@ -83,7 +83,7 @@ export function NumberReceiptSheet({
         ) : null}
 
         <section>
-          <h3 className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Sets used</h3>
+          <h3 className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Sets used</h3>
           <ul className="mt-1 space-y-1 font-mono text-xs tabular">
             {provenance.used.map(({ set, valueG }) => (
               <li key={set.id} className="flex justify-between gap-3">
@@ -100,7 +100,7 @@ export function NumberReceiptSheet({
 
         {provenance.excluded.length > 0 ? (
           <section>
-            <h3 className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Left out</h3>
+            <h3 className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Left out</h3>
             <ul className="mt-1 space-y-1 font-mono text-xs tabular text-muted" data-testid="number-receipt-excluded">
               {provenance.excluded.map(({ set, reason }) => (
                 <li key={set.id} className="flex justify-between gap-3">
@@ -113,7 +113,7 @@ export function NumberReceiptSheet({
         ) : null}
 
         <section>
-          <h3 className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+          <h3 className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
             Session by session ({receipt.trend.length})
           </h3>
           <ul className="mt-1 font-mono text-xs tabular" data-testid="number-receipt-trend">

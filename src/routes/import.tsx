@@ -398,7 +398,7 @@ function ImportPage() {
                     </span>
                   </span>
                   {row.alreadyHere ? (
-                    <span className="shrink-0 rounded-full bg-raised px-2 py-1 text-[11px] text-subtle">
+                    <span className="shrink-0 rounded-full bg-raised px-2 py-1 text-micro text-subtle">
                       Already here
                     </span>
                   ) : null}
@@ -644,7 +644,7 @@ function ChronicleAfterImport() {
   ].filter(Boolean);
   return (
     <Card className="mt-4" data-testid="import-chronicle">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Your Chronicle</p>
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Your Chronicle</p>
       <h2 className="mt-1 font-display text-xl font-semibold tracking-tight">
         {plural(summary.eraCount, "era")}
         {summary.briefReturns ? ` and ${plural(summary.briefReturns, "brief return")}` : ""} from{" "}

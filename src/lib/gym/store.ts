@@ -73,6 +73,7 @@ import { CLIP_PURGE_GRACE_MS, UNDO_WINDOW_MS, clipIdsForSets, withoutClips } fro
 import { deleteClipBlob } from "./vault";
 import { defaultSettings } from "./settings";
 import { switchableStorage } from "@/lib/storage/backend";
+import { currentTextSize, setTextSize } from "@/lib/device/text-size";
 import {
   migratePersisted,
   PERSIST_KEY,
@@ -1427,11 +1428,14 @@ export const useGym = create<GymState>()(
           lessons: state.lessons,
           namedPrs: state.namedPrs,
           clips: state.clips,
+          device: { textSize: currentTextSize() },
         };
       },
 
       importBackup: (backup, mode) => {
         if (backup.format !== BACKUP_FORMAT) throw new Error("Not a Lock’d backup file.");
+        // A backup without a text size keeps this device's choice (spec, Appendix A fix 4).
+        if (backup.device?.textSize) setTextSize(backup.device.textSize);
         if (mode === "replace") {
           set({
             exercises: backup.exercises,

@@ -38,7 +38,7 @@ export function ChangeFlagsCard({
 
   return (
     <Card data-testid="change-flags">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
         What should I change?
       </p>
       <h2 className="mt-1 font-display text-xl font-semibold tracking-tight text-ink">
@@ -155,7 +155,7 @@ export function ChangeFlagsCard({
                 onClick={() => setShowClaim(true)}
               >
                 <span className="block text-sm font-semibold text-ink">{claim.statement}</span>
-                <span className="mt-1 block text-[11px] text-accent">
+                <span className="mt-1 block text-micro text-accent">
                   Open the rule and its limits
                 </span>
               </button>

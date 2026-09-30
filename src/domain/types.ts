@@ -469,6 +469,11 @@ export interface LockdBackup {
   lessons?: ExerciseLesson[];
   namedPrs?: NamedPr[];
   clips?: ClipMeta[];
+  /**
+   * Device-only preferences (text size). Restored only when present, so an older backup never
+   * resets a choice this device made. Never part of settings or the cloud vault.
+   */
+  device?: { textSize?: "standard" | "comfortable" | "large" };
 }
 
 export interface ProgramFile {

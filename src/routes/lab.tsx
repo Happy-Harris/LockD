@@ -58,7 +58,7 @@ function LabPage() {
 
   return (
     <Page>
-      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-subtle">The Lab</p>
+      <p className="text-micro font-medium uppercase tracking-[0.18em] text-subtle">The Lab</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">Ask the numbers.</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         Everything here is worked out on this device from your log, and every answer cites what it used. Signed in, you
@@ -94,7 +94,7 @@ function LabPage() {
                     <p className="text-sm font-medium">{row.name}</p>
                     <p className="mt-1 text-sm leading-relaxed text-muted">{row.headline}</p>
                     {row.findings[0] ? (
-                      <p className="mt-2 font-mono text-[11px] text-subtle">{row.findings[0].evidence}</p>
+                      <p className="mt-2 font-mono text-micro text-subtle">{row.findings[0].evidence}</p>
                     ) : null}
                   </Card>
                 </Link>
@@ -258,7 +258,7 @@ function LabPage() {
       {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
       {labLast ? (
         <Card className="mt-6">
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
             Note from {new Date(labLast.askedAt).toLocaleString()}
           </p>
           <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink">{labLast.text}</p>
@@ -279,7 +279,7 @@ function LabPage() {
               <Card key={note.id}>
                 {note.question ? <p className="text-sm font-medium">{note.question}</p> : null}
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted">{note.answer}</p>
-                <p className="mt-2 font-mono text-[11px] text-subtle">{note.createdAt.slice(0, 10)}</p>
+                <p className="mt-2 font-mono text-micro text-subtle">{note.createdAt.slice(0, 10)}</p>
               </Card>
             ))}
           </div>

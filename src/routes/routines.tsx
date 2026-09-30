@@ -77,7 +77,7 @@ function RoutinesPage() {
 
       <Link to="/programs" className="mt-8 block">
         <Card>
-          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Programs</p>
+          <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Programs</p>
           <p className="mt-1 font-display text-2xl font-semibold tracking-tight">Multi-week blocks</p>
           <p className="mt-1 text-sm text-muted">Progression rules, deload weeks, substitutions, local files.</p>
         </Card>
@@ -96,7 +96,7 @@ function RoutinesPage() {
               upsertTemplate(built.template, built.exercises);
             }}
           >
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">{preset.category}</p>
+            <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">{preset.category}</p>
             <p className="mt-1 font-medium">{preset.name}</p>
             <p className="mt-1 text-sm text-muted">{preset.description}</p>
           </button>

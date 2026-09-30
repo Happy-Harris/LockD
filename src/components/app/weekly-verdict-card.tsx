@@ -62,7 +62,7 @@ export function WeeklyVerdictCard({
       <Card>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+            <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
               Weekly verdict
             </p>
             <h2

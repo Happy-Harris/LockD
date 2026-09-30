@@ -9,6 +9,29 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Text size, step A: role tokens and a device-only setting, Standard unchanged
+
+- **Plan:** `PLAN-ADDENDUM.md` § 6 item 1 ("keeps legacy micro sizes", A-4), built to the owner's *Text Size & Lift Math, Spec v2*
+  (Appendix A; held by the owner, not in this repo), build order step 3: "role tokens, pre-paint script, Settings control,
+  Standard as default. Pass = zero diff against the baseline."
+- **Roles** (`src/styles.css`): body and secondary are `text-sm` (14 / 16 / 18 px), caption is `text-xs` (12 / 14 / 16), micro is
+  `text-micro` (11 / 13 / 15, was `text-[11px]`), legacy micro is `text-micro-legacy` (today's 10 px at Standard, micro above it;
+  step B deletes it), tab labels are `text-tab` (10 px, +1 px at Comfortable and Large, never wrap). Display type (`text-lg` and up)
+  never changes, and the root font size is never touched. Receipts and posters keep Standard at every preset. Chart ticks follow the
+  preset, capped at Comfortable. `cn()` knows the new classes are font sizes (`tailwind-merge`), so none is dropped.
+- **Device-only** (`src/lib/device/text-size.ts`): kept in the `device` table plus a `localStorage` mirror (`lockd-text-size`) that
+  an inline script in `<head>` reads before first paint. Never in settings, the persisted log or the cloud vault. A backup carries it
+  (`device.textSize`, optional) and restores it only when present, so an old backup never resets a chosen size (spec fix 4).
+- **Proof of zero diff:** computed font size, line height and wrapping were compared for every text element on 19 routes at 390 and
+  1024 px, main against this branch: 722 element kinds, identical except the tab labels' `white-space: nowrap`, which changes nothing
+  at Standard. Full-page pixel diffs were too noisy to use (the same build differs from run to run on several pages), so the
+  style comparison is the record.
+- **Not in this step:** the Comfortable default, the one-time notice, the onboarding control and palette entry, the 9 and 10 px
+  drawing labels (plate labels, the rest ring), the 11 px floor, the contrast check, and real phones and tablets (step B).
+- **Tests:** `src/lib/device/text-size.test.ts` (pre-paint script, device table and mirror, restore, not in settings or the cloud,
+  backups with and without the field, tokens), `e2e/text-size.spec.ts` (Large scales body text and keeps headings, applied before
+  hydration on a cold reload; at Large and 320 px no sideways scroll on seven screens, tab labels on one line, the set row fits).
+
 ### 2026-09-30 — Phase 4 design docs: lock-screen timer, watch, health context, program from text
 
 - **Plan:** `PLAN-ADDENDUM.md` § 4 puts the lock-screen rest timer (Opp 6, native half), the watch companion (Opp 7),

@@ -140,7 +140,7 @@ export function CommandPalette() {
             ))
           )}
         </ul>
-        <p className="border-t border-line px-4 py-2 text-[11px] text-subtle">Esc to close · local search, no model</p>
+        <p className="border-t border-line px-4 py-2 text-micro text-subtle">Esc to close · local search, no model</p>
       </div>
     </div>
   );

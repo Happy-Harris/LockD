@@ -250,7 +250,7 @@ export function RestTimerBar() {
       {expanded ? (
         <div className="fixed inset-0 z-50 grid place-items-end bg-canvas/80 p-4 backdrop-blur-md">
           <div className="w-full max-w-lg rounded-[32px] bg-surface p-6 hairline">
-            <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-subtle">
+            <p className="text-micro font-medium uppercase tracking-[0.18em] text-subtle">
               {done ? "On the clock" : "Lock-screen rest"}
             </p>
             <p className="mt-3 font-display text-7xl font-semibold tracking-tight tabular">
@@ -325,7 +325,7 @@ export function RestTimerBar() {
           {restTimer.suggestedSeconds && restTimer.isRunning && !done ? (
             <button
               type="button"
-              className="shrink-0 rounded-xl px-2 py-1 text-[11px] font-medium text-accent hairline"
+              className="shrink-0 rounded-xl px-2 py-1 text-micro font-medium text-accent hairline"
               onClick={() =>
                 startRestTimer(
                   restTimer.suggestedSeconds!,

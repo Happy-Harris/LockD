@@ -68,7 +68,7 @@ export function MuscleSetsCard({
 
   return (
     <Card data-testid="muscle-sets">
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">
         Am I training enough?
       </p>
       <h2 className="mt-1 font-display text-xl font-semibold tracking-tight text-ink">
@@ -109,7 +109,7 @@ export function MuscleSetsCard({
                   {stateLabel(row)}
                 </p>
                 {row.targetSource ? (
-                  <p className="text-[11px] text-subtle">
+                  <p className="text-micro text-subtle">
                     {row.targetSource === "personal" ? "Personal target" : "Default range"}
                   </p>
                 ) : null}

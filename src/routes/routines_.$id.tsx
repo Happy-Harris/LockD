@@ -151,7 +151,7 @@ function Labeled({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[10px] uppercase tracking-[0.14em] text-subtle">{label}</span>
+      <span className="mb-1 block text-micro-legacy uppercase tracking-[0.14em] text-subtle">{label}</span>
       <Input
         inputMode="numeric"
         value={String(value)}

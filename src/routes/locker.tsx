@@ -161,7 +161,7 @@ export function LockerPage() {
 
   return (
     <Page>
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Locker</p>
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Locker</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">Your locker. Your choice.</h1>
       <p className="mt-2 text-sm leading-relaxed text-muted">
         Handle, name, and the stamps you already earned. Vault status: {status === "synced" ? "on the locker" : status}.
@@ -237,10 +237,10 @@ export function LockerPage() {
               <Link to="/s/$id" params={{ id: share.id }}>
                 <Card className="flex items-center justify-between">
                   <span>
-                    <span className="block text-[10px] uppercase tracking-[0.16em] text-subtle">{share.kind}</span>
+                    <span className="block text-micro-legacy uppercase tracking-[0.16em] text-subtle">{share.kind}</span>
                     <span className="block font-medium">{share.title}</span>
                   </span>
-                  <span className="font-mono text-[11px] text-subtle">{share.createdAt.slice(0, 10)}</span>
+                  <span className="font-mono text-micro text-subtle">{share.createdAt.slice(0, 10)}</span>
                 </Card>
               </Link>
               <Button variant="secondary" disabled={busy} onClick={() => void unpublish(share.id)}>
@@ -276,7 +276,7 @@ export function LockerPage() {
             <Card key={link.token} className="space-y-2">
               <div className="flex items-baseline justify-between gap-3">
                 <span className="font-medium">{link.label || "Read-only link"}</span>
-                <span className="font-mono text-[11px] text-subtle">{link.createdAt.slice(0, 10)}</span>
+                <span className="font-mono text-micro text-subtle">{link.createdAt.slice(0, 10)}</span>
               </div>
               <p className="break-all font-mono text-xs text-muted">{linkUrl(link.token)}</p>
               <div className="flex gap-2">

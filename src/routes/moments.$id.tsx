@@ -28,7 +28,7 @@ function MomentPage() {
 
   return (
     <Page>
-      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Moment</p>
+      <p className="text-micro font-medium uppercase tracking-[0.16em] text-subtle">Moment</p>
       <h1 className="mt-1 font-display text-4xl font-semibold tracking-tight">A stamp, not a notification.</h1>
       <div className="mt-6">
         <MomentPoster moment={moment} unit={unit} />
