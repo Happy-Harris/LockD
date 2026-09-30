@@ -35,6 +35,7 @@ import { Route as MomentsIdRouteImport } from './routes/moments.$id'
 import { Route as ProgramsIdRouteImport } from './routes/programs_.$id'
 import { Route as RoutinesIdRouteImport } from './routes/routines_.$id'
 import { Route as SIdRouteImport } from './routes/s.$id'
+import { Route as ToolsLiftMathRouteImport } from './routes/tools_.lift-math'
 import { Route as ToolsPlatesRouteImport } from './routes/tools_.plates'
 import { Route as ToolsWarmupRouteImport } from './routes/tools_.warmup'
 import { Route as UHandleRouteImport } from './routes/u.$handle'
@@ -171,6 +172,11 @@ const SIdRoute = SIdRouteImport.update({
   path: '/s/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsLiftMathRoute = ToolsLiftMathRouteImport.update({
+  id: '/tools_/lift-math',
+  path: '/tools/lift-math',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsPlatesRoute = ToolsPlatesRouteImport.update({
   id: '/tools_/plates',
   path: '/tools/plates',
@@ -224,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/programs/$id': typeof ProgramsIdRoute
   '/routines/$id': typeof RoutinesIdRoute
   '/s/$id': typeof SIdRoute
+  '/tools/lift-math': typeof ToolsLiftMathRoute
   '/tools/plates': typeof ToolsPlatesRoute
   '/tools/warmup': typeof ToolsWarmupRoute
   '/u/$handle': typeof UHandleRoute
@@ -257,6 +264,7 @@ export interface FileRoutesByTo {
   '/programs/$id': typeof ProgramsIdRoute
   '/routines/$id': typeof RoutinesIdRoute
   '/s/$id': typeof SIdRoute
+  '/tools/lift-math': typeof ToolsLiftMathRoute
   '/tools/plates': typeof ToolsPlatesRoute
   '/tools/warmup': typeof ToolsWarmupRoute
   '/u/$handle': typeof UHandleRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   '/programs_/$id': typeof ProgramsIdRoute
   '/routines_/$id': typeof RoutinesIdRoute
   '/s/$id': typeof SIdRoute
+  '/tools_/lift-math': typeof ToolsLiftMathRoute
   '/tools_/plates': typeof ToolsPlatesRoute
   '/tools_/warmup': typeof ToolsWarmupRoute
   '/u/$handle': typeof UHandleRoute
@@ -326,6 +335,7 @@ export interface FileRouteTypes {
     | '/programs/$id'
     | '/routines/$id'
     | '/s/$id'
+    | '/tools/lift-math'
     | '/tools/plates'
     | '/tools/warmup'
     | '/u/$handle'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/programs/$id'
     | '/routines/$id'
     | '/s/$id'
+    | '/tools/lift-math'
     | '/tools/plates'
     | '/tools/warmup'
     | '/u/$handle'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/programs_/$id'
     | '/routines_/$id'
     | '/s/$id'
+    | '/tools_/lift-math'
     | '/tools_/plates'
     | '/tools_/warmup'
     | '/u/$handle'
@@ -426,6 +438,7 @@ export interface RootRouteChildren {
   ProgramsIdRoute: typeof ProgramsIdRoute
   RoutinesIdRoute: typeof RoutinesIdRoute
   SIdRoute: typeof SIdRoute
+  ToolsLiftMathRoute: typeof ToolsLiftMathRoute
   ToolsPlatesRoute: typeof ToolsPlatesRoute
   ToolsWarmupRoute: typeof ToolsWarmupRoute
   UHandleRoute: typeof UHandleRoute
@@ -617,6 +630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools_/lift-math': {
+      id: '/tools_/lift-math'
+      path: '/tools/lift-math'
+      fullPath: '/tools/lift-math'
+      preLoaderRoute: typeof ToolsLiftMathRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tools_/plates': {
       id: '/tools_/plates'
       path: '/tools/plates'
@@ -682,6 +702,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProgramsIdRoute: ProgramsIdRoute,
   RoutinesIdRoute: RoutinesIdRoute,
   SIdRoute: SIdRoute,
+  ToolsLiftMathRoute: ToolsLiftMathRoute,
   ToolsPlatesRoute: ToolsPlatesRoute,
   ToolsWarmupRoute: ToolsWarmupRoute,
   UHandleRoute: UHandleRoute,

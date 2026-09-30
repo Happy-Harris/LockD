@@ -4,10 +4,18 @@ import { Page } from "@/components/app/shell";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { generateWarmup } from "@/domain/warmup";
-import { formatWeight, parseWeightInput, weightUnitFor } from "@/domain/units";
+import { formatWeight, parseWeightInput, weightUnitFor, type WeightUnit } from "@/domain/units";
+import { handedLoad } from "@/lib/gym/handed-load";
 import { useGym } from "@/lib/gym/store";
 
-export const Route = createFileRoute("/tools_/warmup")({ component: WarmupPage });
+export const Route = createFileRoute("/tools_/warmup")({
+  // Lift Math hands its rounded load over in the address (`?load=87.5&unit=kg`); nothing is stored.
+  validateSearch: (search: Record<string, unknown>): { load?: string; unit?: WeightUnit } => ({
+    load: typeof search.load === "string" || typeof search.load === "number" ? String(search.load).slice(0, 12) : undefined,
+    unit: search.unit === "kg" || search.unit === "lb" ? search.unit : undefined,
+  }),
+  component: WarmupPage,
+});
 
 function WarmupPage() {
   const settings = useGym((s) => s.settings);
@@ -16,7 +24,8 @@ function WarmupPage() {
   const unit = weightUnitFor(settings.unitSystem);
   const inventory = plates.find((row) => row.id === settings.defaultPlateInventoryId) ?? plates[0];
   const bar = bars.find((row) => row.id === settings.defaultBarProfileId) ?? bars[0];
-  const [raw, setRaw] = useState(unit === "kg" ? "100" : "225");
+  const handed = Route.useSearch();
+  const [raw, setRaw] = useState(() => handedLoad(handed, unit) ?? (unit === "kg" ? "100" : "225"));
   const [count, setCount] = useState<3 | 4 | 5>(4);
 
   const steps = useMemo(() => {

@@ -10,6 +10,8 @@ interface CommandItem {
   id: string;
   label: string;
   hint?: string;
+  /** Other words that find this item, not shown. */
+  keywords?: string;
   run: () => void;
 }
 
@@ -76,6 +78,12 @@ export function CommandPalette() {
       { id: "body", label: "Body", run: go("/body") },
       { id: "plates", label: "Plate calculator", run: go("/tools/plates") },
       { id: "warmup", label: "Warm-up generator", run: go("/tools/warmup") },
+      {
+        id: "lift-math",
+        label: "Lift Math",
+        keywords: "1rm one rep max e1rm estimated max percent percentage rir rpe calculator",
+        run: go("/tools/lift-math"),
+      },
       { id: "settings", label: "Settings", run: go("/settings") },
     ];
     for (const template of templates.filter((row) => !row.isArchived)) {
@@ -92,7 +100,12 @@ export function CommandPalette() {
     }
     const q = query.trim().toLowerCase();
     const jumps = q
-      ? list.filter((item) => item.label.toLowerCase().includes(q) || item.hint?.toLowerCase().includes(q))
+      ? list.filter(
+          (item) =>
+            item.label.toLowerCase().includes(q) ||
+            item.hint?.toLowerCase().includes(q) ||
+            item.keywords?.includes(q),
+        )
       : list;
     const hits = q.length >= 2 ? searchSessions(query, slices, unit) : [];
     const sessionItems: CommandItem[] = hits.map((hit) => ({
