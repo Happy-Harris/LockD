@@ -10,8 +10,10 @@ import type { EvidenceClaim } from "@/domain/evidence";
 import type { LoggedEntry } from "./compute";
 import type { MuscleSetEvidence, MuscleSetInsight } from "./muscleSets";
 import type { WeeklyVerdict, WeeklyVerdictCopy } from "./weeklyVerdict";
+import type { VerdictLens } from "./lens";
 
-export type AskLabTier = "computed" | "partial" | "explore";
+/** `catalog`: a claim from the evidence catalog, not computed from the log. */
+export type AskLabTier = "computed" | "partial" | "catalog" | "explore";
 
 export type AskLabDataIntent =
   "training_enough" | "muscle_contribution" | "verdict_why" | "getting_stronger" | "change_flags";
@@ -46,7 +48,12 @@ export type StrengthTrendRow = {
   lastE1rmG: number;
   changePercent: number | null;
   lastBestWeightG: number | null;
+  /** The sessions and sets behind the first and last estimate (Lab, cited). */
+  first?: StrengthSample;
+  last?: StrengthSample;
 };
+
+export type StrengthSample = { workoutId: string; localDate: string; weightG: number; reps: number };
 
 export type AskLabPayload =
   | {
@@ -120,6 +127,8 @@ export type AskLabContext = {
   reference?: Date;
   /** User-picked goal lifts; empty or absent falls back to the inferred top lifts. */
   goalLiftIds?: readonly string[];
+  /** The lens framing the verdict and flags use on the cards, so the Lab answers the same. */
+  goalLens?: VerdictLens;
 };
 
 export const ASK_LAB_STARTERS: readonly { label: string; query: string }[] = [

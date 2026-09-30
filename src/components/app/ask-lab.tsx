@@ -10,13 +10,16 @@ import {
   type AskLabAnswer,
   type AskLabTier,
 } from "@/domain/analytics/askLab";
+import type { StrengthTrendRow } from "@/domain/analytics/askLabShared";
 import { getClaim, type EvidenceClaim, type EvidenceKind } from "@/domain/evidence";
 import { titleCase } from "@/domain/taxonomy";
-import { formatCompactNumber, fromGrams, weightUnitFor } from "@/domain/units";
+import { formatCompactNumber, fromGrams, weightUnitFor, type WeightUnit } from "@/domain/units";
 import { loggedEntriesOf } from "@/lib/gym/entries";
 import { useSlices } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
 import { ClaimEvidenceSheet } from "./claim-evidence-sheet";
+import { CitedSessions } from "./cited-sessions";
+import { verdictFraming } from "@/lib/gym/lenses";
 
 const KIND_LABEL: Record<EvidenceKind, string> = {
   evidence_backed_default: "Research default",
@@ -26,8 +29,9 @@ const KIND_LABEL: Record<EvidenceKind, string> = {
 };
 
 const TIER_BADGE: Record<AskLabTier, string> = {
-  computed: "Computed",
+  computed: "Computed from your log",
   partial: "Partial",
+  catalog: "From the evidence catalog",
   explore: EXPLORE_BADGE,
 };
 
@@ -46,6 +50,13 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="font-mono text-xs tabular text-muted">{value}</span>
     </li>
   );
+}
+
+/** The sessions behind a set of evidence rows, once each, oldest first. */
+function sessionsOf(rows: ReadonlyArray<{ workoutId: string; localDate: string }>) {
+  const seen = new Map<string, { workoutId: string; date: string }>();
+  for (const row of rows) seen.set(row.workoutId, { workoutId: row.workoutId, date: row.localDate });
+  return [...seen.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 
 /**
@@ -74,6 +85,7 @@ export function AskLab() {
         includeWarmups: !settings.excludeWarmupsFromAnalytics,
         weightUnit: unit,
         goalLiftIds: settings.goalLiftIds,
+        goalLens: verdictFraming(settings.goalLens),
       }),
     );
   };
@@ -163,6 +175,9 @@ export function AskLab() {
               ))}
             </Rows>
           ) : null}
+          {payload?.kind === "training_enough" && payload.evidence.length > 0 ? (
+            <CitedSessions cites={sessionsOf(payload.evidence)} lift="training" />
+          ) : null}
           {payload?.kind === "muscle_contribution" && payload.attributions.length > 0 ? (
             <Rows>
               {payload.attributions.map((row) => (
@@ -174,20 +189,13 @@ export function AskLab() {
               ))}
             </Rows>
           ) : null}
+          {payload?.kind === "muscle_contribution" && payload.evidence.length > 0 ? (
+            <CitedSessions cites={sessionsOf(payload.evidence)} lift={payload.muscle} />
+          ) : null}
           {payload?.kind === "getting_stronger" && payload.trends.length > 0 ? (
             <Rows>
               {payload.trends.map((row) => (
-                <Row
-                  key={row.exerciseId}
-                  label={row.exerciseName}
-                  value={`${formatCompactNumber(fromGrams(row.firstE1rmG, unit))} → ${formatCompactNumber(
-                    fromGrams(row.lastE1rmG, unit),
-                  )} ${unit}${
-                    row.changePercent != null
-                      ? ` (${row.changePercent >= 0 ? "+" : ""}${row.changePercent.toFixed(0)}%)`
-                      : ""
-                  }`}
-                />
+                <StrengthRow key={row.exerciseId} row={row} unit={unit} />
               ))}
             </Rows>
           ) : null}
@@ -245,5 +253,32 @@ export function AskLab() {
         />
       ) : null}
     </section>
+  );
+}
+
+/** A lift's first and last estimate in the window, each with the set and session it came from. */
+function StrengthRow({ row, unit }: { row: StrengthTrendRow; unit: WeightUnit }) {
+  const sample = (value: number, from?: StrengthTrendRow["first"]) =>
+    `${formatCompactNumber(fromGrams(value, unit))} ${unit}${
+      from ? ` (${formatCompactNumber(fromGrams(from.weightG, unit))} × ${from.reps})` : ""
+    }`;
+  const cites = [row.first, row.last]
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .map((item) => ({ workoutId: item.workoutId, date: item.localDate }));
+  return (
+    <li className="py-2 text-sm" data-testid="lab-strength-row">
+      <div className="flex items-center justify-between gap-3">
+        <span className="font-medium">{row.exerciseName}</span>
+        <span className="font-mono text-xs tabular text-muted">
+          {row.changePercent != null
+            ? `${row.changePercent >= 0 ? "+" : ""}${row.changePercent.toFixed(0)}%`
+            : "change unknown"}
+        </span>
+      </div>
+      <p className="mt-0.5 font-mono text-xs tabular text-muted">
+        {sample(row.firstE1rmG, row.first)} → {sample(row.lastE1rmG, row.last)}, {row.sessionsWithE1rm} sessions
+      </p>
+      <CitedSessions cites={cites} lift={row.exerciseName} />
+    </li>
   );
 }

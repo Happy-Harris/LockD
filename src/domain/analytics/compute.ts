@@ -59,6 +59,8 @@ export interface SeriesPoint {
   label: string;
   value: number;
   detail?: string;
+  /** For e1RM points: the session and the set the estimate came from, so an answer can cite them. */
+  source?: { workoutId: string; localDate: string; weightG: number; reps: number };
 }
 
 export interface ExerciseProgress {
@@ -118,6 +120,12 @@ export function exerciseProgress(
         label,
         value: best.value,
         detail: `${best.set.weightG ?? 0} g × ${best.set.reps ?? 0} (${best.formulaUsed})`,
+        source: {
+          workoutId: workout.id,
+          localDate: workout.localDate,
+          weightG: best.set.weightG ?? 0,
+          reps: best.set.reps ?? 0,
+        },
       });
     }
 

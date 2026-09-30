@@ -21,6 +21,8 @@ export interface SideDelta {
 
 export interface IntelligenceReport {
   hitRate: number;
+  /** How many tracked lifts with sessions on file the hit rate averages; 0 means there is no hit rate. */
+  hitRateLifts: number;
   hitRatePrior: number;
   easierWeek: boolean;
   insights: string[];
@@ -110,7 +112,9 @@ export function buildIntelligence(opts: {
   const recent = slices.slice(-12);
   const prior = slices.slice(-24, -12);
 
-  const recentHits = calls.length ? mean(calls.map((call) => call.hitRate)) : 0;
+  // A lift with no session on file has no hit rate: leave it out rather than count it as 0 %.
+  const rated = calls.filter((call) => call.lastDate);
+  const recentHits = rated.length ? mean(rated.map((call) => call.hitRate)) : 0;
   let priorHits = 0;
   if (prior.length && goalIds.length) {
     const rates: number[] = [];
@@ -309,6 +313,7 @@ export function buildIntelligence(opts: {
 
   return {
     hitRate: recentHits,
+    hitRateLifts: rated.length,
     hitRatePrior: priorHits,
     easierWeek,
     insights: insights.slice(0, 8),

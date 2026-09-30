@@ -84,7 +84,7 @@ function context(
 describe("answerAskLab catalog path", () => {
   it("maps the 10–20 band question to the default-band claim", () => {
     const answer = answerAskLab("Why is the default 10–20 credited sets?");
-    expect(answer.tier).toBe("computed");
+    expect(answer.tier).toBe("catalog");
     expect(answer.intent).toBeNull();
     expect(answer.matches[0]?.claim.id).toBe("weekly-credited-sets-10-20");
     expect(answer.matches[0]?.claim.kind).toBe("implementation_heuristic");
@@ -92,14 +92,14 @@ describe("answerAskLab catalog path", () => {
 
   it("labels secondary credit as a heuristic", () => {
     const answer = answerAskLab("Why do secondary muscles get 0.5 credit?");
-    expect(answer.tier).toBe("computed");
+    expect(answer.tier).toBe("catalog");
     expect(answer.matches[0]?.claim.id).toBe("secondary-set-credit-default");
     expect(answer.matches[0]?.claim.kind).toBe("implementation_heuristic");
   });
 
   it("resolves e1RM formula questions to pure calculation", () => {
     const answer = answerAskLab("How is estimated 1RM calculated with Epley?");
-    expect(answer.tier).toBe("computed");
+    expect(answer.tier).toBe("catalog");
     expect(answer.matches.some((row) => row.claim.id === "e1rm-formulas")).toBe(true);
   });
 
@@ -322,5 +322,61 @@ describe("verdict weekStart alignment", () => {
     expect(sunday.payload.verdict.subject.startDate).not.toBe(
       monday.payload.verdict.subject.startDate,
     );
+  });
+});
+
+describe("Lab, cited: data answers carry the sessions behind them", () => {
+  it("a strength trend names the session and the set behind its first and last estimate", () => {
+    const first = entry({ date: "2026-08-20", weightG: 90_000, reps: 5 });
+    const last = entry({ date: "2026-09-10", weightG: 100_000, reps: 5 });
+    const answer = answerAskLab("Am I getting stronger?", context([first, last]));
+    if (answer.payload?.kind !== "getting_stronger") throw new Error("expected a strength answer");
+    const [row] = answer.payload.trends;
+    expect(row!.first).toEqual({ workoutId: first.workout.id, localDate: "2026-08-20", weightG: 90_000, reps: 5 });
+    expect(row!.last).toEqual({ workoutId: last.workout.id, localDate: "2026-09-10", weightG: 100_000, reps: 5 });
+  });
+
+  it("training volume and muscle answers keep the session of every set they credited", () => {
+    const logged = [entry({ date: "2026-09-15", setTypes: ["working", "working"] })];
+    for (const query of ["Am I training enough?", "Which exercises contributed to chest?"]) {
+      const payload = answerAskLab(query, context(logged)).payload;
+      if (payload?.kind !== "training_enough" && payload?.kind !== "muscle_contribution") {
+        throw new Error(`expected a muscle answer for ${query}`);
+      }
+      expect(payload.evidence.length).toBeGreaterThan(0);
+      for (const row of payload.evidence) {
+        expect(row.workoutId).toBe(logged[0]!.workout.id);
+        expect(row.localDate).toBe("2026-09-15");
+      }
+    }
+  });
+
+  it("the verdict answer uses the lifter's lens, as the card does", async () => {
+    const { weeklyVerdict } = await import("./weeklyVerdict");
+    const logged = [
+      entry({ date: "2026-08-10", setTypes: Array(10).fill("working") as SetType[] }),
+      entry({ date: "2026-08-17", setTypes: Array(10).fill("working") as SetType[] }),
+      entry({ date: "2026-08-24", setTypes: Array(10).fill("working") as SetType[] }),
+      entry({ date: "2026-08-31", setTypes: Array(10).fill("working") as SetType[] }),
+      entry({ date: "2026-09-08", setTypes: Array(4).fill("working") as SetType[] }),
+    ];
+    const reference = new Date("2026-09-17T12:00:00Z");
+    for (const goalLens of ["strength", "build", "maintain"] as const) {
+      const answer = answerAskLab("Why did Weekly Verdict change?", { ...context(logged, reference), goalLens });
+      if (answer.payload?.kind !== "verdict_why") throw new Error("expected a verdict answer");
+      const card = weeklyVerdict(
+        logged,
+        { formula: "epley", includeWarmups: false, secondaryCredit: 0.5 },
+        "monday",
+        reference,
+        undefined,
+        goalLens,
+      );
+      expect(answer.payload.verdict).toEqual(card);
+    }
+  });
+
+  it("a catalog claim is labelled as from the catalog, not computed from the log", () => {
+    expect(answerAskLab("Why is the default 10–20 credited sets?").tier).toBe("catalog");
   });
 });
