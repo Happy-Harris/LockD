@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { LockdMark } from "@/components/app/mark";
+import { useCanSignIn } from "@/lib/auth/use-current-user";
 import { useGym } from "@/lib/gym/store";
 import type { UnitSystem } from "@/domain/types";
 
 export function Onboarding() {
   const completeOnboarding = useGym((s) => s.completeOnboarding);
   const [units, setUnits] = useState<UnitSystem>("metric");
+  const canSignIn = useCanSignIn();
+  const navigate = useNavigate();
 
   return (
     <main className="relative mx-auto flex min-h-dvh max-w-md flex-col justify-between overflow-hidden px-6 py-10">
@@ -19,8 +22,8 @@ export function Onboarding() {
         </p>
         <p className="mt-6 max-w-sm text-base leading-relaxed text-muted">
           A training operating system that remembers the whole lifting life. Progression with a why,
-          named eras, goal lenses, and a paper receipt for every session. Sign in and it follows you
-          — locker, Lab, links you can send.
+          named eras, goal lenses, and a paper receipt for every session.
+          {canSignIn ? " Sign in and it follows you: locker, Lab, links you can send." : ""}
         </p>
       </div>
 
@@ -52,6 +55,22 @@ export function Onboarding() {
           <Button
             className="w-full"
             size="lg"
+            data-testid="onboarding-import"
+            onClick={() => {
+              completeOnboarding({ loadDemo: false, unitSystem: units });
+              void navigate({ to: "/import" });
+            }}
+          >
+            Import your history
+          </Button>
+          <p className="text-center text-xs leading-relaxed text-subtle">
+            From Strong, Hevy or any spreadsheet. It stays on this device, and your eras are named
+            as soon as it is in.
+          </p>
+          <Button
+            className="w-full"
+            size="lg"
+            variant="secondary"
             onClick={() => completeOnboarding({ loadDemo: true, unitSystem: units })}
           >
             Open with a sample log
@@ -66,13 +85,15 @@ export function Onboarding() {
           </Button>
           <p className="text-center text-xs leading-relaxed text-subtle">
             Sample log is a year of Push / Pull / Legs — layoff, comeback, PR run, stall, current
-            block. Sign in after and it lives on the locker, not just this browser.
+            block.{canSignIn ? " Sign in after and it lives on the locker, not just this browser." : ""}
           </p>
-          <p className="text-center text-xs">
-            <Link to="/login" className="text-accent underline-offset-2 hover:underline">
-              Sign in first
-            </Link>
-          </p>
+          {canSignIn ? (
+            <p className="text-center text-xs">
+              <Link to="/login" className="text-accent underline-offset-2 hover:underline">
+                Sign in first
+              </Link>
+            </p>
+          ) : null}
         </div>
       </div>
     </main>

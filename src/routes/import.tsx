@@ -23,6 +23,10 @@ import { isKnurlVault, KNURL_SOURCE, readKnurlVault } from "@/lib/import/knurl";
 import { readRepforgeBackup, REPFORGE_SOURCE } from "@/lib/import/repforge";
 import { STRONG_PROFILE } from "@/lib/import/strong";
 import { describeImport } from "@/lib/import/summary";
+import { formatLocalDate } from "@/domain/time";
+import { ERA_MIN_SEGMENT_WEEKS } from "@/lib/gym/chronicle";
+import { summariseChronicle } from "@/lib/gym/chronicle-summary";
+import { useGymDerived } from "@/lib/gym/hooks";
 import {
   defaultSelection,
   exerciseNames,
@@ -609,6 +613,7 @@ function ImportPage() {
               </button>
             </div>
           </Card>
+          <ChronicleAfterImport />
           <Card className="mt-4">
             <h2 className="font-display text-xl font-semibold tracking-tight">
               Classify new exercises
@@ -620,6 +625,56 @@ function ImportPage() {
         </>
       ) : null}
     </Page>
+  );
+}
+
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+/** An import spans years, so every date on the card carries one. */
+const eraDate = (date: string) =>
+  formatLocalDate(date, { day: "numeric", month: "short", year: "numeric" });
+
+/** Opp 1: the Chronicle the import just built, read from the whole log, with the way in to it. */
+function ChronicleAfterImport() {
+  const { chronicle } = useGymDerived();
+  const summary = summariseChronicle(chronicle);
+  if (!summary) return null;
+  const extras = [
+    summary.layoffs ? plural(summary.layoffs, "layoff") : "",
+    summary.prRuns ? plural(summary.prRuns, "PR run") : "",
+  ].filter(Boolean);
+  return (
+    <Card className="mt-4" data-testid="import-chronicle">
+      <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Your Chronicle</p>
+      <h2 className="mt-1 font-display text-xl font-semibold tracking-tight">
+        {plural(summary.eraCount, "era")} from {eraDate(summary.firstDate)} to{" "}
+        {eraDate(summary.lastDate)}
+      </h2>
+      <p className="mt-1 text-sm text-muted" data-testid="import-chronicle-summary">
+        {plural(summary.sessions, "session")} in your log
+        {extras.length ? `, ${extras.join(" and ")}` : ""}.
+      </p>
+      <ul className="mt-3 space-y-2">
+        {summary.eras.map((era) => (
+          <li key={era.id} className="flex items-baseline justify-between gap-3 text-sm">
+            <span className="font-medium text-ink">{era.name}</span>
+            <span className="shrink-0 text-xs text-muted">
+              {eraDate(era.startDate)} – {eraDate(era.endDate)} ·{" "}
+              {plural(era.sessions, "session")}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {summary.earlier ? (
+        <p className="mt-2 text-xs text-muted">and {plural(summary.earlier, "earlier era")}.</p>
+      ) : null}
+      <p className="mt-3 text-xs leading-relaxed text-subtle">
+        A new era starts after any gap of 14 days or more, or where your weekly sets or PR rate
+        changed for at least {ERA_MIN_SEGMENT_WEEKS} weeks. Rename any of them on the Chronicle.
+      </p>
+      <Button asChild className="mt-4 w-full" data-testid="import-open-chronicle">
+        <Link to="/chronicle">Open your Chronicle</Link>
+      </Button>
+    </Card>
   );
 }
 
