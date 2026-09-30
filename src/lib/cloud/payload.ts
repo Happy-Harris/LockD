@@ -1,5 +1,14 @@
+import type { BodyMeasurement } from "@/domain/types";
 import type { GymData } from "@/lib/gym/store";
 import type { CloudGym } from "./types";
+
+/**
+ * A reading that came from a health app stays on the device (owner's decision, 2026-09-30): it is tagged with its source
+ * and left out of the vault. A typed entry has no source and syncs as before.
+ */
+export function isDeviceOnlyMeasurement(row: Pick<BodyMeasurement, "source">): boolean {
+  return row.source !== undefined;
+}
 
 export function cloudGymFromState(state: GymData): CloudGym {
   return {
@@ -9,7 +18,7 @@ export function cloudGymFromState(state: GymData): CloudGym {
     workouts: state.workouts,
     workoutExercises: state.workoutExercises,
     workoutSets: state.workoutSets,
-    measurements: state.measurements,
+    measurements: state.measurements.filter((row) => !isDeviceOnlyMeasurement(row)),
     plates: state.plates,
     bars: state.bars,
     settings: state.settings,
