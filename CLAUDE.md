@@ -44,8 +44,8 @@ understand their own record?*
 | `docs/STATUS.md` | The map: label scheme, Step and Opp status, decisions, terms |
 | `docs/HANDOVER.md` | Handover log: what shipped, most recent first |
 
-Some app-builder scaffolding is still in the tree (the Grok auth broker under `src/lib/auth/*`, `src/lib/app-data/`,
-`src/lib/multiplayer/`, the preview bridge, `scripts/with-app-env.mjs`). It is scheduled for removal (plan Step 12).
+Some app-builder scaffolding is still in the tree (the Grok auth broker under `src/lib/auth/*`,
+`scripts/with-app-env.mjs`). It is scheduled for removal (plan Step 12).
 The share-card tags for every page now come from the routes (`src/lib/og/tags.ts`); the middleware that used to inject
 them, and the third-party script it added, are gone. Don't build on the rest.
 

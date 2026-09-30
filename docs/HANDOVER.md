@@ -9,6 +9,13 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Step 12b: the preview bridge, app-data and multiplayer are removed
+
+- **What:** deleted `src/components/preview-host-bridge.tsx`, `src/lib/preview-host-bridge.ts`, `src/lib/preview-embedder-origin.ts`, `src/lib/app-data/` and `src/lib/multiplayer/`, and `PreviewHostBridge` from the root route. Also dropped the app-data suites from `test:legacy`, the `src/lib/app-data/**` Vitest exclude and the three app-data rows in the brand allowlist. About 2,000 lines, no behaviour change: only the root route imported any of it, and nothing imported app-data or multiplayer.
+- **Checked:** `npm run verify` (972 tests), `npm run check:brand` (0 findings), full Playwright run. One storage perf test (the 5-year log at 4x CPU) missed its budget in the full run and passed alone, so it is load-sensitive on a busy machine.
+- **Not fixed, not new:** five `test:legacy` cases fail on `main` too (`app-env` and auth-schema copy checks); they belong to 12d.
+- **Next:** 12c (D16 dead code), then 12d (needs the owner's sign-in provider choice).
+
 ### 2026-09-30 — Paused after Step 12a, for a new session
 
 - **State:** `main` has everything through `LockD#71`. Steps 1 to 11, 12a and 13 are done; nothing is open, in flight or scheduled for this work. The owner asked to pause here and continue in another Claude session.
