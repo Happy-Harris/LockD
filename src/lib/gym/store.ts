@@ -33,6 +33,7 @@ import type {
 } from "@/domain/types";
 import { BACKUP_FORMAT, BACKUP_VERSION, PROGRAM_FORMAT } from "@/domain/types";
 import type { CloudGym } from "@/lib/cloud/types";
+import { isDeviceOnlyMeasurement } from "@/lib/cloud/payload";
 import { defaultQuickIncrementG, weightUnitFor } from "@/domain/units";
 import {
   detectPrsForWorkout,
@@ -1691,7 +1692,13 @@ export const useGym = create<GymState>()(
           workouts: payload.workouts ?? [],
           workoutExercises: payload.workoutExercises ?? [],
           workoutSets: payload.workoutSets ?? [],
-          measurements: payload.measurements ?? [],
+          // Readings from a health app never travel to the vault, so a pull must not wipe them from this device.
+          measurements: [
+            ...(payload.measurements ?? []),
+            ...get().measurements.filter(
+              (row) => isDeviceOnlyMeasurement(row) && !(payload.measurements ?? []).some((other) => other.id === row.id),
+            ),
+          ],
           plates: payload.plates?.length ? payload.plates : get().plates,
           bars: payload.bars?.length ? payload.bars : get().bars,
           settings: {

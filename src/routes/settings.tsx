@@ -602,9 +602,9 @@ function HealthSection() {
     <Section title="Health context" id="health">
       <p className="text-xs leading-relaxed text-subtle">
         Lock'd can read these from your phone's health app and show them beside your training in the Chronicle. It only
-        reads, and never turns them into a score or advice. Bodyweight becomes an ordinary bodyweight entry, so it
-        syncs with your account like one you typed. Sleep and heart rate variability stay on this device and in your
-        backups; they are not synced.
+        reads, and never turns them into a score or advice. Everything read from Health stays on this device and in
+        your backups. Bodyweight read from Health shows beside the ones you typed, but only the ones you typed sync
+        with your account.
       </p>
       {rows.map(([type, label]) => (
         <Toggle key={type} label={label} checked={health?.[type] ?? false} onChange={(on) => toggle(type, on)} />

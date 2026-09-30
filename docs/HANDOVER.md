@@ -9,6 +9,12 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Health-sourced bodyweight stays out of the cloud vault
+
+- **Owner's decision (reverses the one recorded earlier the same day):** bodyweight read from Health is tagged with its source and excluded from vault sync; typed entries still sync; the latest-recorded rule on the device is unchanged. Sleep and HRV were already device-only.
+- **Shipped:** `cloudGymFromState` drops rows that have a `source`; `replaceFromCloud` keeps this device's Health rows when a pull replaces the log. The Settings "Health context" text now says everything read from Health stays on the device and in backups. Test: `src/lib/cloud/health-vault.test.ts`.
+- **Also on the record:** the earlier entry "Health settings copy says what syncs" is superseded by this one.
+
 ### 2026-09-30 — Opp 6: the native lock-screen rest timer, and the native build checks
 
 - **Plan:** `PLAN-ADDENDUM.md` § 4 row 6; the owner's answers are in `docs/design/lock-screen-rest-timer.md`.
@@ -59,7 +65,7 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 - **Stored data:** optional `source` and `sourceId` on `BodyMeasurement`; a new optional `healthSamples` collection (backup schema,
   store export and import, a Dexie table in database version 4, a v3-to-v4 upgrade test); optional `settings.health`. The `localStorage`
   copy leaves an empty `healthSamples` out, so the old-format fixtures still load and write back byte for byte. Sleep and HRV are not in the
-  cloud vault; bodyweight rows read from Health are ordinary bodyweight rows and do sync (raised with the owner).
+  cloud vault; bodyweight rows read from Health are ordinary bodyweight rows (they no longer sync: see the entry above, 30 Sep).
 - **Not written:** the native half of `LockdHealth` (HealthKit, Health Connect, permission prompts, Info.plist and manifest entries).
 - **Not verified:** everything native; a real read on a long history.
 - **Tests:** `src/domain/health.test.ts`, `src/lib/native/health.test.ts`, `src/lib/gym/health-context.test.ts`, the version-4 upgrade in
