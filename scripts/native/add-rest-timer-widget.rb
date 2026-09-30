@@ -28,6 +28,7 @@ ext.add_file_references([widget_ref, refs['RestTimerAttributes'], refs['RestTime
 app_config = app.build_configurations.first.build_settings
 ext.build_configurations.each do |config|
   s = config.build_settings
+  s['PRODUCT_NAME'] = '$(TARGET_NAME)'
   s['PRODUCT_BUNDLE_IDENTIFIER'] = 'com.happyharris.lockd.RestTimerWidget'
   s['INFOPLIST_FILE'] = 'RestTimerWidget/Info.plist'
   s['GENERATE_INFOPLIST_FILE'] = 'NO'
