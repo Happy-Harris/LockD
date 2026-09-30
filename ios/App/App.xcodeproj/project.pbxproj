@@ -11,6 +11,7 @@
 		0EEB87CC239F5F886B2A0829 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B8473AD63BB676D57A8144C6 /* Foundation.framework */; };
 		1DA98D47B0C08F6A40E3ACF8 /* RestTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6DDE87A4CF77D849C1B34FB /* RestTimerAttributes.swift */; };
 		238CEC5C6B564921F1FEEBB7 /* LockdHealthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E18ADD568B94F0BB488016 /* LockdHealthPlugin.swift */; };
+		2AB833228565E5FE5F2010B0 /* LockdWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = FF4049EC1A566C9587CA6237 /* LockdWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -18,17 +19,30 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		5873FF49E78884526646082C /* LockdWatchPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80647253825CA599045C183D /* LockdWatchPlugin.swift */; };
+		5FAA307E84E2B1857459C1CC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACF7E66018619201551A2B5 /* ContentView.swift */; };
 		6DE27068A75EDB166C9059BA /* LockScreenTimerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF614EFFAAAFDEBD88E62FD9 /* LockScreenTimerPlugin.swift */; };
 		7CF5C46070A14C5EE3E6DD0B /* RestTimerAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6DDE87A4CF77D849C1B34FB /* RestTimerAttributes.swift */; };
 		7FBB0FFDA4D5ED6AB6BC0B7D /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09EC5291F640A86AF5CB1706 /* MainViewController.swift */; };
+		945EF5C36CFC36F3299788B6 /* WatchSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C1CD764CDC6BF9A6C0E570C /* WatchSnapshot.swift */; };
 		95DC2D000569C377FA750C18 /* RestTimerWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D5AF5FC10892861A084DBC /* RestTimerWidget.swift */; };
 		A0271A0A77A546783B727A38 /* RestTimerWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 07B0BCBA894531403D0789B8 /* RestTimerWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 		A28BB160C3F05C953AEA4E42 /* SleepIntervals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CE83E05B7F9614C733DD7D /* SleepIntervals.swift */; };
+		A82C6C8599B0620C39E7925B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 693174D7801CC3C82BACC50B /* Foundation.framework */; };
+		B96D2DE0455D054C3C0CDA33 /* WatchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1407CA5803C818F73F9D5A63 /* WatchModel.swift */; };
+		D46913799E33C393CE9509B0 /* LockdWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0FBDB2067C183F8217D4BB /* LockdWatchApp.swift */; };
 		FB15B6586C0E184E14F9C9F8 /* RestTimerIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ED9581293CC83C0C3CA9C36 /* RestTimerIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		187E48EA290E43E98941A01A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8160E1B912081543AD6A077D;
+			remoteInfo = LockdWatch;
+		};
 		5B21B6B950333D72292DB6F0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
@@ -50,11 +64,24 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9A8B2B3F92D1708BBE77F987 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				2AB833228565E5FE5F2010B0 /* LockdWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		07B0BCBA894531403D0789B8 /* RestTimerWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RestTimerWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		09EC5291F640A86AF5CB1706 /* MainViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		1407CA5803C818F73F9D5A63 /* WatchModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchModel.swift; sourceTree = "<group>"; };
+		1A1AF94F133D1229C0E4E32F /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		21E18ADD568B94F0BB488016 /* LockdHealthPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LockdHealthPlugin.swift; sourceTree = "<group>"; };
 		28CE83E05B7F9614C733DD7D /* SleepIntervals.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SleepIntervals.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
@@ -66,16 +93,22 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		693174D7801CC3C82BACC50B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		6ED9581293CC83C0C3CA9C36 /* RestTimerIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RestTimerIntents.swift; sourceTree = "<group>"; };
+		80647253825CA599045C183D /* LockdWatchPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LockdWatchPlugin.swift; sourceTree = "<group>"; };
 		84D5AF5FC10892861A084DBC /* RestTimerWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RestTimerWidget.swift; sourceTree = "<group>"; };
+		8C1CD764CDC6BF9A6C0E570C /* WatchSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchSnapshot.swift; sourceTree = "<group>"; };
 		8F19F74644433E4DA164A28B /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A59BED91FB32138F434DA690 /* App.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		AACF7E66018619201551A2B5 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
 		B8473AD63BB676D57A8144C6 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		BF614EFFAAAFDEBD88E62FD9 /* LockScreenTimerPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LockScreenTimerPlugin.swift; sourceTree = "<group>"; };
+		CE0FBDB2067C183F8217D4BB /* LockdWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LockdWatchApp.swift; sourceTree = "<group>"; };
 		D6DDE87A4CF77D849C1B34FB /* RestTimerAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RestTimerAttributes.swift; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
+		FF4049EC1A566C9587CA6237 /* LockdWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LockdWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +128,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		70FEBBA84DC74D8712350187 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A82C6C8599B0620C39E7925B /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -103,6 +144,7 @@
 			children = (
 				AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */,
 				A4B598B8C7F8D28250B4D512 /* iOS */,
+				D7AC07535921FB423C974E14 /* watchOS */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -116,6 +158,7 @@
 				09EC5291F640A86AF5CB1706 /* MainViewController.swift */,
 				21E18ADD568B94F0BB488016 /* LockdHealthPlugin.swift */,
 				28CE83E05B7F9614C733DD7D /* SleepIntervals.swift */,
+				80647253825CA599045C183D /* LockdWatchPlugin.swift */,
 			);
 			name = Native;
 			path = Native;
@@ -129,6 +172,7 @@
 				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
 				51F73399076007D4758A9D64 /* RestTimerWidget */,
+				A57E50818139E427C906390A /* LockdWatch */,
 			);
 			sourceTree = "<group>";
 		};
@@ -137,6 +181,7 @@
 			children = (
 				504EC3041FED79650016851F /* App.app */,
 				07B0BCBA894531403D0789B8 /* RestTimerWidgetExtension.appex */,
+				FF4049EC1A566C9587CA6237 /* LockdWatch.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -185,6 +230,27 @@
 			name = iOS;
 			sourceTree = "<group>";
 		};
+		A57E50818139E427C906390A /* LockdWatch */ = {
+			isa = PBXGroup;
+			children = (
+				CE0FBDB2067C183F8217D4BB /* LockdWatchApp.swift */,
+				AACF7E66018619201551A2B5 /* ContentView.swift */,
+				1407CA5803C818F73F9D5A63 /* WatchModel.swift */,
+				8C1CD764CDC6BF9A6C0E570C /* WatchSnapshot.swift */,
+				1A1AF94F133D1229C0E4E32F /* Info.plist */,
+			);
+			name = LockdWatch;
+			path = LockdWatch;
+			sourceTree = "<group>";
+		};
+		D7AC07535921FB423C974E14 /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				693174D7801CC3C82BACC50B /* Foundation.framework */,
+			);
+			name = watchOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -197,16 +263,35 @@
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
 				82721503009E76329A834DA2 /* Embed Foundation Extensions */,
+				9A8B2B3F92D1708BBE77F987 /* Embed Watch Content */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				F993B51E022A3EFD8814C55F /* PBXTargetDependency */,
+				CB276BF0206EF47FF84A9E4A /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		8160E1B912081543AD6A077D /* LockdWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7F357122D958A0CA70408979 /* Build configuration list for PBXNativeTarget "LockdWatch" */;
+			buildPhases = (
+				F610823DE689489D80B82A3D /* Sources */,
+				70FEBBA84DC74D8712350187 /* Frameworks */,
+				ABE6BB5D5E0B4D8407BA43EB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LockdWatch;
+			productName = LockdWatch;
+			productReference = FF4049EC1A566C9587CA6237 /* LockdWatch.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8DCF6D5F0775B928445B8080 /* RestTimerWidgetExtension */ = {
@@ -257,6 +342,7 @@
 			targets = (
 				504EC3031FED79650016851F /* App */,
 				8DCF6D5F0775B928445B8080 /* RestTimerWidgetExtension */,
+				8160E1B912081543AD6A077D /* LockdWatch */,
 			);
 		};
 /* End PBXProject section */
@@ -276,6 +362,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		97E4669799281F7A21DC08C7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ABE6BB5D5E0B4D8407BA43EB /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -342,12 +435,30 @@
 				7FBB0FFDA4D5ED6AB6BC0B7D /* MainViewController.swift in Sources */,
 				238CEC5C6B564921F1FEEBB7 /* LockdHealthPlugin.swift in Sources */,
 				A28BB160C3F05C953AEA4E42 /* SleepIntervals.swift in Sources */,
+				5873FF49E78884526646082C /* LockdWatchPlugin.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F610823DE689489D80B82A3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D46913799E33C393CE9509B0 /* LockdWatchApp.swift in Sources */,
+				5FAA307E84E2B1857459C1CC /* ContentView.swift in Sources */,
+				B96D2DE0455D054C3C0CDA33 /* WatchModel.swift in Sources */,
+				945EF5C36CFC36F3299788B6 /* WatchSnapshot.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		CB276BF0206EF47FF84A9E4A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = LockdWatch;
+			target = 8160E1B912081543AD6A077D /* LockdWatch */;
+			targetProxy = 187E48EA290E43E98941A01A /* PBXContainerItemProxy */;
+		};
 		F993B51E022A3EFD8814C55F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = RestTimerWidgetExtension;
@@ -393,6 +504,29 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		476AEF5D708554B7BE73AF5C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LockdWatch/Info.plist;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.happyharris.lockd.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 9.0;
 			};
 			name = Debug;
 		};
@@ -544,6 +678,30 @@
 			};
 			name = Release;
 		};
+		5A193D15A88E85E412BB3E32 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = NO;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LockdWatch/Info.plist;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.happyharris.lockd.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchos watchsimulator";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 9.0;
+			};
+			name = Release;
+		};
 		80C26B8D1688BB235EA62E53 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -591,6 +749,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7F357122D958A0CA70408979 /* Build configuration list for PBXNativeTarget "LockdWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A193D15A88E85E412BB3E32 /* Release */,
+				476AEF5D708554B7BE73AF5C /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

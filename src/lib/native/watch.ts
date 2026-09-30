@@ -56,6 +56,11 @@ export interface WatchSnapshot {
   rest: WatchRestLine | null;
   /** The phone's "Vibrate when rest ends" setting; the watch follows it. */
   vibrate: boolean;
+  /**
+   * The same numbers as words, written by the phone with `formatWeight` so the watch never formats a weight itself and
+   * the two can never disagree. Each is absent when its numbers are missing; the watch then shows the gap as a gap.
+   */
+  display?: { load?: string; previous?: string; target?: string };
   /** A short line for a moment after a record; names the lift and the value only. */
   record?: string;
 }
@@ -94,6 +99,14 @@ export interface WatchSnapshotInput {
   /** The progression engine's call for each exercise in the workout, keyed by workout exercise id. */
   targets: ReadonlyMap<string, { weightG?: number; reps?: number; why: string } | undefined>;
   record?: string;
+}
+
+/** "80 kg × 5", "80 kg" or "5 reps"; undefined when neither number is there. Never a zero for a missing one. */
+export function loadText(weightG: number | undefined, reps: number | undefined, unit: WeightUnit): string | undefined {
+  if (weightG !== undefined && reps !== undefined) return `${formatWeight(weightG, unit)} ${unit} × ${reps}`;
+  if (weightG !== undefined) return `${formatWeight(weightG, unit)} ${unit}`;
+  if (reps !== undefined) return `${reps} reps`;
+  return undefined;
 }
 
 /** The set the watch shows: the first set not done, in workout order. Warm-ups count. */
@@ -169,6 +182,13 @@ export function buildWatchSnapshot(input: WatchSnapshotInput): WatchSnapshot | n
         : rows.slice(0, index + 1).filter((set) => set.setType !== "warmup" && !set.side).length;
   const previous = previousFor(rows, input.ghosts.get(exercise.id) ?? [], index);
   const target = input.targets.get(exercise.id);
+  const display = {
+    ...(loadText(row.weightG, row.reps, unit) ? { load: loadText(row.weightG, row.reps, unit) } : {}),
+    ...(previous && loadText(previous.weightG, previous.reps, unit)
+      ? { previous: loadText(previous.weightG, previous.reps, unit) }
+      : {}),
+    ...(target && loadText(target.weightG, target.reps, unit) ? { target: loadText(target.weightG, target.reps, unit) } : {}),
+  };
   return {
     version: WATCH_PROTOCOL_VERSION,
     workoutId: workout.id,
@@ -192,6 +212,7 @@ export function buildWatchSnapshot(input: WatchSnapshotInput): WatchSnapshot | n
     unit,
     rest: restLine,
     vibrate: input.vibrate,
+    ...(Object.keys(display).length ? { display } : {}),
     ...(input.record ? { record: input.record } : {}),
   };
 }

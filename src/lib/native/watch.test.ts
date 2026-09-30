@@ -6,6 +6,7 @@ import {
   buildWatchSnapshot,
   createWatchSync,
   currentSetOf,
+  loadText,
   parseWatchIntent,
   recordLine,
   type WatchBridge,
@@ -115,6 +116,19 @@ describe("watch snapshot", () => {
   it("words a record with the lift and the value only", () => {
     const record = { exerciseName: "Bench Press", value: 102500 } as PersonalRecord;
     expect(recordLine(record, "kg")).toBe("Bench Press 102.5 kg");
+  });
+});
+
+describe("watch display text", () => {
+  it("is written by the phone with the weight rule, and absent when the numbers are", () => {
+    const ghosts = new Map([["x1", [{ weightG: 77500, reps: 5 }]]]);
+    const targets = new Map([["x1", { weightG: 82500, why: "Hit every rep twice." }]]);
+    const snap = buildWatchSnapshot(input(base(), { ghosts, targets }))!;
+    expect(snap.display).toEqual({ load: "80 kg × 5", previous: "77.5 kg × 5", target: "82.5 kg" });
+    expect(buildWatchSnapshot(input(base(), { unit: "lb" }))!.display!.load).toBe("176.37 lb × 5");
+    const blank = base().map((s) => (s.id === "b" ? { ...s, weightG: undefined, reps: undefined } : s));
+    expect(buildWatchSnapshot(input(blank))!.display).toBeUndefined();
+    expect(loadText(undefined, 8, "kg")).toBe("8 reps");
   });
 });
 

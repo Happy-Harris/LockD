@@ -1,6 +1,6 @@
 # Watch companion (Opp 7)
 
-Status: owner's seven answers recorded (2026-09-30). The TypeScript side is built; the SwiftUI watch app and the phone-side native module are not written and nothing has run on a watch.
+Status: owner's seven answers recorded (2026-09-30). The TypeScript side, the SwiftUI watch app and the phone-side `LockdWatch` plugin are written and compiled in CI (unsigned, simulator). Nothing has run on a watch.
 
 ## Goal
 
@@ -106,13 +106,28 @@ All taken as recommended.
   progression calls the workout screen uses, and sends a short "Bench Press 102.5 kg" line for eight seconds after a record (lift and value only).
 - Tests: `src/lib/native/watch.test.ts`.
 
-## Not written, not verified
+## Native half (written, compiled in CI)
 
-- The SwiftUI watch app, the phone-side `LockdWatch` Capacitor plugin (WatchConnectivity), the watch target and its signing. These need a Mac
-  build in cloud CI and a device.
-- Nothing has run against a real watch: reachability, the latency of a tap, and the watch-side formatting of weights (which must follow
-  `formatWeight`).
-- Wear OS.
+- `ios/App/LockdWatch/`: a watchOS 9 SwiftUI app (`com.happyharris.lockd.watchkitapp`). It holds no log. `WatchModel` receives the phone's snapshot over WatchConnectivity and sends intents back; `ContentView` shows the exercise, the set, previous values, the next target and the rest countdown (drawn from `endsAt`), with one big button for "complete set" and +15 / -15 / stop for rest.
+- The phone writes the wording. The snapshot carries `display` text (`load`, `previous`, `target`) built with `formatWeight`, so the watch never formats a weight.
+- `ios/App/App/Native/LockdWatchPlugin.swift`: the phone-side Capacitor plugin. `updateApplicationContext` for the latest snapshot, `sendMessage` for the short record line, and incoming watch messages forwarded to the web layer as intents.
+- `scripts/native/add-watch-app.rb` adds the target and the "Embed Watch Content" phase to the project.
+- CI (`native-build.yml`) builds the app with the watch target for the simulator, unsigned, and fails if the watch app or the Live Activity extension is missing from the build products.
+
+## Checks
+
+| Check | Status |
+|---|---|
+| Code written | yes |
+| Compile check | CI job `ios` (simulator, unsigned) |
+| Device check | **Not run.** Reachability, tap latency, and whether the snapshot survives the watch app being suspended |
+
+Known limits to test on a device: a complete-set tap from the watch is dropped if the phone's web layer is suspended (the stale-set guard makes that safe, not silent), and the watch app has no icon asset catalog yet, which distribution needs.
+
+## Needs the owner
+
+- An Apple Developer account and team, and App IDs for the watch app (`com.happyharris.lockd.watchkitapp`) and the widget extension.
+- A paired watch (or the simulator pair) for the device check. Wear OS is not started.
 
 ## Out of scope
 
