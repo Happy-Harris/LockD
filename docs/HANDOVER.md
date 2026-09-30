@@ -9,6 +9,26 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 11: program from text
+
+- **Plan:** `PLAN-ADDENDUM.md` § 4 row 11, built to the owner's answers to the seven open questions in
+  `docs/design/program-from-text.md` (recorded there).
+- **Shipped:** `/programs/from-text` ("Paste a program" on Programs). A fixed grammar (`src/lib/import/program-text.ts`)
+  reads a name, "Week N [deload]", "Day N: Name" and lines like "Bench Press 3x8-12 @ RPE 8 rest 90s". The preview shows
+  each session and row with its library match, a "Filled in, not in your text" list (double progression, warm-ups on, the
+  general lens, the default rest, and a name, week count or session name when the text has none), and a list of every line
+  or part of a line not used, with line number and reason. Nothing is written until "Save program", which goes through
+  `importProgram` unchanged.
+- **Names:** exact and bracket-equipment matches link; a near name is only suggested until a tap ("Same exercise"); a new
+  name is kept as an unresolved row.
+- **Not used, and listed:** loads (kept verbatim in the row's notes), lines of a week that differs from the first,
+  supersets, anything outside the grammar. The pasted text is not stored, and no stored field changed.
+- **Also:** `PLAN-ADDENDUM.md` § 10 named `motivatedc-creator/LockD` as the product repo; corrected to `Happy-Harris/LockD`
+  on the owner's word.
+- **Tests:** `src/lib/import/program-text.test.ts` (grammar, unused lines, weeks, the file, a round trip through
+  `importProgramFile`), `e2e/program-from-text.spec.ts` (preview, unused list, nothing saved before Save, near-name tap).
+- **Not verified:** real spreadsheet pastes from Excel or Sheets beyond tab-separated text.
+
 ### 2026-09-30 — Text size, step B: Comfortable by default, the notice, and nothing below 11 px
 
 - **Plan:** `PLAN-ADDENDUM.md` § 6 item 9 and A-3, A-4, built to the owner's spec (Appendix A) build-order step 4: "flip the default to

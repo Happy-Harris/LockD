@@ -130,7 +130,7 @@ are the ones the Step 4 to 8 work has been building underneath.
 | 8 | Comeback mode: detect layoffs, suggest re-entry loads, PRs "since comeback" | **done** | `Opp 8: comeback mode`: after 14+ days away each lift restarts at 90 / 80 / 70 % of its last working load by the length of the break (A-7, DA-3), rounded down to a buildable load, stated as a rule and editable in Settings; a Comeback card on Today with the records set since the return; "Within reach" leaves out lifts still restarting |
 | 9 | Shareable receipts: private by default, a share card, a read-only link | **done** | Private by default and unpublish: the privacy PR (29 Sep). `Opp 9: shareable receipts`: a read-only history link for a coach or partner (`/h/$token`, unguessable, revocable from the Locker, sessions and sets only, no locker), and the lifetime receipt (Opp 2) as a share (`/s/$id`, kind `lifetime`, owner's choice 2026-09-30). The "your locker is now private" notice now clears when the owner publishes on purpose |
 | 10 | Health context: bodyweight, sleep, HRV overlays in Chronicle, no readiness score | design doc only | Phase 4: `docs/design/health-context.md` |
-| 11 | Program from text: paste a program or spreadsheet, get a routine with progression | design doc only | Phase 4: `docs/design/program-from-text.md` |
+| 11 | Program from text: paste a program or spreadsheet, get a routine with progression | **done** | Line grammar, preview with every unused line listed, saved only on Save program. Owner's seven answers recorded in `docs/design/program-from-text.md`. Spreadsheet columns, loads, differing weeks and supersets are not in version 1 |
 
 Phase 3 items that are not an Opp (`PLAN-ADDENDUM.md` § 6):
 

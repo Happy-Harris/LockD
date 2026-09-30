@@ -148,8 +148,8 @@ and guests are told "The session is on the locker".
 
 ## 10. Owner decisions — 29 Sep 2026 (supersedes A-1 and A-2)
 
-- Product repository: `motivatedc-creator/LockD`. Earlier `Happy-Harris/LockD`
-  references describe the prior location.
+- Product repository: `Happy-Harris/LockD`. The owner confirmed this on 2026-09-30; the earlier line here naming
+  `motivatedc-creator/LockD` was out of date.
 - Privacy lands as a small standalone PR before plan PR 3. New profiles are private.
   **All existing public lockers are switched to private**, with a persistent one-time
   notice to the owner. Publishing the profile again requires explicit opt-in. This

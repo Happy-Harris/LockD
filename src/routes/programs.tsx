@@ -114,6 +114,10 @@ function ProgramsPage() {
         ))}
       </div>
 
+      <Button className="mt-6 w-full" variant="secondary" asChild>
+        <Link to="/programs/from-text">Paste a program</Link>
+      </Button>
+
       <label className="mt-6 block">
         <span className="mb-1 block text-xs text-subtle">Import program JSON</span>
         <input

@@ -33,6 +33,7 @@ import { Route as HistoryIdRouteImport } from './routes/history_.$id'
 import { Route as LibraryIdRouteImport } from './routes/library_.$id'
 import { Route as MomentsIdRouteImport } from './routes/moments.$id'
 import { Route as ProgramsIdRouteImport } from './routes/programs_.$id'
+import { Route as ProgramsFromTextRouteImport } from './routes/programs_.from-text'
 import { Route as RoutinesIdRouteImport } from './routes/routines_.$id'
 import { Route as SIdRouteImport } from './routes/s.$id'
 import { Route as ToolsLiftMathRouteImport } from './routes/tools_.lift-math'
@@ -162,6 +163,11 @@ const ProgramsIdRoute = ProgramsIdRouteImport.update({
   path: '/programs/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProgramsFromTextRoute = ProgramsFromTextRouteImport.update({
+  id: '/programs_/from-text',
+  path: '/programs/from-text',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RoutinesIdRoute = RoutinesIdRouteImport.update({
   id: '/routines_/$id',
   path: '/routines/$id',
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/library/$id': typeof LibraryIdRoute
   '/moments/$id': typeof MomentsIdRoute
   '/programs/$id': typeof ProgramsIdRoute
+  '/programs/from-text': typeof ProgramsFromTextRoute
   '/routines/$id': typeof RoutinesIdRoute
   '/s/$id': typeof SIdRoute
   '/tools/lift-math': typeof ToolsLiftMathRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/library/$id': typeof LibraryIdRoute
   '/moments/$id': typeof MomentsIdRoute
   '/programs/$id': typeof ProgramsIdRoute
+  '/programs/from-text': typeof ProgramsFromTextRoute
   '/routines/$id': typeof RoutinesIdRoute
   '/s/$id': typeof SIdRoute
   '/tools/lift-math': typeof ToolsLiftMathRoute
@@ -297,6 +305,7 @@ export interface FileRoutesById {
   '/library_/$id': typeof LibraryIdRoute
   '/moments/$id': typeof MomentsIdRoute
   '/programs_/$id': typeof ProgramsIdRoute
+  '/programs_/from-text': typeof ProgramsFromTextRoute
   '/routines_/$id': typeof RoutinesIdRoute
   '/s/$id': typeof SIdRoute
   '/tools_/lift-math': typeof ToolsLiftMathRoute
@@ -333,6 +342,7 @@ export interface FileRouteTypes {
     | '/library/$id'
     | '/moments/$id'
     | '/programs/$id'
+    | '/programs/from-text'
     | '/routines/$id'
     | '/s/$id'
     | '/tools/lift-math'
@@ -367,6 +377,7 @@ export interface FileRouteTypes {
     | '/library/$id'
     | '/moments/$id'
     | '/programs/$id'
+    | '/programs/from-text'
     | '/routines/$id'
     | '/s/$id'
     | '/tools/lift-math'
@@ -401,6 +412,7 @@ export interface FileRouteTypes {
     | '/library_/$id'
     | '/moments/$id'
     | '/programs_/$id'
+    | '/programs_/from-text'
     | '/routines_/$id'
     | '/s/$id'
     | '/tools_/lift-math'
@@ -436,6 +448,7 @@ export interface RootRouteChildren {
   LibraryIdRoute: typeof LibraryIdRoute
   MomentsIdRoute: typeof MomentsIdRoute
   ProgramsIdRoute: typeof ProgramsIdRoute
+  ProgramsFromTextRoute: typeof ProgramsFromTextRoute
   RoutinesIdRoute: typeof RoutinesIdRoute
   SIdRoute: typeof SIdRoute
   ToolsLiftMathRoute: typeof ToolsLiftMathRoute
@@ -616,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProgramsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/programs_/from-text': {
+      id: '/programs_/from-text'
+      path: '/programs/from-text'
+      fullPath: '/programs/from-text'
+      preLoaderRoute: typeof ProgramsFromTextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/routines_/$id': {
       id: '/routines_/$id'
       path: '/routines/$id'
@@ -700,6 +720,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryIdRoute: LibraryIdRoute,
   MomentsIdRoute: MomentsIdRoute,
   ProgramsIdRoute: ProgramsIdRoute,
+  ProgramsFromTextRoute: ProgramsFromTextRoute,
   RoutinesIdRoute: RoutinesIdRoute,
   SIdRoute: SIdRoute,
   ToolsLiftMathRoute: ToolsLiftMathRoute,
