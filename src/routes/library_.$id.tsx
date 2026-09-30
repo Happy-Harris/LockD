@@ -7,7 +7,7 @@ import { Card, Stat } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { titleCase } from "@/domain/taxonomy";
 import { formatLocalDate } from "@/domain/time";
-import { formatWeight, formatWeightWithUnit, weightUnitFor } from "@/domain/units";
+import { formatWeight, formatWeightWithUnit, roundEstimateG, weightUnitFor } from "@/domain/units";
 import { bestOneRepMax } from "@/domain/oneRepMax";
 import { formatRatio, relativeStrength } from "@/domain/relativeStrength";
 import { e1rmSeries } from "@/lib/gym/analytics";
@@ -15,6 +15,8 @@ import { autopsyLift } from "@/lib/gym/autopsy";
 import { buildLiftDna } from "@/lib/gym/dna";
 import { progressExercise, actionLabel } from "@/lib/gym/progression";
 import { CitedSessions } from "@/components/app/cited-sessions";
+import { NumberReceiptSheet } from "@/components/app/number-receipt-sheet";
+import { e1rmReceipt } from "@/lib/gym/number-receipts";
 import { rmTable } from "@/lib/gym/queue";
 import { useGymDerived, useSlices } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
@@ -47,6 +49,7 @@ function ExerciseDetailPage() {
     notes: setup?.notes ?? "",
   });
   const [note, setNote] = useState("");
+  const [receiptOpen, setReceiptOpen] = useState(false);
 
   if (!exercise) {
     return (
@@ -97,6 +100,9 @@ function ExerciseDetailPage() {
     settings.oneRepMaxFormula,
     settings.excludeWarmupsFromAnalytics,
   );
+  const latestReceipt = latest
+    ? e1rmReceipt(id, latest.slice.workout.id, slices, settings.oneRepMaxFormula)
+    : null;
   const table = rmTable(id, slices, settings.excludeWarmupsFromAnalytics);
   const pinned = lessons.filter((row) => row.exerciseId === id);
 
@@ -196,11 +202,26 @@ function ExerciseDetailPage() {
       ) : null}
 
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <Card className="p-3">
-          <Stat
-            label="Best e1RM"
-            value={latest?.best ? formatWeightWithUnit(latest.best.value, unit) : "—"}
-          />
+        <Card className="p-0">
+          {latestReceipt?.provenance.best ? (
+            <button
+              type="button"
+              className="min-h-11 w-full rounded-2xl p-3 text-left hover:bg-raised"
+              onClick={() => setReceiptOpen(true)}
+              data-testid="latest-e1rm"
+              aria-label={`Latest estimated 1RM ${formatWeightWithUnit(roundEstimateG(latestReceipt.provenance.best.value, unit), unit)}: show the working`}
+            >
+              <Stat
+                label="Latest e1RM"
+                value={formatWeightWithUnit(roundEstimateG(latestReceipt.provenance.best.value, unit), unit)}
+                hint="Tap for the working"
+              />
+            </button>
+          ) : (
+            <div className="p-3">
+              <Stat label="Latest e1RM" value="—" />
+            </div>
+          )}
         </Card>
         <Card className="p-3">
           <Stat label="Sessions" value={history.length} />
@@ -379,6 +400,15 @@ function ExerciseDetailPage() {
           </Link>
         ))}
       </div>
+      {latestReceipt ? (
+        <NumberReceiptSheet
+          open={receiptOpen}
+          onClose={() => setReceiptOpen(false)}
+          lift={exercise.name}
+          receipt={latestReceipt}
+          unit={unit}
+        />
+      ) : null}
     </Page>
   );
 }

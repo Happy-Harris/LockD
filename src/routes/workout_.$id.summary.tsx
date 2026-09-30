@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { elapsedSeconds } from "@/domain/time";
-import { weightUnitFor } from "@/domain/units";
+import { formatWeightWithUnit, weightUnitFor } from "@/domain/units";
 import { detectPrsForWorkout, workoutTonnageG } from "@/lib/gym/analytics";
+import { e1rmReceipt } from "@/lib/gym/number-receipts";
+import { NumberReceiptSheet } from "@/components/app/number-receipt-sheet";
 import { workoutDiff } from "@/lib/gym/ghost";
 import { momentsForWorkout } from "@/lib/gym/moments";
 import { nearMisses } from "@/lib/gym/queue";
@@ -31,6 +33,7 @@ function SummaryPage() {
   const unit = weightUnitFor(settings.unitSystem);
   const [saved, setSaved] = useState(false);
   const [lesson, setLesson] = useState("");
+  const [recordOpen, setRecordOpen] = useState<string | null>(null);
   const receiptRef = useRef<HTMLDivElement>(null);
 
   const diff = useMemo(() => (slice ? workoutDiff(slice, slices, unit) : null), [slice, slices, unit]);
@@ -100,6 +103,43 @@ function SummaryPage() {
           </ul>
         </Card>
       ) : null}
+
+      {prs.length > 0 ? (
+        <Card className="mt-5" data-testid="session-records">
+          <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">New records</p>
+          <ul className="mt-2">
+            {prs.map((pr) => (
+              <li key={pr.exerciseId}>
+                <button
+                  type="button"
+                  className="flex min-h-11 w-full items-center justify-between gap-3 rounded-lg text-left text-sm hover:bg-raised"
+                  onClick={() => setRecordOpen(pr.exerciseId)}
+                  aria-label={`${pr.exerciseName} new estimated 1RM ${formatWeightWithUnit(pr.value, unit)}: show the working`}
+                >
+                  <span className="font-medium">{pr.exerciseName}</span>
+                  <span className="font-mono text-xs tabular text-accent">
+                    {formatWeightWithUnit(pr.value, unit)} est. 1RM
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+      {prs.map((pr) => {
+        const receipt = recordOpen === pr.exerciseId ? e1rmReceipt(pr.exerciseId, id, slices, settings.oneRepMaxFormula) : null;
+        return receipt ? (
+          <NumberReceiptSheet
+            key={pr.exerciseId}
+            open
+            onClose={() => setRecordOpen(null)}
+            lift={pr.exerciseName}
+            receipt={receipt}
+            unit={unit}
+            record
+          />
+        ) : null;
+      })}
 
       {misses.length > 0 ? (
         <section className="mt-5">

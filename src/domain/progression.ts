@@ -63,6 +63,9 @@ export interface StallComparison {
   /** Best valid e1RM in the prior equal-count window, in grams. Null when unavailable. */
   comparisonBestE1rmG: number | null;
   comparisonSource: "prior_equal_window" | null;
+  /** First and last date of the prior equal-count window, when it was compared (Opp 4: the working). */
+  comparisonStartDate: string | null;
+  comparisonEndDate: string | null;
 }
 
 /** Completed, non-warm-up sets with a positive load and rep count. */
@@ -110,6 +113,8 @@ export function computeStallComparison(
       bestE1rmInWindowG: bestE1rmForSessions(windowSessions, formula),
       comparisonBestE1rmG: null,
       comparisonSource: null,
+      comparisonStartDate: null,
+      comparisonEndDate: null,
     };
   }
 
@@ -121,6 +126,8 @@ export function computeStallComparison(
 
   let comparisonBestE1rmG: number | null = null;
   let comparisonSource: StallComparison["comparisonSource"] = null;
+  let comparisonStartDate: string | null = null;
+  let comparisonEndDate: string | null = null;
   if (priorSessions.length >= sessionsInWindow) {
     const equalPriorSessions = priorSessions.slice(-sessionsInWindow);
     const lastPrior = equalPriorSessions[equalPriorSessions.length - 1]!.localDate;
@@ -129,6 +136,8 @@ export function computeStallComparison(
     if (gapDays <= STALL_MAX_GAP_DAYS) {
       comparisonBestE1rmG = bestE1rmForSessions(equalPriorSessions, formula);
       comparisonSource = "prior_equal_window";
+      comparisonStartDate = equalPriorSessions[0]!.localDate;
+      comparisonEndDate = lastPrior;
     }
   }
 
@@ -139,6 +148,8 @@ export function computeStallComparison(
       bestE1rmInWindowG,
       comparisonBestE1rmG,
       comparisonSource,
+      comparisonStartDate,
+      comparisonEndDate,
     };
   }
 
@@ -149,6 +160,8 @@ export function computeStallComparison(
     bestE1rmInWindowG,
     comparisonBestE1rmG,
     comparisonSource,
+    comparisonStartDate,
+    comparisonEndDate,
   };
 }
 
@@ -319,8 +332,8 @@ export function suggestProgression(
     comparison.state === "insufficient_data"
       ? `${comparison.sessionsInWindow} session${comparison.sessionsInWindow === 1 ? "" : "s"} in the trailing ${STALL_WINDOW_DAYS} local days (need ${STALL_MIN_SESSIONS} plus a comparable prior window) — target is last session's numbers to beat, not a trend call.`
       : comparison.state === "stalled"
-        ? `Best e1RM in the trailing ${STALL_WINDOW_DAYS} days is flat or down vs the prior equal-count window (${comparison.sessionsInWindow} sessions) — stalled. Next target: ${REASON_PHRASE[target.reason]}.`
-        : `Best e1RM in the trailing ${STALL_WINDOW_DAYS} days improved vs the prior equal-count window (${comparison.sessionsInWindow} sessions) — progressing. Next target: ${REASON_PHRASE[target.reason]}.`;
+        ? `Best e1RM in the trailing ${STALL_WINDOW_DAYS} days is flat or down against the prior equal-count window (${comparison.sessionsInWindow} sessions vs the prior ${comparison.sessionsInWindow}) — stalled. Next target: ${REASON_PHRASE[target.reason]}.`
+        : `Best e1RM in the trailing ${STALL_WINDOW_DAYS} days improved against the prior equal-count window (${comparison.sessionsInWindow} sessions vs the prior ${comparison.sessionsInWindow}) — progressing. Next target: ${REASON_PHRASE[target.reason]}.`;
 
   return {
     target,

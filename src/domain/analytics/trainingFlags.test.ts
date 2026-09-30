@@ -209,6 +209,19 @@ describe("trainingFlags", () => {
     expect(bench!.bestE1rmInWindowG!).toBeLessThanOrEqual(bench!.comparisonBestE1rmG!);
   });
 
+  it("a stall states its counts and the dates of the sessions it was compared with (Opp 4)", () => {
+    const bench = stallFlags(stallYesEntries(), GOLDEN_OPTIONS, "monday", REF).find(
+      (flag) => flag.liftId === "bench",
+    )!;
+    const n = bench.sessionsInWindow;
+    expect(bench.receipt).toBe(
+      `Bench Press: best e1RM over ${n} sessions in the trailing 28 days is flat or down against the ${n} sessions before them. Stall.`,
+    );
+    expect(bench.comparisonStartDate! <= bench.comparisonEndDate!).toBe(true);
+    expect(bench.comparisonEndDate! < bench.windowStartDate).toBe(true);
+    expect(bench.receipt).not.toMatch(/%|probab|likely|confiden/i);
+  });
+
   it("stallFlag is inactive when best e1RM improved in the window", () => {
     const entries = stallNoEntries();
     const stalls = stallFlags(entries, GOLDEN_OPTIONS, "monday", REF);
