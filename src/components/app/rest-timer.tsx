@@ -1,5 +1,7 @@
 import { Pause, Play, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { LOCK_SCREEN_STEP_SECONDS, lockScreenSync } from "@/lib/native/lock-screen-timer";
+import { isNativePlatform } from "@/lib/native/platform";
 import { formatDuration } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
 import { cn } from "@/lib/utils";
@@ -153,7 +155,8 @@ export function RestTimerBar() {
   const display = done ? 0 : Math.ceil(Math.max(0, left) / 1000);
 
   useEffect(() => {
-    if (!restTimer || typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
+    // The native build has its own lock-screen tile, so the Media Session one would be a second copy.
+    if (!restTimer || isNativePlatform() || typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
     try {
       const art = paintLockArt(display, restTimer.label ?? "Rest");
       navigator.mediaSession.metadata = new MediaMetadata({
@@ -183,6 +186,20 @@ export function RestTimerBar() {
       /* media session is best-effort */
     }
   }, [adjustRestTimer, display, done, restTimer, startRestTimer, stopRestTimer]);
+
+  // Native only: mirror the timer to the lock screen and take its plus, minus and stop buttons back through the store.
+  useEffect(() => {
+    if (!isNativePlatform()) return;
+    lockScreenSync.sync(stillActive ? restTimer : null, { notify, nowMs: now });
+  }, [restTimer, stillActive, notify, now]);
+  useEffect(() => {
+    if (!isNativePlatform()) return;
+    return lockScreenSync.onAction((action) => {
+      if (action === "plus") adjustRestTimer(LOCK_SCREEN_STEP_SECONDS);
+      else if (action === "minus") adjustRestTimer(-LOCK_SCREEN_STEP_SECONDS);
+      else stopRestTimer();
+    });
+  }, [adjustRestTimer, stopRestTimer]);
 
   if (!restTimer || !stillActive) return null;
 

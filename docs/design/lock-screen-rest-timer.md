@@ -1,6 +1,7 @@
 # Lock-screen rest timer (Opp 6, native half)
 
-Status: design doc only (Phase 4). No native code, no new dependencies and no change to `src/` ship with it.
+Status: **TypeScript side built** (2026-09-30); the native side is not written and nothing has run on a device. It was a
+design doc first; the sections below are kept as the design, and "Defaults taken" records the answers.
 
 ## Goal
 
@@ -97,9 +98,42 @@ Opp 6 (warm-up and working rest, precedence, typed values) shipped in Step 9 and
    alert and say so?
 7. Is a home-screen widget in scope for this Opp, or later?
 
+## Defaults taken (owner can reverse) and what was built
+
+The owner was not asked; the standing order was to take the smallest default consistent with this doc and the principles.
+
+| # | Question | Default taken |
+|---|---|---|
+| 1 | Controls | Plus, minus and stop. No "complete next set" (it would write history from a lock screen) |
+| 2 | Step | 15 s, the in-app and Media Session step (`LOCK_SCREEN_STEP_SECONDS`) |
+| 3 | Media Session tile | Off in the native build (it would be a second tile); unchanged on the web |
+| 4 | End alert settings | Follows the existing "Rest timer notification" setting; the sound and vibration settings still apply in the app |
+| 5 | "Rest done" lifetime | 60 s, then it clears (`LOCK_SCREEN_DONE_LINGER_SECONDS`) |
+| 6 | Android exact alarms | Not requested; the alert is scheduled with `allowWhileIdle` and may be a little late on Android |
+| 7 | Home-screen widget | Later, not in this Opp |
+| n/a | Stored native activity id | None stored; `show` must be safe to call again for a timer that is already showing |
+
+Built:
+
+- `src/lib/native/lock-screen-timer.ts`. `createLockScreenSync(bridge)` mirrors the store's `restTimer` to the phone and
+  only talks to it when something it shows has changed (a new end time, pause, label, or the rest ending). It shows
+  "done" at the end, clears after the linger, and clears at once when the timer goes (stop, finish or discard the
+  workout). A failed native call is dropped so it can never get in the way of logging.
+- `src/components/app/rest-timer.tsx` calls it only on native, and turns the Media Session tile off there. The plus, minus
+  and stop buttons on the phone come back as `action` events and go through `adjustRestTimer` and `stopRestTimer`, so the
+  store stays the only owner of the timer and writes the new timestamps.
+- **End-of-rest alert** uses the official `@capacitor/local-notifications` plugin (`schedule` with a fixed id, so a new
+  timer replaces the old alert). It asks for notification permission the first time it needs it.
+- **The `LockScreenTimer` plugin** is registered with a no-op web implementation. Its native half (an iOS Live Activity
+  through ActivityKit, an Android ongoing notification with a chronometer) is **not written**. Its contract:
+  `show(timer)`, `update(timer)`, `clear()` and an `action` event (`plus`, `minus`, `stop`); the payload is
+  `LockScreenTimerPayload` (`startedAt`, `endsAt`, `durationSeconds`, `isRunning`, `remainingSeconds`, `label`). Until it
+  exists, native calls fail quietly and only the scheduled end alert works.
+- **Not verified:** everything native. Tests use a fake bridge (`src/lib/native/lock-screen-timer.test.ts`).
+
 ## Out of scope
 
-- Any native code, Capacitor setup or new package (this is a design doc).
+- The native Live Activity and ongoing-notification code (to be written on a Mac and Android Studio; see above).
 - Changes to rest precedence, warm-up rest or learned rest (Step 9, decision D7 and A-8).
 - The watch (see `watch-companion.md`).
 - Background audio or music control.
