@@ -63,6 +63,9 @@ export interface StallFlag {
   bestE1rmInWindowG: number | null;
   comparisonBestE1rmG: number | null;
   comparisonSource: "prior_equal_window" | null;
+  /** First and last date of the prior sessions compared, when there were any (Opp 4). */
+  comparisonStartDate: string | null;
+  comparisonEndDate: string | null;
   claimId: typeof STALL_CLAIM_ID;
   receipt: string;
 }
@@ -205,8 +208,14 @@ export function stallFlags(
       windowEndDate,
       STALL_MIN_SESSIONS,
     );
-    const { sessionsInWindow, bestE1rmInWindowG, comparisonBestE1rmG, comparisonSource } =
-      comparison;
+    const {
+      sessionsInWindow,
+      bestE1rmInWindowG,
+      comparisonBestE1rmG,
+      comparisonSource,
+      comparisonStartDate,
+      comparisonEndDate,
+    } = comparison;
     const label = `Stall — ${lift.name}`;
 
     if (sessionsInWindow < STALL_MIN_SESSIONS) {
@@ -222,6 +231,8 @@ export function stallFlags(
         bestE1rmInWindowG,
         comparisonBestE1rmG: null,
         comparisonSource: null,
+        comparisonStartDate: null,
+        comparisonEndDate: null,
         claimId: STALL_CLAIM_ID,
         receipt: `${lift.name}: ${sessionsInWindow} completed session${
           sessionsInWindow === 1 ? "" : "s"
@@ -242,6 +253,8 @@ export function stallFlags(
         bestE1rmInWindowG,
         comparisonBestE1rmG,
         comparisonSource,
+        comparisonStartDate,
+        comparisonEndDate,
         claimId: STALL_CLAIM_ID,
         receipt: `${lift.name}: ${sessionsInWindow} sessions in the trailing ${STALL_WINDOW_DAYS} days, but e1RM comparison is incomplete. Partial — no stall claim.`,
       };
@@ -249,8 +262,8 @@ export function stallFlags(
 
     const stalled = comparison.state === "stalled";
     const receipt = stalled
-      ? `${lift.name}: best e1RM in trailing ${STALL_WINDOW_DAYS} days is flat or down vs prior equal-count window (${sessionsInWindow} sessions). Stall.`
-      : `${lift.name}: best e1RM in trailing ${STALL_WINDOW_DAYS} days improved vs prior equal-count window. No stall.`;
+      ? `${lift.name}: best e1RM over ${sessionsInWindow} sessions in the trailing ${STALL_WINDOW_DAYS} days is flat or down against the ${sessionsInWindow} sessions before them. Stall.`
+      : `${lift.name}: best e1RM over ${sessionsInWindow} sessions in the trailing ${STALL_WINDOW_DAYS} days improved against the ${sessionsInWindow} sessions before them. No stall.`;
 
     return {
       id: "stall" as const,
@@ -264,6 +277,8 @@ export function stallFlags(
       bestE1rmInWindowG,
       comparisonBestE1rmG,
       comparisonSource,
+      comparisonStartDate,
+      comparisonEndDate,
       claimId: STALL_CLAIM_ID,
       receipt,
     };

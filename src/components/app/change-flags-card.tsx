@@ -132,6 +132,12 @@ export function ChangeFlagsCard({
                   Window {selected.windowStartDate} → {selected.windowEndDate}
                 </li>
                 <li>Sessions in window {selected.sessionsInWindow}</li>
+                {selected.comparisonStartDate && selected.comparisonEndDate ? (
+                  <li data-testid="stall-prior-window">
+                    Compared with the prior {selected.sessionsInWindow} sessions, {selected.comparisonStartDate} →{" "}
+                    {selected.comparisonEndDate}
+                  </li>
+                ) : null}
                 <li>Best e1RM in window {formatE1rm(selected.bestE1rmInWindowG, weightUnit)}</li>
                 <li>
                   Comparison e1RM {formatE1rm(selected.comparisonBestE1rmG, weightUnit)}

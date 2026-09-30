@@ -9,6 +9,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 4: numbers show their working
+
+- **Owner's standing instruction (2026-09-30):** build the plan item by item and merge each PR once it is green and built to the plan, without asking. Opp 4 was the next open item (STATUS § 4 "partly done"). The plan is `PLAN-ADDENDUM.md` § 4 row 4: a shared provenance shape (formula, inputs, sets used, sets excluded and the reason), one sheet, tap targets on the numbers, and stall confidence as counts, never a probability.
+- **Provenance:** `e1rmProvenance` (`src/domain/provenance.ts`) accounts for every set of a lift in a session: the ones that gave an estimate (with it) and the ones left out, with the reason (`not completed`, `warm-up`, `no load`, `no reps`, `over 12 reps`). It agrees with `bestOneRepMax` by test. `e1rmReceipt` and `latestE1rmReceipt` (`src/lib/gym/number-receipts.ts`) add the best before the session (the one a record beats, as `detectPrsForWorkout` compares) and the lift's estimate per session (the chart's points).
+- **One sheet:** `NumberReceiptSheet` (`src/components/app/number-receipt-sheet.tsx`): the estimate, its source set, the formula written out, the best before, the sets used and left out, and the last 12 sessions, each date a link to that session. Estimates show to 0.5 kg or 1 lb, as on Today (Step 8d-1), and the sheet says so.
+- **Where a tap opens it:** the lift page's e1RM stat, now labelled "Latest e1RM" (it always showed the latest session's estimate, not the best; the old "Best e1RM" label was wrong); each goal lift's number on the Data Lab (now rounded like Today's); and a new "New records" list on the session summary, outside the shareable receipt, so the PNG is unchanged. Today's goal cards are links to the lift page and already say "from W × R, date", so they were left alone.
+- **Stalls as counts:** `computeStallComparison` and the stall flag now carry the prior window's first and last dates. The flag reads "best e1RM over N sessions in the trailing 28 days is flat or down against the N sessions before them", and its sheet adds "Compared with the prior N sessions, date → date". The progression receipt says "N sessions vs the prior N".
+- **Not in this PR:** a receipt for volume numbers beyond the verdict and muscle sets (already there), and for the Lab's relative-strength ratio and intelligence insight strings.
+- **Tests:** `provenance.test.ts` (reasons, every set accounted for, parity with `bestOneRepMax`, both formulas), `number-receipts.test.ts` (the best a record beat matches `detectPrsForWorkout`, the trend matches `e1rmSeries`, first session, latest, a lift not on file), `trainingFlags.test.ts` (the stall's wording and prior dates, no probability words), `e2e/numbers-working.spec.ts` (Data Lab e1RM opens the sheet with the formula, the left-out 15-rep set, the best before and the trend; a date opens the session).
+- **Screens:** the receipt sheet at 390 and 1024 px (new, no baseline).
+
 ### 2026-09-30 — Opp 3: explained progression
 
 - **Owner's ask (2026-09-30):** "move on to the next item on our plan … implement accordingly". The plan is `PLAN-ADDENDUM.md` § 4 row 3, Phase 3 item 5 and A-6: the engine half (windowed stall, grid and plate-aware loads) shipped in Step 8d-2; this item is the case fixtures (missed sessions, failed reps, swaps, deload) and the UI to open the cited sessions.

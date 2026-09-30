@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ChangeFlagsCard } from "@/components/app/change-flags-card";
 import { MuscleSetsCard } from "@/components/app/muscle-sets-card";
@@ -6,16 +7,18 @@ import { Page } from "@/components/app/shell";
 import { WeeklyVerdictCard } from "@/components/app/weekly-verdict-card";
 import { Card } from "@/components/ui/card";
 import { HEATMAP_MUSCLES, titleCase } from "@/domain/taxonomy";
-import { formatWeight, formatWeightWithUnit, fromGrams, weightUnitFor } from "@/domain/units";
+import { formatWeight, formatWeightWithUnit, fromGrams, roundEstimateG, weightUnitFor } from "@/domain/units";
 import { e1rmSeries } from "@/lib/gym/analytics";
-import { useGymDerived } from "@/lib/gym/hooks";
+import { NumberReceiptSheet } from "@/components/app/number-receipt-sheet";
+import { latestE1rmReceipt } from "@/lib/gym/number-receipts";
+import { useGymDerived, useSlices } from "@/lib/gym/hooks";
 import { lensDef } from "@/lib/gym/lenses";
 import { useGym } from "@/lib/gym/store";
 
 export const Route = createFileRoute("/analytics")({ component: AnalyticsPage });
 
 function AnalyticsPage() {
-  const { verdict, verdictLens, flags, muscleInsights, subjectBalance, weeks, muscles, records, settings, slices, heat, exercises, intelligence } = useGymDerived();
+  const { verdict, verdictLens, flags, muscleInsights, subjectBalance, weeks, muscles, records, settings, heat, exercises, intelligence } = useGymDerived();
   const updateSettings = useGym((s) => s.updateSettings);
   const unit = weightUnitFor(settings.unitSystem);
   const maxMuscle = Math.max(1, ...Object.values(muscles));
@@ -80,35 +83,9 @@ function AnalyticsPage() {
       <section className="mt-6">
         <h2 className="font-display text-2xl font-semibold tracking-tight">Goal lifts</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-3">
-          {goalIds.map((id) => {
-            const exercise = exercises.find((row) => row.id === id);
-            const series = e1rmSeries(id, slices, settings.oneRepMaxFormula).map((point) => ({
-              date: point.date.slice(5),
-              e1rm: Number(formatWeight(point.value, unit)),
-            }));
-            const latest = series[series.length - 1];
-            return (
-              <Card key={id}>
-                <Link to="/library/$id" params={{ id }} className="text-sm font-medium">
-                  {exercise?.name ?? "Lift"}
-                </Link>
-                <p className="mt-1 font-display text-2xl font-semibold tabular">
-                  {latest ? `${latest.e1rm} ${unit}` : "—"}
-                </p>
-                <div className="mt-2 h-24">
-                  {series.length > 1 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={series}>
-                        <Area type="monotone" dataKey="e1rm" stroke="var(--rf-accent)" fill="var(--rf-accent)" fillOpacity={0.15} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <p className="text-xs text-subtle">Need two sessions to plot.</p>
-                  )}
-                </div>
-              </Card>
-            );
-          })}
+          {goalIds.map((id) => (
+            <GoalLiftCard key={id} id={id} name={exercises.find((row) => row.id === id)?.name ?? "Lift"} />
+          ))}
         </div>
       </section>
 
@@ -155,5 +132,55 @@ function AnalyticsPage() {
         </div>
       </section>
     </Page>
+  );
+}
+
+/** A goal lift's latest estimate and its trend; the number opens its working (Opp 4). */
+function GoalLiftCard({ id, name }: { id: string; name: string }) {
+  const slices = useSlices();
+  const settings = useGym((s) => s.settings);
+  const unit = weightUnitFor(settings.unitSystem);
+  const [open, setOpen] = useState(false);
+  const series = e1rmSeries(id, slices, settings.oneRepMaxFormula).map((point) => ({
+    date: point.date.slice(5),
+    e1rm: Number(formatWeight(point.value, unit)),
+  }));
+  const receipt = series.length ? latestE1rmReceipt(id, slices, settings.oneRepMaxFormula) : null;
+  const latest = receipt?.provenance.best
+    ? formatWeightWithUnit(roundEstimateG(receipt.provenance.best.value, unit), unit)
+    : null;
+  return (
+    <Card>
+      <Link to="/library/$id" params={{ id }} className="text-sm font-medium">
+        {name}
+      </Link>
+      {latest && receipt ? (
+        <button
+          type="button"
+          className="mt-1 block min-h-11 rounded-lg text-left font-display text-2xl font-semibold tabular hover:text-accent"
+          onClick={() => setOpen(true)}
+          data-testid="goal-e1rm"
+          aria-label={`${name} latest estimated 1RM ${latest}: show the working`}
+        >
+          {latest}
+        </button>
+      ) : (
+        <p className="mt-1 font-display text-2xl font-semibold tabular">—</p>
+      )}
+      <div className="mt-2 h-24">
+        {series.length > 1 ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={series}>
+              <Area type="monotone" dataKey="e1rm" stroke="var(--rf-accent)" fill="var(--rf-accent)" fillOpacity={0.15} />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="text-xs text-subtle">Need two sessions to plot.</p>
+        )}
+      </div>
+      {receipt ? (
+        <NumberReceiptSheet open={open} onClose={() => setOpen(false)} lift={name} receipt={receipt} unit={unit} />
+      ) : null}
+    </Card>
   );
 }
