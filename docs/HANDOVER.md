@@ -9,6 +9,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 2: web receipt, no account
+
+- **Owner's ask (2026-09-30):** "Move straight to Opp 2", after the era-name cleanup (#79). The spec is `PLAN-ADDENDUM.md` § 4 row 2: a public route outside `GymGate` that imports on the device and renders a receipt; "Continue in Lock'd" hands the parsed batch to the guest store; a Playwright assertion that no request carries the file.
+- **The page:** `/receipt` (new route, public like `/login`, `/s/$id` and `/u/$handle`). Drop or choose a Strong or Hevy CSV; it is read in the browser and turned into a lifetime receipt: first and last date, sessions, hard sets, lifts, layoffs, the eras (newest five, Brief Returns muted), sessions for every year from first to last (an empty year shows 0), the three most-logged lifts with their best estimated 1RM and the set it came from (formula named, warm-ups left out), the busiest year and the longest gap by its dates. "Save as image" reuses the session receipt's PNG drawing.
+- **On the device only:** `src/lib/receipt/web-receipt.ts` tries the Strong, Hevy and generic presets in turn, builds the batch into a throwaway log (seed exercises plus the file, never the lifter's store), and reads the Chronicle off it with the same `buildChronicle` and `summariseChronicle` the app uses, so the receipt and the Chronicle count the same eras and layoffs. The route calls no server function; its loader only passes the origin for the share card (`receiptOg`).
+- **Units:** a header that says kg or lb wins. When it does not, the page asks (kg or lb) and every number follows the answer.
+- **Continue in Lock'd:** completes onboarding with an empty log if this browser has none (in the file's unit), then runs the store's normal `importPrepared` with the wizard's defaults (every session not already here), and opens `/chronicle`. Nothing is saved before that tap, and the button waits for the log to load.
+- **Not in this PR:** a link to `/receipt` from the landing or onboarding (onboarding's "Import your history" already covers a new lifter in the app), JSON backups and the manual column map (the page says to use Import in Lock'd for another spreadsheet), and a server-side share of the receipt (Opp 9).
+- **Tests:** `src/lib/receipt/web-receipt.test.ts` (Strong and Hevy read without being told, an unreadable file, units, counts, empty years, busiest-year ties, gap, eras and layoffs from the Chronicle, top lifts with their source set), `e2e/web-receipt.spec.ts` (drop a file, every request is a GET with no body and none carries the file, the log stays empty until Continue, then 6 sessions and the Chronicle; the unit question; an unreadable file; the share card in the server HTML).
+- **Screens:** `/receipt` empty and filled at 390 and 1024 px. New screen, so there is no baseline to compare.
+
 ### 2026-09-30 — Opp 1 follow-up: era names from the training record, told apart by date
 
 - **Owner's ask (2026-09-30):** replace "The Return · 2" to "The Return · 14" with distinct names derived only from observable training history; a split when the data supports it, else calendar names ("2021 Return", "February 2024 Return", "Late 2024 Return"); keep Brief Return; no narrative labels; the lifter's own names are never overwritten.
