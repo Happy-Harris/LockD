@@ -86,32 +86,22 @@ Opp 6 (warm-up and working rest, precedence, typed values) shipped in Step 9 and
   no-op.
 - **Brand:** "Lock'd" on the activity and notifications, as in `paintLockArt` today.
 
-## Open questions for the owner
+## Owner's answers
 
-1. Which lock-screen controls: plus and minus, stop, and should "complete next set" ever be there?
-2. The step size for plus and minus (the app uses 15 s today; keep it or make it a setting?).
-3. Keep the Media Session tile in the native build, or show only the native one?
-4. Should the native end-of-rest alert follow the existing sound, vibrate and notification settings, or
-   have its own?
-5. How long should a "Rest done" state stay on the lock screen before it clears itself?
-6. Android exact alarms need a user permission on recent versions. Ask for it, or accept a possibly late
-   alert and say so?
-7. Is a home-screen widget in scope for this Opp, or later?
+Recorded 2026-09-30. The owner accepted the recommended answer on all seven.
 
-## Open questions: not decided, waiting for the owner
-
-The seven questions above stand. The code below uses placeholder values so it runs and can be tested; none is a decision,
-and each changes when the owner answers. Recommended answers are in the thread.
-
-| # | Question | Placeholder in the code |
+| # | Question | Answer |
 |---|---|---|
-| 1 | Controls | plus, minus, stop |
-| 2 | Step | 15 s (`LOCK_SCREEN_STEP_SECONDS`) |
-| 3 | Media Session tile in the native build | off in native, unchanged on the web |
-| 4 | End alert settings | follows "Rest timer notification" |
-| 5 | "Rest done" lifetime | 60 s (`LOCK_SCREEN_DONE_LINGER_SECONDS`) |
-| 6 | Android exact alarms | not requested |
-| 7 | Home-screen widget | none |
+| 1 | Controls | Plus, minus and stop. No "complete next set" (it would write history from a lock screen) |
+| 2 | Step | 15 s, the in-app and Media Session step (`LOCK_SCREEN_STEP_SECONDS`) |
+| 3 | Media Session tile | Off in the native build (it would be a second tile); unchanged on the web |
+| 4 | End alert settings | Follows the existing "Rest timer notification" setting; the sound and vibration settings still apply in the app |
+| 5 | "Rest done" lifetime | 60 s, then it clears (`LOCK_SCREEN_DONE_LINGER_SECONDS`) |
+| 6 | Android exact alarms | Do not ask for the permission. The alert is scheduled with `allowWhileIdle`. **Test condition:** measure it on a real Android device with the screen locked. If the alert is more than about 5 s late, come back to the owner with a foreground-service option instead of the permission |
+| 7 | Home-screen widget | Later, not in this Opp |
+| n/a | Stored native activity id | None stored; `show` must be safe to call again for a timer that is already showing |
+
+The Android lateness test has not been run: there is no device here and native builds run in cloud CI.
 
 Built:
 
@@ -133,7 +123,7 @@ Built:
 
 ## Out of scope
 
-- The native Live Activity and ongoing-notification code (to be written on a Mac and Android Studio; see above).
+- The native Live Activity and ongoing-notification code (native builds run in cloud CI; see `native-shell.md`).
 - Changes to rest precedence, warm-up rest or learned rest (Step 9, decision D7 and A-8).
 - The watch (see `watch-companion.md`).
 - Background audio or music control.

@@ -11,16 +11,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ### 2026-09-30 — Opp 6, native half: the lock-screen rest timer (TypeScript side)
 
-- **Plan:** `PLAN-ADDENDUM.md` § 4 row 6; the design is `docs/design/lock-screen-rest-timer.md`. The design's seven open questions are
-  not answered; the code uses placeholder values and the design doc lists them for the owner.
+- **Plan:** `PLAN-ADDENDUM.md` § 4 row 6; the design is `docs/design/lock-screen-rest-timer.md`. The owner accepted the recommended answer on all seven
+  questions (recorded in the design doc). One test condition: the Android alert is not to be late by more than about 5 s on a real
+  device with the screen locked; if it is, come back with a foreground-service option instead of the exact-alarm permission.
 - **Shipped:** `src/lib/native/lock-screen-timer.ts` (the sync logic, the `LockScreenTimer` plugin contract with a no-op web
   implementation, and the end-of-rest alert through `@capacitor/local-notifications`), wired into `RestTimerBar` on native only.
   The native build drops the Media Session tile; the web is unchanged.
 - **Unchanged:** the store still owns the timer and writes every timestamp; the lock screen's plus, minus and stop go back
   through `adjustRestTimer` and `stopRestTimer`.
 - **Not written:** the native half of `LockScreenTimer` (iOS Live Activity, Android ongoing notification).
-- **Not verified:** everything native: the notification permission prompt, the scheduled alert, the Live Activity, Android
-  idle-mode lateness. Tests use a fake bridge.
+- **Not verified:** everything native: the notification permission prompt, the scheduled alert, the Live Activity, and the
+  Android lateness test the owner asked for (needs a real device; there is none here). Tests use a fake bridge.
 - **Tests:** `src/lib/native/lock-screen-timer.test.ts`.
 
 ### 2026-09-30 — Phase 4 foundation: the Capacitor shell
