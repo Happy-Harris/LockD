@@ -11,8 +11,7 @@ export type AutopsyCode =
   | "falling_volume"
   | "rising_rpe"
   | "inconsistent_frequency"
-  | "high_workload"
-  | "short_rests";
+  | "high_workload";
 
 /**
  * Lowers the first letter so a title reads inside a sentence, and leaves the rest alone. Lowercasing the

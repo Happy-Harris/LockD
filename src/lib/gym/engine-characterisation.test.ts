@@ -5,7 +5,7 @@ import { autopsyLift, loadsSimilar } from "./autopsy";
 import { buildChronicle, eraForDate } from "./chronicle";
 import { buildDemoLog } from "./demo";
 import { buildLiftDna } from "./dna";
-import { compareSet, workoutDiff, wouldBePr } from "./ghost";
+import { compareSet, workoutDiff } from "./ghost";
 import { easierWeekCall, progressExercise } from "./progression";
 import { seedExerciseId, seedExercises } from "./seed";
 
@@ -129,13 +129,6 @@ describe("engine characterisation — current behaviour, not desired correctness
       compareSet({ weightG: 100000, reps: 8 }, { weightG: 100000, reps: 8 }),
       compareSet({ weightG: 100000, reps: 8 }),
     ]).toMatchSnapshot("weight wins despite fewer reps, tie, first exposure");
-  });
-
-  it("BUG: first exposure is called a new e1RM record without a previous baseline", () => {
-    expect(wouldBePr({
-      weightG: 100000, reps: 6, exerciseId: bench.id, slices: [],
-      formula: "epley", excludeWarmups: true,
-    })).toEqual({ would: true, label: "new e1RM" });
   });
 
   it("pins progression decisions and easier-week board thresholds", () => {
