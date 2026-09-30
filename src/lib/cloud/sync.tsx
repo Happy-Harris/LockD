@@ -44,7 +44,7 @@ export function CloudSync({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isPending || !hydrated) return;
-    if (!user || user.isDevFallback) {
+    if (!user) {
       ready.current = false;
       setStatus("guest");
       setProfile(null);
@@ -100,10 +100,10 @@ export function CloudSync({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [user?.id, user?.isDevFallback, isPending, hydrated, user?.displayName, user?.primaryEmail]);
+  }, [user?.id, isPending, hydrated, user?.displayName, user?.primaryEmail]);
 
   useEffect(() => {
-    if (!user || user.isDevFallback || !hydrated) return;
+    if (!user || !hydrated) return;
     let timer: number | undefined;
     const unsub = useGym.subscribe(() => {
       if (applying.current || !ready.current) return;

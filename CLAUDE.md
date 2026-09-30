@@ -44,10 +44,10 @@ understand their own record?*
 | `docs/STATUS.md` | The map: label scheme, Step and Opp status, decisions, terms |
 | `docs/HANDOVER.md` | Handover log: what shipped, most recent first |
 
-Some app-builder scaffolding is still in the tree (the Grok auth broker under `src/lib/auth/*`,
-`scripts/with-app-env.mjs`). It is scheduled for removal (plan Step 12).
-The share-card tags for every page now come from the routes (`src/lib/og/tags.ts`); the middleware that used to inject
-them, and the third-party script it added, are gone. Don't build on the rest.
+The app-builder scaffolding is gone (plan Step 12). Sign-in is Lock'd's own Better Auth with Google, Apple and an
+email link, each switched on by its environment variables (`src/lib/auth/config.server.ts`, `.env.example`); with none
+set, the app is a guest app and hides every sign-in prompt. The share-card tags for every page come from the routes
+(`src/lib/og/tags.ts`).
 
 ## Commands
 

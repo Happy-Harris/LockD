@@ -3,7 +3,7 @@ import { render, screen, cleanup } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ pull: vi.fn(), push: vi.fn(), subscribe: vi.fn() }));
 vi.mock("@/lib/auth/use-current-user", () => ({
-  useCurrentUserState: () => ({ user: { id: "dev-user", isDevFallback: true }, isPending: false }),
+  useCurrentUserState: () => ({ user: null, isPending: false }),
 }));
 vi.mock("@/lib/gym/store", () => ({ useGym: Object.assign(() => true, { subscribe: mocks.subscribe }) }));
 vi.mock("./api", () => ({ pullVault: mocks.pull, pushVault: mocks.push }));

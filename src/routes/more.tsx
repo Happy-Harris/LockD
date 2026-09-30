@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Page } from "@/components/app/shell";
 import { Card } from "@/components/ui/card";
-import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { useCanSignIn, useCurrentUserState } from "@/lib/auth/use-current-user";
 import { useCloud } from "@/lib/cloud/sync";
 
 export const Route = createFileRoute("/more")({ component: MorePage });
@@ -53,6 +53,7 @@ const ITEMS = [
 
 function MorePage() {
   const { user, isPending } = useCurrentUserState();
+  const canSignIn = useCanSignIn();
   const { status, profile } = useCloud();
   return (
     <Page>
@@ -60,7 +61,7 @@ function MorePage() {
       <p className="mt-1 text-sm text-muted">
         Everything that is not the daily loop. Press ⌘K to jump from anywhere.
       </p>
-      {!isPending ? (
+      {!isPending && !user && !canSignIn ? null : !isPending ? (
         <Link to={user ? "/locker" : "/login"} className="mt-4 block">
           <Card>
             <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">

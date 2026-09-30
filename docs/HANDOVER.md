@@ -9,6 +9,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Step 12d: sign-in through Google, Apple and an email link; the Grok auth broker is gone
+
+- **Owner's choice (2026-09-30):** "Google, Apple, email, and other options I might be missing". Email is a one-tap link (Better Auth's magic link) sent through Resend's HTTP API, with no SDK. Passkeys were suggested as the one worth adding later; not built.
+- **How it is switched on:** `src/lib/auth/config.server.ts` reads the environment. Each method is on only when all its variables are set, and sign-in as a whole needs `BETTER_AUTH_SECRET` plus one method. The root route's `beforeLoad` asks the server which methods are on (with the session) and keeps the last answer for offline moves. `useSignInMethods()` / `useCanSignIn()` read it. With sign-in off every prompt is hidden (the More card, the sidebar card, "Sign in to share a link", "Sign in to install", the Lab note) and `/login` says sign-in isn't set up.
+- **Removed:** the broker `genericOAuth` wiring, the live-preview popup (`popup.server.ts`, the Vite `/auth/popup` plugin) and bearer token, the gate identity and gate sessions, `preview.ts`, `providers.ts`, `email-password.ts`, `sign-in-gate.ts`, `env.server.ts`, and `scripts/with-app-env.mjs`, `app-env-plugin.mjs`, `check-auth-invariant.mjs`, `sign-out-plan.mjs` with their tests. `dev`, `build` and `preview` run Vite directly. `VITE_AUTH_ENABLED` no longer exists.
+- **Behaviour change:** the client no longer has a "dev user". With sign-in off, a visitor is a guest (`user` is `null`); before, the old off-switch showed a signed-in "Dev User". The server's dev-user fallback (no database, sign-in off) is unchanged, and the cloud and the Lab still refuse it by id.
+- **Cookies renamed** from `__Host-grok-auth.*` to `__Host-lockd.*`, so anyone signed in through the old broker signs in again.
+- **Tests:** `src/lib/auth/config.test.ts` (5), `e2e/sign-in.spec.ts` (the configured methods and nothing else; the guest prompt). `playwright.config.ts` starts the dev server with placeholder Google and email values (Apple left off) so the e2e suite sees the signed-out prompts of a real deployment. `test:legacy` is now only `scripts/migration-plan.test.mjs`; its template-era check that the auth schema sits outside `migrations/` is deleted, because Lock'd applies it.
+- **Not checked:** a real Google, Apple or email round trip (no credentials here) and a database round trip. Apple's client secret is a JWT that expires after at most six months; rotating it is the owner's job until someone automates it.
+- **Next:** the rest of plan § 5 (cloud and the Lab provider behind config), then Opp 1.
+
 ### 2026-09-30 — Step 7+: import keeps equipment variants apart (found on a real export)
 
 - **Found by:** running the owner's own Strong export (597 sessions, 13,319 sets, Dec 2019 to Aug 2025) through `importStrongCsv` and the engines. The file is private: it is not in the repo, and no row of it is in a fixture.

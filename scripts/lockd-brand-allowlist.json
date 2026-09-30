@@ -1,7 +1,4 @@
 {
   "note": "Findings here are reported but never fail the check. Every entry needs a reason and the PR that removes it.",
-  "entries": [
-    { "file": "src/lib/auth/gate-identity.server.ts", "contains": "Grok user", "reason": "Grok auth broker fallback name; broker code removed in PR 12" },
-    { "file": "src/lib/auth/popup.server.ts", "contains": "<!doctype html>", "reason": "Grok auth broker popup page; broker code removed in PR 12" }
-  ]
+  "entries": []
 }
