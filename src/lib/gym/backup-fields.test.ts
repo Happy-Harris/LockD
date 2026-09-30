@@ -17,6 +17,8 @@ describe("backup round trip and the widened domain types (plan PR 4f)", () => {
     expect(state.settings.restTimerVibrate).toBeUndefined();
     expect(state.settings.warmupRestSeconds).toBeUndefined();
     expect(state.settings.personalMuscleTargets).toBeUndefined();
+    // Opp 8: no rule stored means the default comeback rule.
+    expect(state.settings.comebackRule).toBeUndefined();
   });
 
   it("the new optional fields survive import and export", () => {
@@ -36,6 +38,7 @@ describe("backup round trip and the widened domain types (plan PR 4f)", () => {
         restTimerNotification: false,
         warmupRestSeconds: 30,
         personalMuscleTargets: { chest: { min: 10, max: 16 } },
+        comebackRule: { shortPct: 95, midPct: 85, longPct: 60 },
       },
     };
     useGym.getState().importBackup(backup, "replace");

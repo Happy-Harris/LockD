@@ -11,6 +11,7 @@ import {
 } from "./analytics";
 import { autopsyBoard } from "./autopsy";
 import { buildChronicle } from "./chronicle";
+import { currentComeback } from "./comeback";
 import { buildLiftDna } from "./dna";
 import { buildIntelligence } from "./intelligence";
 import { lensDef, verdictFraming } from "./lenses";
@@ -149,8 +150,10 @@ export function useGymDerived() {
       slices,
       settings.oneRepMaxFormula,
       settings.excludeWarmupsFromAnalytics,
+      { today: localDateOf(now), rule: settings.comebackRule },
     );
     const easier = easierWeekCall(board);
+    const comeback = currentComeback(slices, localDateOf(now), settings.oneRepMaxFormula);
     const chronicle = buildChronicle(
       slices,
       settings.oneRepMaxFormula,
@@ -231,6 +234,7 @@ export function useGymDerived() {
       lens,
       board,
       easier,
+      comeback,
       chronicle,
       moments,
       intelligence,

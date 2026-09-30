@@ -8,10 +8,23 @@ import {
   type LoadSnap,
 } from "@/domain/progression";
 import { shiftLocalDate } from "@/domain/analytics/trainingWeeks";
-import type { OneRepMaxFormula, TrackingType } from "@/domain/types";
+import type { ComebackRule, OneRepMaxFormula, TrackingType } from "@/domain/types";
 import type { SessionSlice } from "./analytics";
+import {
+  comebackBand,
+  comebackPercent,
+  daysBetween,
+  DEFAULT_COMEBACK_RULE,
+  reEntryLoadG,
+} from "./comeback";
 
-export type ProgressAction = "add_load" | "add_reps" | "hold" | "deload" | "easier_week";
+export type ProgressAction =
+  | "add_load"
+  | "add_reps"
+  | "hold"
+  | "deload"
+  | "easier_week"
+  | "re_entry";
 
 export interface Exposure {
   date: string;
@@ -180,6 +193,12 @@ export function progressExercise(opts: {
   excludeWarmups: boolean;
   /** Rounds a load to one that can be built (barbell work with the lifter's bar and plates). */
   snap?: LoadSnap;
+  /**
+   * Today's date. With it, a lift last trained a layoff ago restarts by the comeback rule (Opp 8).
+   * Without it (the characterisation fixtures) the engine reads the log alone, as before.
+   */
+  today?: string;
+  comebackRule?: ComebackRule;
 }): ProgressionCall {
   const exposures = collectExposures(
     opts.exerciseId,
@@ -228,6 +247,22 @@ export function progressExercise(opts: {
 
   const lastLoad = last.bestWeightG;
   const lastReps = last.working.reduce((max, set) => Math.max(max, set.reps ?? 0), 0);
+
+  // Opp 8: a layoff since this lift's last session. Restart from that session's top working load by
+  // the stated rule, reps at the bottom of the range. A rule, not a prediction, and it says so.
+  const away = opts.today ? daysBetween(last.date, opts.today) : 0;
+  const percent = comebackPercent(away, opts.comebackRule ?? DEFAULT_COMEBACK_RULE);
+  if (percent !== undefined) {
+    const top = last.working.find((set) => set.weightG === lastLoad) ?? last.working[0];
+    return {
+      ...base,
+      action: "re_entry",
+      suggestedWeightG:
+        bodyweight || !lastLoad ? undefined : reEntryLoadG(lastLoad, percent, increment, opts.snap),
+      suggestedReps: opts.targetRepMin ?? top?.reps,
+      why: `${away} days since your last session of this lift, on ${last.date}. Comeback rule, not a prediction: ${percent}% of that session's top working load after ${comebackBand(away)}, rounded down to a load you can build. Change the rule in Settings.`,
+    };
+  }
   const recentTwo = last8.slice(-2);
 
   if (missStreak >= 3 || (stallSessions >= 4 && hitRate < 0.45 && last8.length >= 4)) {
@@ -328,6 +363,7 @@ export function progressBoard(
   slices: SessionSlice[],
   formula: OneRepMaxFormula,
   excludeWarmups: boolean,
+  comeback?: { today: string; rule?: ComebackRule },
 ): ProgressionCall[] {
   return targets.map((target) =>
     progressExercise({
@@ -335,6 +371,8 @@ export function progressBoard(
       slices,
       formula,
       excludeWarmups,
+      today: comeback?.today,
+      comebackRule: comeback?.rule,
     }),
   );
 }
@@ -364,5 +402,6 @@ export function actionLabel(action: ProgressAction): string {
   if (action === "add_reps") return "Add reps";
   if (action === "deload") return "Drop load";
   if (action === "easier_week") return "Easier week";
+  if (action === "re_entry") return "Comeback";
   return "Hold";
 }

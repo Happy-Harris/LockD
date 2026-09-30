@@ -349,6 +349,16 @@ export interface ClipMeta {
   durationMs?: number;
 }
 
+/** Opp 8: the share of the last working load a lift restarts at after a layoff, by the break's length. Whole percents. */
+export interface ComebackRule {
+  /** 14 to 27 days away. */
+  shortPct: number;
+  /** 28 to 55 days away. */
+  midPct: number;
+  /** 56 or more days away. */
+  longPct: number;
+}
+
 export interface AppSettings {
   unitSystem: UnitSystem;
   oneRepMaxFormula: OneRepMaxFormula;
@@ -368,6 +378,8 @@ export interface AppSettings {
   restTimerVibrate?: boolean;
   /** Missing means off. */
   restTimerNotification?: boolean;
+  /** Missing means the default rule (90, 80, 70). */
+  comebackRule?: ComebackRule;
   goalLiftIds: UUID[];
   defaultBarProfileId: UUID;
   defaultPlateInventoryId: UUID;

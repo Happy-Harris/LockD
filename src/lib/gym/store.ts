@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, type PersistStorage } from "zustand/middleware";
 import { uuid } from "@/domain/ids";
-import { nowParts } from "@/domain/time";
+import { localDateOf, nowParts } from "@/domain/time";
 import type {
   AppSettings,
   BarProfile,
@@ -574,6 +574,8 @@ export const useGym = create<GymState>()(
             formula: state.settings.oneRepMaxFormula,
             excludeWarmups: state.settings.excludeWarmupsFromAnalytics,
             snap: barbellSnap(exercise, state.bars, state.plates, state.settings),
+            today: localDateOf(),
+            comebackRule: state.settings.comebackRule,
           });
           const count = Math.max(row.targetSets, 1);
           buildSlots(count, !!row.includeWarmup, !!exercise.unilateral).forEach((slot, order) => {
@@ -655,6 +657,8 @@ export const useGym = create<GymState>()(
             formula: state.settings.oneRepMaxFormula,
             excludeWarmups: state.settings.excludeWarmupsFromAnalytics,
             snap: barbellSnap(exercise, state.bars, state.plates, state.settings),
+            today: localDateOf(),
+            comebackRule: state.settings.comebackRule,
           });
           const applied = applyProgramLoad({
             rule: row.rule,
