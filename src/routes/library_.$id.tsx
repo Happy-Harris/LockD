@@ -14,6 +14,7 @@ import { e1rmSeries } from "@/lib/gym/analytics";
 import { autopsyLift } from "@/lib/gym/autopsy";
 import { buildLiftDna } from "@/lib/gym/dna";
 import { progressExercise, actionLabel } from "@/lib/gym/progression";
+import { CitedSessions } from "@/components/app/cited-sessions";
 import { rmTable } from "@/lib/gym/queue";
 import { useGymDerived, useSlices } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
@@ -134,6 +135,7 @@ function ExerciseDetailPage() {
         </p>
         <p className="mt-1 font-display text-2xl font-semibold">{actionLabel(call.action)}</p>
         <p className="mt-2 text-sm leading-relaxed text-muted">{call.why}</p>
+        <CitedSessions cites={call.cites} lift={call.exerciseName} />
         <p className="mt-2 font-mono text-xs text-subtle">
           Hit rate {Math.round(call.hitRate * 100)}% · miss streak {call.missStreak}
           {call.typicalExposuresToProgress

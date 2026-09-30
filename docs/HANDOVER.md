@@ -9,6 +9,16 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 3: explained progression
+
+- **Owner's ask (2026-09-30):** "move on to the next item on our plan … implement accordingly". The plan is `PLAN-ADDENDUM.md` § 4 row 3, Phase 3 item 5 and A-6: the engine half (windowed stall, grid and plate-aware loads) shipped in Step 8d-2; this item is the case fixtures (missed sessions, failed reps, swaps, deload) and the UI to open the cited sessions.
+- **Cited sessions:** `ProgressionCall` gains `cites: Array<{ workoutId, date }>`, oldest first: the sessions the call's rule read. A deload cites its misses, an easier week its miss streak or the sessions in the 28-day stall window, an add-load the sessions at that load, a comeback the last session before the break, anything else the last session; no session on file, nothing. The `why` wording is unchanged.
+- **Where it shows:** under the `why` on Today's Next targets, the Lab's engine calls and the lift page ("Read from" and each date, 44 px tap targets), each date a link to that session in History (`CitedSessions`, `src/components/app/cited-sessions.tsx`). The Lab brief adds the cited dates to each call, so Lab answers can cite them. Not on the workout screen, so logging stays one screen.
+- **Swaps:** each lift already keeps its own history (a swap rewrites `exerciseId`). A program lift swapped in (`substitutionOf`) now says so: "in place of Bench Press" on the program page, and "Swapped in for Bench Press. The target reads Dumbbell Bench Press's own sessions." above its target in a program workout (`programSwap`, `programSwapForWorkout` in `programs.ts`). No stored data changed.
+- **Missed sessions:** no new rule. A gap under 14 days is read as logged (not a miss, not a comeback); 14 days or more is the Opp 8 comeback rule. Pinned by fixtures.
+- **Tests:** `progression-cases.test.ts` (cites per branch with ids, stall window cites, skipped week vs layoff, one/two/three failed sessions, one short set still a hit, failure sets count, deload on the grid and the call after it, a swapped-in lift never inherits the original's misses, program swap lookup), `engine-characterisation` snapshot (only the new `cites` field added), `e2e/explained-progression.spec.ts` (a Today target's date opens that session).
+- **Screens:** Today's Next targets at 390 and 1024 px. Only the "Read from" line is new against the baseline.
+
 ### 2026-09-30 — Opp 9: shareable receipts
 
 - **Owner's ask (2026-09-30):** "Start Opp 9 — Shareable receipts", from `STATUS.md` § 4 and `PLAN-ADDENDUM.md` (§ 4 row 9, Phase 3 item 7, § 10). Private by default and share unpublish already shipped in the privacy PR (29 Sep); the gap left was the read-only coach/partner link ("unguessable, revocable, scoped to history, no locker") and the share card. The owner chose the share card on a decision card: the lifetime receipt from Opp 2 as its own share (not a server-drawn preview image, not "nothing new").

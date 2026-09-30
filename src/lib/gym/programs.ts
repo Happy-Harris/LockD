@@ -486,3 +486,35 @@ export function unresolvedProgramRows(
     .map((row) => ({ row, name: row.unresolvedName ?? row.exerciseId }));
 }
 
+
+/**
+ * Opp 3: a program lift the lifter swapped in, and the lift it replaced. The next target for a swapped-in lift reads
+ * that lift's own sessions (each lift keeps its own history), so the screen says which lift it stands in for.
+ * Undefined when the row is not a swap.
+ */
+export function programSwap(
+  row: ProgramExercise,
+  library: readonly Exercise[],
+): { name: string; originalName: string } | undefined {
+  if (!row.substitutionOf || row.substitutionOf === row.exerciseId) return undefined;
+  const current = resolveProgramExercise(row, library);
+  const original = library.find((exercise) => exercise.id === row.substitutionOf);
+  if (!current || !original) return undefined;
+  return { name: current.name, originalName: original.name };
+}
+
+/** The swap behind a lift in a program workout, found through the session the workout was started from. */
+export function programSwapForWorkout(
+  programId: string | undefined,
+  exerciseId: string,
+  sessions: readonly ProgramSession[],
+  rows: readonly ProgramExercise[],
+  library: readonly Exercise[],
+): { name: string; originalName: string } | undefined {
+  if (!programId) return undefined;
+  const sessionIds = new Set(sessions.filter((row) => row.programId === programId).map((row) => row.id));
+  const row = rows.find(
+    (item) => sessionIds.has(item.programSessionId) && item.exerciseId === exerciseId && item.substitutionOf,
+  );
+  return row ? programSwap(row, library) : undefined;
+}

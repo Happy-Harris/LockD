@@ -11,7 +11,7 @@ import { useGymDerived } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
 import { PublishButton } from "@/components/app/publish-button";
 import { programShare } from "@/lib/cloud/shares";
-import { resolveProgramExercise, unresolvedProgramRows } from "@/lib/gym/programs";
+import { programSwap, resolveProgramExercise, unresolvedProgramRows } from "@/lib/gym/programs";
 
 export const Route = createFileRoute("/programs_/$id")({ component: ProgramDetailPage });
 
@@ -171,7 +171,11 @@ function ProgramDetailPage() {
                       <span className="ml-2 text-xs text-subtle">
                         {lift.targetSets} × {lift.targetRepMin ?? "—"}–{lift.targetRepMax ?? "—"} · {lift.rule.kind.replace("_", " ")}
                       </span>
-                      {lift.substitutionOf ? (
+                      {programSwap(lift, exercises) ? (
+                        <span className="ml-2 text-xs text-subtle" data-testid="program-swap">
+                          in place of {programSwap(lift, exercises)?.originalName}
+                        </span>
+                      ) : lift.substitutionOf ? (
                         <Badge tone="muted" className="ml-2">
                           sub
                         </Badge>
