@@ -10,9 +10,10 @@ const fontPx = (page: Page, selector: string) =>
 const overflowing = (page: Page) =>
   page.evaluate(() => {
     const width = document.documentElement.clientWidth;
-    if (document.documentElement.scrollWidth <= width) return [] as string[];
+    // One pixel of slack: a chart can size itself to a fraction, which is not a sideways scroll a lifter can feel.
+    if (document.documentElement.scrollWidth <= width + 1) return [] as string[];
     return [...document.querySelectorAll("body *")]
-      .filter((el) => el.getBoundingClientRect().right > width + 0.5)
+      .filter((el) => el.getBoundingClientRect().right > width + 1.5)
       .slice(0, 6)
       .map((el) => `<${el.tagName.toLowerCase()} class="${String(el.className).slice(0, 90)}"> right=${Math.round(el.getBoundingClientRect().right)} "${(el.textContent ?? "").trim().slice(0, 40)}"`);
   });

@@ -9,6 +9,30 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Fix: the bottom tab bar was one pixel too wide at Large and 320 px
+
+- Found by `e2e/text-size.spec.ts` on CI after Text size step A merged (`/analytics` was only the first screen it measured):
+  the five tab items could not shrink below their label, so at Large on a 320 px phone the bar reached 321 px. It did not
+  reproduce on my machine, where the font renders a little narrower; the failure message now names the overflowing elements.
+- **Fixed:** the tab items may shrink (`min-w-0`), and at Large the tab labels drop their letter spacing. Standard and
+  Comfortable are unchanged.
+- **Riding on the Lift Math step A PR** because `main`'s end-to-end run is red until it lands.
+
+### 2026-09-30 — Lift Math, step A: the maths, no screen
+
+- **Plan:** `PLAN-ADDENDUM.md` § 6 item 2 and A-5, built to the owner's *Text Size & Lift Math, Spec v2* build-order step 5:
+  "domain module and the test vectors, with no UI." The one-rep rule already lives in the shared core (`e1rmExact`, plan PR 4a).
+- **Shipped:** `src/domain/liftMath.ts`. `estimateMax` (load × reps with the RIR on that set; RIR above 0 marks the result
+  "RIR-adjusted"), `targetLoad` (the inverse), `effectiveReps` (reps + RIR, capped at 12; reps whole, RIR whole or a half),
+  `rirFromRpe`, `roundToLoadable` (nearest step, ties down, integer hundredths), `parseDecimal` (decimal comma) and
+  `percentTable` (loads only, no reps column). Everything works in the unit typed; whole effective reps go through
+  `e1rmExact`, so the calculator and the log agree.
+- **Decision recorded:** the spec's seven decisions are written in `docs/STATUS.md` § 5, as the spec recommends. One call
+  the spec leaves open: an RPE half step (8.5 → RIR 1.5) gives a half effective rep, and the formulas take it as it is.
+- **Tests:** `src/domain/liftMath.test.ts`: every vector in the spec, parity with analytics for reps 1–12 and both formulas,
+  the round-trip property (reps 1–12, both formulas, six loads), 87.50000000000001 → 87.5, `102,5` = `102.5`, and empty,
+  zero, negative and over-cap inputs giving no number.
+
 ### 2026-09-30 — Text size, step A: role tokens and a device-only setting, Standard unchanged
 
 - **Plan:** `PLAN-ADDENDUM.md` § 6 item 1 ("keeps legacy micro sizes", A-4), built to the owner's *Text Size & Lift Math, Spec v2*

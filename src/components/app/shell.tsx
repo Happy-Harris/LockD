@@ -105,7 +105,7 @@ export function AppShell({ children, hideNav }: { children: React.ReactNode; hid
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               const Icon = item.icon;
               return (
-                <li key={item.to} className="flex-1">
+                <li key={item.to} className="min-w-0 flex-1">
                   <Link
                     to={item.to}
                     className={cn(
@@ -121,7 +121,7 @@ export function AppShell({ children, hideNav }: { children: React.ReactNode; hid
                 </li>
               );
             })}
-            <li className="flex-1">
+            <li className="min-w-0 flex-1">
               <Link
                 to="/more"
                 className={cn(
