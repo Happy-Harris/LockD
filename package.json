@@ -56,7 +56,9 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@capacitor/android": "^7.6.9",
     "@capacitor/cli": "^7.6.9",
+    "@capacitor/ios": "^7.6.9",
     "@eslint/js": "^9.20.0",
     "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^7.0.1",

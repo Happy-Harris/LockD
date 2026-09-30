@@ -22,26 +22,23 @@ project is committed and nothing here has run on a device. The three Phase 4 fea
 
 ## What was not checked, and why
 
-- No device or simulator build: this environment has no Xcode, Android SDK or signing. `npx cap add ios` and
-  `npx cap add android` were not run, so no `ios/` or `android/` folder is committed. Generating them is the owner's
-  first step on a Mac (below).
+- No device or simulator build: this environment has no Xcode, Android SDK or signing. `ios/` and `android/` are
+  generated and committed but have never been built.
 - Sign-in, sync, public shares and the Lab call server functions at relative URLs, which do not exist inside a static
-  bundle. Whether the first native build leaves them out is open question 2; nothing hides them yet.
+  bundle. The owner chose guest and offline first (answer 2); nothing hides them yet.
 - The service worker and the install manifest were not exercised inside a native web view.
 
 ## Steps for the owner
 
-1. On a Mac with Xcode: `npm ci`, `npm run build:native`, `npx cap add ios`, `npx cap sync`, `npx cap open ios`.
-2. Choose the bundle identifier (`appId`) and team in Xcode. Changing `appId` before the first signed build costs nothing;
-   after a store listing it is a migration.
-3. Android is the same with `npx cap add android` and Android Studio.
-4. Store setup, signing and an Apple Developer account are the owner's; none is in the repo.
+1. Native builds run in cloud CI (GitHub Actions macOS runner or Codemagic): `npm ci`, `npm run build:native`, `npx cap sync`, then the platform build.
+2. Store setup, signing and an Apple Developer account are the owner's; none is in the repo.
 
-## Open questions for the owner
+## Owner's answers
 
-These are not decided. The values in the repo (`appId` `app.lockd.app`, no `ios/` or `android/` folder) are placeholders
-so the build runs; none is a decision.
+Recorded 2026-09-30.
 
-1. The bundle identifier (`appId`). Recommended: choose it when the Apple Developer account exists; until then the placeholder stays.
-2. Cloud features (sign-in, sync, Lab, shares) in the first native build. Recommended: guest and offline first.
-3. Commit the generated `ios/` and `android/` folders, or generate them on each machine. Recommended: commit them once a device build works.
+1. **Bundle identifier: `com.happyharris.lockd`, the same on iOS and Android.** No Apple account is needed to pick it. Users never see it. It is fixed once the app ships, so a later rebrand does not matter.
+2. **Cloud features (sign-in, sync, Lab, shares) in the first native build: guest and offline first.** Nothing is hidden yet; the static bundle has no server functions to call.
+3. **`ios/` and `android/` are committed now.** The owner works from a phone, so every native build runs in cloud CI (a GitHub Actions macOS runner or Codemagic), and CI needs the folders in the repo. The lock-screen timer's entitlements and Info.plist edits also live there.
+
+`ios/` and `android/` were generated with `npx cap add`. CocoaPods and Xcode are not available here, so `pod install` has not run and the iOS project has not been opened or built; the Android project has not been built either. Built web assets and Pods are ignored by the platform folders' own `.gitignore`.
