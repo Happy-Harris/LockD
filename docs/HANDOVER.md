@@ -9,6 +9,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 6: the native lock-screen rest timer, and the native build checks
+
+- **Plan:** `PLAN-ADDENDUM.md` § 4 row 6; the owner's answers are in `docs/design/lock-screen-rest-timer.md`.
+- **Shipped:** the native half. Android: a `LockScreenTimer` plugin (Java) with an ongoing notification on the system chronometer and minus, plus and stop buttons;
+  a pure `RestTimerFormat` with unit tests. iOS: a Live Activity through ActivityKit, a Widget Extension target `RestTimerWidgetExtension` (added to the Xcode project by
+  `scripts/native/add-rest-timer-widget.rb`), the plugin and a `MainViewController` that registers it. The payload gained `endsAtMs`.
+- **CI:** `.github/workflows/native-build.yml`: an Android debug build with unit tests, and an unsigned iOS simulator build. Compile checks only.
+- **Compiled here:** Android (`assembleDebug`, 3 unit tests). **Not compiled here:** iOS (no Xcode); its first compile is the CI job.
+- **Not verified on a device:** everything. The Android locked-screen lateness test is **still outstanding**.
+- **Needs the owner:** an Apple Developer account and team (signing, and an App ID for the widget extension), a Play Console account and signing key for release.
+
 ### 2026-09-30 — Health settings copy says what syncs
 
 - **Shipped:** owner's decision recorded: Health-imported bodyweight stays an ordinary bodyweight row and syncs; sleep and HRV stay on the device

@@ -41,6 +41,7 @@ describe("lock-screen payload", () => {
   it("carries the store's timestamps, and counts whole seconds up", () => {
     expect(payloadFor(timer(), START + 500)).toMatchObject({
       endsAt: "2026-09-30T12:02:00.000Z",
+      endsAtMs: Date.parse("2026-09-30T12:02:00.000Z"),
       remainingSeconds: 120,
       isRunning: true,
       label: "Bench Press",

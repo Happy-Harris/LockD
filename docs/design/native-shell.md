@@ -1,13 +1,26 @@
 # Native shell: Capacitor (Phase 4 foundation)
 
-Status: **foundation built** (2026-09-30): the config, a static single-page build and the platform check. No iOS or Android
-project is committed and nothing here has run on a device. The three Phase 4 features depend on it: the lock-screen timer
+Status: **foundation built** (2026-09-30): the config, a static single-page build, the platform check and the committed `ios/` and
+`android/` projects. Nothing here has run on a device. The three Phase 4 features depend on it: the lock-screen timer
 (`lock-screen-rest-timer.md`), health context (`health-context.md`) and the watch companion (`watch-companion.md`).
+
+## Native build status
+
+Three separate things are kept apart: code written, a compile check, and a device check. A green CI job is a compile check only.
+
+| Item | Code written | Compile check | Device check | Needs the owner |
+|---|---|---|---|---|
+| Lock-screen rest timer, Android | yes | built and unit tested here; also in CI job `android` | not run; the lateness test is outstanding | nothing for a debug build; a Play Console account and a signing key for release |
+| Lock-screen rest timer, iOS (Live Activity) | yes | CI job `ios` only (no Xcode here) | not run | an Apple Developer account and team for signing; the widget extension needs its own App ID (`com.happyharris.lockd.RestTimerWidget`) |
+
+CI: `.github/workflows/native-build.yml` builds the debug APK and runs the Android unit tests on Ubuntu, and builds the iOS app and widget extension
+unsigned for the simulator on macOS. It runs on changes under `ios/`, `android/`, `src/lib/native/`, the Capacitor config and the native scripts.
+It signs nothing and proves nothing about a real device.
 
 ## What ships
 
-- `@capacitor/core` (runtime) and `@capacitor/cli` (dev). No other Capacitor plugin yet.
-- `capacitor.config.ts`: `appName` "Lock'd", `webDir` `dist/client`, and a placeholder `appId` (`app.lockd.app`).
+- `@capacitor/core` (runtime), `@capacitor/cli` (dev), and the official `@capacitor/local-notifications` plugin.
+- `capacitor.config.ts`: `appName` "Lock'd", `webDir` `dist/client`, and `appId` `com.happyharris.lockd`.
 - `npm run build:native` (`scripts/build-native.mjs`): builds the same React app as a static single-page bundle with
   TanStack Start's SPA mode (`vite build --mode native`, see `vite.config.ts`) and copies the shell page to `index.html`.
   The normal web build (`npm run build`) is unchanged; nothing in the default mode reads the new option.

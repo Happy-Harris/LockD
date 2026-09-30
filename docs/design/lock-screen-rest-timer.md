@@ -1,7 +1,7 @@
 # Lock-screen rest timer (Opp 6, native half)
 
-Status: **TypeScript side built with placeholder values** (2026-09-30), awaiting the owner's answers below; the native side is not
-written and nothing has run on a device.
+Status: **TypeScript and native code written** (2026-09-30). The Android code is compiled and unit tested; the iOS code is
+compiled only by the macOS job in CI. Nothing has run on a device, and the Android lateness test below is **outstanding**.
 
 ## Goal
 
@@ -101,7 +101,8 @@ Recorded 2026-09-30. The owner accepted the recommended answer on all seven.
 | 7 | Home-screen widget | Later, not in this Opp |
 | n/a | Stored native activity id | None stored; `show` must be safe to call again for a timer that is already showing |
 
-The Android lateness test has not been run: there is no device here and native builds run in cloud CI.
+**The Android lateness test has not been run and stays outstanding** until someone runs it on a real Android phone with the screen
+locked (see "Verification" below). No result is recorded here until it has actually run.
 
 Built:
 
@@ -114,16 +115,35 @@ Built:
   store stays the only owner of the timer and writes the new timestamps.
 - **End-of-rest alert** uses the official `@capacitor/local-notifications` plugin (`schedule` with a fixed id, so a new
   timer replaces the old alert). It asks for notification permission the first time it needs it.
-- **The `LockScreenTimer` plugin** is registered with a no-op web implementation. Its native half (an iOS Live Activity
-  through ActivityKit, an Android ongoing notification with a chronometer) is **not written**. Its contract:
-  `show(timer)`, `update(timer)`, `clear()` and an `action` event (`plus`, `minus`, `stop`); the payload is
-  `LockScreenTimerPayload` (`startedAt`, `endsAt`, `durationSeconds`, `isRunning`, `remainingSeconds`, `label`). Until it
-  exists, native calls fail quietly and only the scheduled end alert works.
-- **Not verified:** everything native. Tests use a fake bridge (`src/lib/native/lock-screen-timer.test.ts`).
+- **The `LockScreenTimer` plugin.** Contract: `show(timer)`, `update(timer)`, `clear()` and an `action` event (`plus`, `minus`,
+  `stop`); the payload is `LockScreenTimerPayload` (`startedAt`, `endsAt`, `endsAtMs`, `durationSeconds`, `isRunning`,
+  `remainingSeconds`, `label`, `workoutId`). `endsAtMs` was added so native code needs no ISO parser.
+  - **Android** (`android/app/src/main/java/com/happyharris/lockd/`, Java, not Kotlin, because the project has no Kotlin
+    toolchain and the plugin is small): `LockScreenTimerPlugin` posts one ongoing notification on a low-importance "Rest timer"
+    channel. A running timer uses the system chronometer counting down to `endsAtMs`; a paused one shows its remainder and a Stop
+    button; a finished one says "Rest done" and times out after 60 s. Buttons are broadcast intents handled by
+    `LockScreenActionReceiver`, which forwards them to the web layer. `RestTimerFormat` holds the wording and is unit tested
+    (`RestTimerFormatTest`). `POST_NOTIFICATIONS` is declared; without the grant the tile is skipped and the scheduled alert, which asks
+    for it, still works. The plugin is registered in `MainActivity`.
+  - **iOS** (`ios/App/App/Native/`, `ios/App/RestTimerWidget/`): `LockScreenTimerPlugin` starts, updates and ends an ActivityKit Live
+    Activity (iOS 16.2 and later; older systems get the scheduled alert only). A Widget Extension target `RestTimerWidgetExtension`
+    (added by `scripts/native/add-rest-timer-widget.rb`) draws it: a `Text(timerInterval:)` clock bound to `endsAt`, so the system
+    counts down with the app suspended, and minus, plus and stop buttons (iOS 17 and later, as `LiveActivityIntent`s that post to the
+    plugin). `MainViewController` registers the plugin; the storyboard and `NSSupportsLiveActivities` are updated.
+  - **Known limits, by design:** a Live Activity does not redraw itself at zero while the app is suspended, so it may sit at 0:00
+    until the app wakes; the scheduled notification is what alerts. A lock-screen button tapped while the web layer is not running
+    has nobody to tell and is dropped.
+- **Verification.**
+  - Compiled here: the Android app builds (`assembleDebug`) and its 3 unit tests pass. The TypeScript is covered by `lock-screen-timer.test.ts`.
+  - Compiled in CI only: the iOS app and the widget extension (`.github/workflows/native-build.yml`, job `ios`, unsigned, simulator SDK). Not
+    compiled here: there is no Xcode.
+  - Not verified on a device: any of it. To check: the tile appears and counts down with the screen locked; the buttons change the
+    timer; the end alert arrives; the Live Activity appears on a real iPhone.
+  - **Android lateness test (outstanding):** on a real Android phone with the screen locked, finish a set, let the alert fire, and
+    measure how late it is against `endsAt`. If it is more than about 5 s late, come back to the owner with a foreground-service option.
 
 ## Out of scope
 
-- The native Live Activity and ongoing-notification code (native builds run in cloud CI; see `native-shell.md`).
 - Changes to rest precedence, warm-up rest or learned rest (Step 9, decision D7 and A-8).
 - The watch (see `watch-companion.md`).
 - Background audio or music control.
