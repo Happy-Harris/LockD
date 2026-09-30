@@ -1,6 +1,6 @@
 # Watch companion (Opp 7)
 
-Status: design doc only (Phase 4). No native code, no new dependencies and no change to `src/` ship with it.
+Status: owner's seven answers recorded (2026-09-30). The TypeScript side is built; the SwiftUI watch app and the phone-side native module are not written and nothing has run on a watch.
 
 ## Goal
 
@@ -78,20 +78,45 @@ tap, and see and adjust the rest timer on the wrist. Apple Watch first (SwiftUI)
   is kept thin: a renderer and an intent sender, with no lifting maths of its own.
 - **Brand:** "Lock'd" on the watch app name and complications.
 
-## Open questions for the owner
+## Owner's answers (questions 19 to 25 of the approved list, 2026-09-30)
 
-1. Scope of version 1: complete set and rest only, or also editing weight and reps on the wrist?
-2. Should the watch ever log without the phone (queued, then merged), accepting a second writer?
-3. Should the watch be able to start a workout (for example "Repeat last session"), or only follow one
-   started on the phone?
-4. Complications: which one, if any (rest remaining, sets done)?
-5. Haptic at the end of rest on the watch: always, or following `restTimerVibrate`?
-6. Heart rate from the watch: out of scope, or stored later as health context (see `health-context.md`)?
-7. When is Wear OS worth starting: a date, or after the Apple Watch app has been used for a while?
+All taken as recommended.
+
+| # | Question | Answer |
+|---|---|---|
+| 1 | Scope of version 1 | Complete set and rest only. No editing weight or reps on the wrist, so `adjustSetValue` and `nextExercise` are not in the protocol |
+| 2 | Log without the phone | No. The watch shows "Phone not reachable" and disables Complete. One writer, no merge |
+| 3 | Start a workout from the watch | No. It follows a workout started on the phone |
+| 4 | Complications | None in version 1 |
+| 5 | Haptic at end of rest | Follows the phone's "Vibrate when rest ends" (`vibrate` in the snapshot) |
+| 6 | Heart rate | Out of scope |
+| 7 | Wear OS | After the Apple Watch app has been in use for a while |
+
+## Built (TypeScript, tested)
+
+- `src/lib/native/watch.ts`: the protocol (version 1), `buildWatchSnapshot` (pure; the first set not done, warm-ups count, a left and right
+  pair is one set with each side matched to its prior side, previous values only when a previous session exists, a next target only when the
+  progression engine made one), `parseWatchIntent` (the watch is not trusted to be well formed), `applyWatchIntent` and `createWatchSync`.
+- Intents: `completeSet(setId)`, `adjustRest(deltaSeconds)` (a non-zero whole number, at most 60), `stopRest`. The phone applies each through the
+  store's own actions. A complete-set tap carries the set the watch was shown; if that is no longer the current set it is dropped and the phone
+  sends the watch a fresh snapshot, so a stale tap cannot log the wrong set.
+- Sync sends only when something the watch shows changed. The countdown is drawn on the watch from `endsAt`, so ticking seconds are not a change.
+  Every bridge failure is swallowed; the watch can never get in the way of logging.
+- `src/components/app/watch-sync.tsx`, mounted in the shell, native iOS only: builds the snapshot from the store and the same ghost and
+  progression calls the workout screen uses, and sends a short "Bench Press 102.5 kg" line for eight seconds after a record (lift and value only).
+- Tests: `src/lib/native/watch.test.ts`.
+
+## Not written, not verified
+
+- The SwiftUI watch app, the phone-side `LockdWatch` Capacitor plugin (WatchConnectivity), the watch target and its signing. These need a Mac
+  build in cloud CI and a device.
+- Nothing has run against a real watch: reachability, the latency of a tap, and the watch-side formatting of weights (which must follow
+  `formatWeight`).
+- Wear OS.
 
 ## Out of scope
 
-- Any native code, Capacitor setup or new package (this is a design doc).
+- The native watch app itself (see "Not written").
 - A standalone watch app with its own log, sync or account.
 - Workout history, Chronicle, Lab or charts on the watch.
 - Readiness or recovery scores of any kind.
