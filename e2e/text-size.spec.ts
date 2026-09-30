@@ -6,8 +6,18 @@ import { goTo, openWithSampleLog } from "./helpers";
 const fontPx = (page: Page, selector: string) =>
   page.locator(selector).first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
 
-const noSideScroll = (page: Page) =>
-  page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
+/** The elements wider than the screen (empty when nothing scrolls sideways), so a failure names what overflowed. */
+const overflowing = (page: Page) =>
+  page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    if (document.documentElement.scrollWidth <= width) return [] as string[];
+    return [...document.querySelectorAll("body *")]
+      .filter((el) => el.getBoundingClientRect().right > width + 0.5)
+      .slice(0, 6)
+      .map((el) => `<${el.tagName.toLowerCase()} class="${String(el.className).slice(0, 90)}"> right=${Math.round(el.getBoundingClientRect().right)} "${(el.textContent ?? "").trim().slice(0, 40)}"`);
+  });
+
+const noSideScroll = async (page: Page) => (await overflowing(page)).length === 0;
 
 test.describe("text size", () => {
   test("Large scales body text, keeps headings, and is applied before the app loads on a cold start", async ({ page }) => {
@@ -42,7 +52,7 @@ test.describe("text size", () => {
     for (const path of ["/", "/settings", "/analytics", "/chronicle", "/history", "/lab", "/more"]) {
       await goTo(page, path);
       // Charts size themselves after the first render: wait for the layout to settle, then require no sideways scroll.
-      await expect.poll(() => noSideScroll(page), { message: path, timeout: 10_000 }).toBe(true);
+      await expect.poll(() => overflowing(page), { message: path, timeout: 10_000 }).toEqual([]);
     }
 
     const tabs = page.locator("nav a.text-tab");
