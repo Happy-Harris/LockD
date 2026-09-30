@@ -33,6 +33,7 @@ import { describeImport } from "@/lib/import/summary";
 import { HISTORY_PROMISE, HISTORY_PROMISE_TITLE } from "@/lib/promise";
 import { SafetyBackups } from "@/components/app/safety-backups";
 import { eraseAllOnDevice } from "@/lib/storage/boot";
+import { LocalNotifications } from "@capacitor/local-notifications";
 import { isNativePlatform } from "@/lib/native/platform";
 import { readHealthNow, requestHealthAccess } from "@/lib/native/health-sync";
 import type { HealthType } from "@/lib/native/health";
@@ -264,10 +265,17 @@ function SettingsPage() {
               updateSettings({ restTimerNotification: false });
               return;
             }
-            if (typeof Notification === "undefined") return;
-            void Notification.requestPermission().then((permission) =>
-              updateSettings({ restTimerNotification: permission === "granted" }),
-            );
+            // The iOS web view has no Notification API; the native plugin asks instead.
+            const ask = isNativePlatform()
+              ? LocalNotifications.requestPermissions().then((asked) => asked.display === "granted")
+              : typeof Notification === "undefined"
+                ? Promise.resolve(undefined)
+                : Notification.requestPermission().then((permission) => permission === "granted");
+            void ask
+              .then((granted) => {
+                if (granted !== undefined) updateSettings({ restTimerNotification: granted });
+              })
+              .catch(() => undefined);
           }}
         />
         <p className="mt-2 text-xs text-subtle">
