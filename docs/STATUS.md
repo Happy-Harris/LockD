@@ -120,7 +120,7 @@ are the ones the Step 4 to 8 work has been building underneath.
 
 | Opp | What | State | Done by / next |
 |---|---|---|---|
-| 1 | Import-first Chronicle: Hevy and generic CSV beside Strong with mapping review; then build Chronicle straight after an import | **done** | Steps 7b to 7f (import), then `Opp 1: Chronicle after import` (import-first onboarding, a Chronicle card on the import's last step). Open: one-session eras between two layoffs (owner's call) |
+| 1 | Import-first Chronicle: Hevy and generic CSV beside Strong with mapping review; then build Chronicle straight after an import | **done** | Steps 7b to 7f (import), then `Opp 1: Chronicle after import` (import-first onboarding, a Chronicle card on the import's last step). A single session between two layoffs is a Brief Return, kept apart (owner's decision, 2026-09-30) |
 | 2 | Web receipt with no account: drop an export on the site, processed on the device, get a training receipt | not started | needs the wizard (done) and a receipt view |
 | 3 | Explained progression: a deterministic next target with a "why" that cites the sessions behind it; handles missed sessions, failed reps, swaps | not started | Step 8d-2 is the engine fix underneath; the "why" and swaps are the Opp |
 | 4 | Numbers show their working: tap any e1RM, volume, PR or trend for the formula, the sets used, what was excluded; stall with stated confidence | **partly done** | verdict, flags and muscle sets each open a receipt (Steps 8b, 8c-1). Not done: e1RM, PR and trend tap-through, stated confidence on stalls |
@@ -160,9 +160,8 @@ handover entry says so. The open ones:
 - **`percent_deload`** (I-41): a program rule kind that is accepted in files and does nothing. Keep as an alias of the
   default deload, or drop from the type and ignore it in files?
 - **`eraSplits`** (I-17): the plan's hand-made era splits have no UI or data yet; not built.
-- **One-session eras** (Opp 1): a single session between two layoffs of 14 days or more is its own era (the owner's
-  real file has one, "The Return · 2"), and the post-import card lists it. Keep it, or fold a stretch that short
-  into the era around it?
+- **One-session eras** (Opp 1): decided 2026-09-30. Kept separate, never folded into a neighbour, and labelled a
+  Brief Return.
 - **`short_rests`** (I-16): deleted in 12c.
 - **Real-file validation**: the Strong importer was run on the owner's own export on 2026-09-30 (597 sessions,
   13,319 sets, 2019 to 2025; the file is private and not in the repo). Hevy and the sister apps are still verified

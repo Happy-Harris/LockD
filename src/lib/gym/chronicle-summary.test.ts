@@ -33,6 +33,7 @@ describe("the Chronicle after an import", () => {
     };
     expect(summariseChronicle(chronicle)).toEqual({
       eraCount: 2,
+      briefReturns: 0,
       sessions: 42,
       firstDate: "2011-01-01",
       lastDate: "2012-06-30",
@@ -48,5 +49,14 @@ describe("the Chronicle after an import", () => {
     const summary = summariseChronicle({ eras, events: [] })!;
     expect(summary.eras.map((e) => e.name)).toEqual(["Era 7", "Era 6", "Era 5", "Era 4", "Era 3"]);
     expect(summary.earlier).toBe(2);
+  });
+
+  it("counts a brief return apart from the eras, and still lists it in its place", () => {
+    const brief = { ...era(2, 1), name: "Brief Return", tone: "brief" as const };
+    const summary = summariseChronicle({ eras: [era(1, 30), brief, era(3, 20)], events: [] })!;
+    expect(summary.eraCount).toBe(2);
+    expect(summary.briefReturns).toBe(1);
+    expect(summary.sessions).toBe(51);
+    expect(summary.eras.map((e) => e.name)).toEqual(["Era 3", "Brief Return", "Era 1"]);
   });
 });

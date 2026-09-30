@@ -4,7 +4,10 @@ import type { Chronicle, TrainingEra } from "./chronicle";
 export const CHRONICLE_SUMMARY_ERAS = 5;
 
 export interface ChronicleSummary {
+  /** Full eras, not counting brief returns. */
   eraCount: number;
+  /** Single sessions between two layoffs (tone `brief`). */
+  briefReturns: number;
   sessions: number;
   firstDate: string;
   lastDate: string;
@@ -26,7 +29,8 @@ export function summariseChronicle(chronicle: Chronicle): ChronicleSummary | und
   const newestFirst = [...eras].reverse();
   const shown = newestFirst.slice(0, CHRONICLE_SUMMARY_ERAS);
   return {
-    eraCount: eras.length,
+    eraCount: eras.filter((era) => era.tone !== "brief").length,
+    briefReturns: eras.filter((era) => era.tone === "brief").length,
     sessions: eras.reduce((sum, era) => sum + era.sessions, 0),
     firstDate: eras[0]!.startDate,
     lastDate: eras[eras.length - 1]!.endDate,

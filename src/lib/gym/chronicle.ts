@@ -19,7 +19,9 @@ export interface ChronicleEvent {
   magnitude?: number;
 }
 
-export type EraTone = "foundation" | "comeback" | "volume" | "strength" | "peak" | "rebuild";
+/** `brief`: a single session between two layoffs. Kept as its own stretch, never folded into a neighbour (owner, 2026-09-30). */
+export type EraTone =
+  "foundation" | "comeback" | "volume" | "strength" | "peak" | "rebuild" | "brief";
 
 export interface TrainingEra {
   id: string;
@@ -166,6 +168,7 @@ function nameEra(args: {
   total: number;
 }): string {
   if (args.index === 0) return "Foundation";
+  if (args.tone === "brief") return "Brief Return";
   if (args.afterLayoff && args.tone === "comeback") return "The Return";
   if (args.tone === "volume") return `Volume ${seasonOf(args.startDate)}`;
   if (args.tone === "strength")
@@ -318,7 +321,11 @@ export function buildChronicle(
           slice.workout.localDate >= era.startDate && slice.workout.localDate <= era.endDate,
       );
       const baseline = baselineWeeklySets(slices, era.startDate) ?? overallWeekly;
-      const tone = classifyTone(
+      // One session with a layoff on each side: the lifter came back once and stopped again. It stays its own stretch
+      // so the record does not look more continuous than it was, but it is named for what it is, not as a full era.
+      const brief =
+        inEra.length === 1 && era.afterLayoff && Boolean(expanded[index + 1]?.afterLayoff);
+      const tone: EraTone = brief ? "brief" : classifyTone(
         slices,
         era.startDate,
         era.endDate,

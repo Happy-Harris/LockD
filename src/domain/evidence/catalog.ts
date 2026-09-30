@@ -183,7 +183,7 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
   {
     id: "era-detection-rules",
     statement:
-      "Chronicle eras start at the first logged session and after each layoff of 14 days or more, and a stretch is split again when its weekly hard sets change by 25% or more, or its PR stamps per four weeks change by 3 or more, between two halves of at least six weeks. An era's tone is read against the lifter's own hard sets per trained week over the 26 weeks before it.",
+      "Chronicle eras start at the first logged session and after each layoff of 14 days or more, and a stretch is split again when its weekly hard sets change by 25% or more, or its PR stamps per four weeks change by 3 or more, between two halves of at least six weeks. A single session with a layoff on each side stays its own stretch, called a Brief Return, and is never folded into a neighbouring era. An era's tone is read against the lifter's own hard sets per trained week over the 26 weeks before it.",
     kind: "implementation_heuristic",
     behaviors: ["chronicle_eras", "era_tone_names"],
     sourceIds: [],

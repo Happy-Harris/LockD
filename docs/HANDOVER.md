@@ -9,6 +9,15 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Opp 1 follow-up: a single session between two layoffs is a Brief Return
+
+- **Owner's decision (2026-09-30):** "Keep the session separate; improve the classification instead of merging it." One session between two substantial layoffs is preserved as its own stretch and labelled for what it is; two or more sessions follow the normal era rules; training is never merged across a detected layoff to make the Chronicle look tidier; sessions, dates, layoffs and raw history are untouched whatever the label.
+- **The rule:** in `buildChronicle`, a stretch that starts after a layoff, holds exactly one session, and is followed by another layoff gets tone `brief` and the auto-name "Brief Return" (numbered like any repeated name). Layoffs are the existing 14-day gap. A single session after the *last* layoff is a comeback in progress and keeps the ordinary rules. A name the lifter typed still wins. The `era-detection-rules` catalog claim says so.
+- **Shown lighter:** the Chronicle page draws a brief return with a small title, a small rail marker and "one session between two layoffs"; the import's Chronicle card counts it apart ("2 eras and 1 brief return") and lists it in its place, muted. Its moment reads "Brief return, one session on DATE, between two layoffs" instead of "Named era".
+- **Tests:** four in `chronicle-detection.test.ts` (kept apart and counted, two sessions stay ordinary, a trailing single session is a comeback, a lifter's name wins), one in `chronicle-summary.test.ts`, one more in `e2e/import-first.spec.ts`. The characterisation snapshots did not move: the demo log has no such stretch.
+- **Screens:** the Chronicle page and the import card at 390 and 1024 px.
+- **On the owner's real export** (run in memory, nothing saved): 597 sessions become 25 eras and 4 brief returns (January 2021, February 2024, December 2024, February 2025), with 18 layoffs. Earlier notes counted one; the old names hid the others among fourteen "The Return · N" eras, which is a naming question still open.
+
 ### 2026-09-30 — Opp 1: Chronicle after import
 
 - **Owner's ask (2026-09-30):** "Start opp1", after Step 12 closed. The import half of Opp 1 was already done (Steps 7b to 7f); this is the other half from `PLAN-ADDENDUM.md`: "Import your history" as the first onboarding path, and a post-import landing on the Chronicle.

@@ -646,7 +646,9 @@ function ChronicleAfterImport() {
     <Card className="mt-4" data-testid="import-chronicle">
       <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-subtle">Your Chronicle</p>
       <h2 className="mt-1 font-display text-xl font-semibold tracking-tight">
-        {plural(summary.eraCount, "era")} from {eraDate(summary.firstDate)} to{" "}
+        {plural(summary.eraCount, "era")}
+        {summary.briefReturns ? ` and ${plural(summary.briefReturns, "brief return")}` : ""} from{" "}
+        {eraDate(summary.firstDate)} to{" "}
         {eraDate(summary.lastDate)}
       </h2>
       <p className="mt-1 text-sm text-muted" data-testid="import-chronicle-summary">
@@ -656,20 +658,26 @@ function ChronicleAfterImport() {
       <ul className="mt-3 space-y-2">
         {summary.eras.map((era) => (
           <li key={era.id} className="flex items-baseline justify-between gap-3 text-sm">
-            <span className="font-medium text-ink">{era.name}</span>
-            <span className="shrink-0 text-xs text-muted">
-              {eraDate(era.startDate)} – {eraDate(era.endDate)} ·{" "}
-              {plural(era.sessions, "session")}
+            <span
+              className={cn("shrink-0", era.tone === "brief" ? "text-muted" : "font-medium text-ink")}
+            >
+              {era.name}
+            </span>
+            <span className="text-right text-xs text-muted">
+              {era.tone === "brief"
+                ? `${eraDate(era.startDate)} · one session between two layoffs`
+                : `${eraDate(era.startDate)} – ${eraDate(era.endDate)} · ${plural(era.sessions, "session")}`}
             </span>
           </li>
         ))}
       </ul>
       {summary.earlier ? (
-        <p className="mt-2 text-xs text-muted">and {plural(summary.earlier, "earlier era")}.</p>
+        <p className="mt-2 text-xs text-muted">and {summary.earlier} earlier.</p>
       ) : null}
       <p className="mt-3 text-xs leading-relaxed text-subtle">
         A new era starts after any gap of 14 days or more, or where your weekly sets or PR rate
-        changed for at least {ERA_MIN_SEGMENT_WEEKS} weeks. Rename any of them on the Chronicle.
+        changed for at least {ERA_MIN_SEGMENT_WEEKS} weeks. A single session between two layoffs is
+        kept as a brief return. Rename any of them on the Chronicle.
       </p>
       <Button asChild className="mt-4 w-full" data-testid="import-open-chronicle">
         <Link to="/chronicle">Open your Chronicle</Link>

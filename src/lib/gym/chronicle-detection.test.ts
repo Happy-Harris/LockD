@@ -191,3 +191,48 @@ describe("era detection reads the lifter's own training", () => {
     expect(steady).toHaveLength(1);
   });
 });
+
+describe("a single session between two layoffs (owner, 2026-09-30)", () => {
+  // Ten weeks, a four-week layoff, one week back, another four-week layoff, ten more weeks.
+  const plan = [
+    { weeks: 10, sets: 20 },
+    { weeks: 1, sets: 20, gapWeeks: 4 },
+    { weeks: 10, sets: 20, gapWeeks: 4 },
+  ];
+  const withOneSessionBack = () => log(plan).filter((_, i) => i !== 21);
+
+  it("stays its own stretch, named a Brief Return, with every session still counted", () => {
+    const slices = withOneSessionBack();
+    const result = eras(slices);
+    expect(result.map((era) => [era.name, era.tone, era.sessions])).toEqual([
+      ["Foundation", "foundation", 20],
+      ["Brief Return", "brief", 1],
+      ["The Return", "comeback", 20],
+    ]);
+    expect(result.reduce((sum, era) => sum + era.sessions, 0)).toBe(slices.length);
+    // Both layoffs are still on the record.
+    expect(buildChronicle(slices, "epley", goals).events.filter((e) => e.kind === "layoff")).toHaveLength(2);
+  });
+
+  it("two sessions back is an ordinary era", () => {
+    expect(eras(log(plan)).map((era) => era.name)).toEqual([
+      "Foundation",
+      "The Return",
+      "The Return · 2",
+    ]);
+  });
+
+  it("one session after the last layoff is a comeback in progress, not a brief return", () => {
+    const slices = log(plan.slice(0, 2)).filter((_, i) => i !== 21);
+    expect(eras(slices).at(-1)).toMatchObject({ name: "The Return", tone: "comeback", sessions: 1 });
+  });
+
+  it("a name the lifter gave it still wins", () => {
+    const slices = withOneSessionBack();
+    const start = slices[20]!.workout.localDate;
+    expect(eras(slices, [{ startDate: start, name: "Wedding week" }])[1]).toMatchObject({
+      name: "Wedding week",
+      autoName: "Brief Return",
+    });
+  });
+});

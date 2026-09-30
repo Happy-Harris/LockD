@@ -73,7 +73,12 @@ function ChroniclePage() {
       <div className="era-rail mt-4 space-y-3 pl-1">
         {[...chronicle.eras].reverse().map((era) => (
           <div key={era.id} className="relative pl-8">
-            <span className="absolute left-0 top-4 size-6 rounded-full bg-raised hairline" />
+            <span
+              className={cn(
+                "absolute rounded-full bg-raised hairline",
+                era.tone === "brief" ? "left-1.5 top-4 size-3" : "left-0 top-4 size-6",
+              )}
+            />
             <Card>
               {editing === era.startDate ? (
                 <form
@@ -98,11 +103,23 @@ function ChroniclePage() {
                     setDraft(era.name);
                   }}
                 >
-                  <p className="font-display text-2xl font-semibold tracking-tight">{era.name}</p>
-                  <p className="mt-1 text-xs text-muted">
-                    {formatLocalDate(era.startDate)} – {formatLocalDate(era.endDate)} · {era.sessions} sessions ·{" "}
-                    {era.hardSets} hard sets
-                  </p>
+                  {era.tone === "brief" ? (
+                    <>
+                      <p className="font-display text-lg font-semibold tracking-tight text-muted">{era.name}</p>
+                      <p className="mt-1 text-xs text-muted" data-testid="brief-return">
+                        {formatLocalDate(era.startDate, { day: "numeric", month: "short", year: "numeric" })} · one
+                        session between two layoffs · {era.hardSets} hard {era.hardSets === 1 ? "set" : "sets"}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="font-display text-2xl font-semibold tracking-tight">{era.name}</p>
+                      <p className="mt-1 text-xs text-muted">
+                        {formatLocalDate(era.startDate)} – {formatLocalDate(era.endDate)} · {era.sessions} sessions ·{" "}
+                        {era.hardSets} hard sets
+                      </p>
+                    </>
+                  )}
                   <p className="mt-2 text-[11px] text-subtle">Tap to rename · auto: {era.autoName}</p>
                 </button>
               )}
