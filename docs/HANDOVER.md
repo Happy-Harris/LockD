@@ -9,6 +9,21 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Phase 4 foundation: the Capacitor shell
+
+- **Plan:** Phase 4 dependency named in `docs/design/*.md` ("Capacitor project"). Owner's standing order: build the native
+  items back to back; where a design doc leaves a question open, stop and ask the owner (not decided by me).
+- **Shipped:** `@capacitor/core` and `@capacitor/cli`, `capacitor.config.ts` (`appId` `com.happyharris.lockd`, the owner's choice), the generated `ios/` and `android/` projects (`@capacitor/ios`, `@capacitor/android`), `npm run build:native`
+  (a static single-page build through TanStack Start's SPA mode, selected by `--mode native`), and `src/lib/native/platform.ts`.
+  The default web build and the default dev server are untouched.
+- **Checked:** the native bundle builds and, served statically with an `index.html` fallback, opens the app and loads the
+  sample log in Chromium.
+- **Not checked:** any device or simulator build (`pod install` has not run; nothing was opened in Xcode or Android Studio),
+  signing, and the service worker inside a native web view. Cloud features do not work in a static bundle; the first native
+  build is guest and offline (owner's answer 2). Native builds run in cloud CI, so the folders are committed (answer 3).
+- **Owner-only:** Apple Developer account, signing, store setup. Steps are in `docs/design/native-shell.md`.
+- **Tests:** `src/lib/native/platform.test.ts`.
+
 ### 2026-09-30 — Opp 11: program from text
 
 - **Plan:** `PLAN-ADDENDUM.md` § 4 row 11, built to the owner's answers to the seven open questions in
