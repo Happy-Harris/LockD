@@ -257,6 +257,7 @@ describe("a program's linear rule", () => {
     suggestedWeightG: 100_000,
     suggestedReps: 6,
     why: "",
+    cites: [],
     hitRate: 1,
     missStreak: 0,
     stallSessions: 0,

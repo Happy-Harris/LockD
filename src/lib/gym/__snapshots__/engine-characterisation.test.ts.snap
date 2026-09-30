@@ -918,6 +918,16 @@ exports[`engine characterisation — current behaviour, not desired correctness 
 {
   "addLoad": {
     "action": "add_load",
+    "cites": [
+      {
+        "date": "2026-09-01",
+        "workoutId": "workout-0",
+      },
+      {
+        "date": "2026-09-02",
+        "workoutId": "workout-1",
+      },
+    ],
     "exerciseId": "seed-bench-press",
     "exerciseName": "Bench Press",
     "exposuresAtLoad": 2,
@@ -935,6 +945,12 @@ exports[`engine characterisation — current behaviour, not desired correctness 
   },
   "addReps": {
     "action": "add_reps",
+    "cites": [
+      {
+        "date": "2026-09-01",
+        "workoutId": "workout-0",
+      },
+    ],
     "exerciseId": "seed-bench-press",
     "exerciseName": "Bench Press",
     "exposuresAtLoad": 1,
@@ -952,6 +968,7 @@ exports[`engine characterisation — current behaviour, not desired correctness 
   },
   "empty": {
     "action": "hold",
+    "cites": [],
     "exerciseId": "seed-bench-press",
     "exerciseName": "Bench Press",
     "exposuresAtLoad": 0,
@@ -967,6 +984,12 @@ exports[`engine characterisation — current behaviour, not desired correctness 
   },
   "oneMiss": {
     "action": "hold",
+    "cites": [
+      {
+        "date": "2026-09-01",
+        "workoutId": "workout-0",
+      },
+    ],
     "exerciseId": "seed-bench-press",
     "exerciseName": "Bench Press",
     "exposuresAtLoad": 1,
@@ -984,6 +1007,20 @@ exports[`engine characterisation — current behaviour, not desired correctness 
   },
   "threeMisses": {
     "action": "easier_week",
+    "cites": [
+      {
+        "date": "2026-09-01",
+        "workoutId": "workout-0",
+      },
+      {
+        "date": "2026-09-02",
+        "workoutId": "workout-1",
+      },
+      {
+        "date": "2026-09-03",
+        "workoutId": "workout-2",
+      },
+    ],
     "exerciseId": "seed-bench-press",
     "exerciseName": "Bench Press",
     "exposuresAtLoad": 3,
@@ -1001,6 +1038,12 @@ exports[`engine characterisation — current behaviour, not desired correctness 
   },
   "topOnce": {
     "action": "hold",
+    "cites": [
+      {
+        "date": "2026-09-01",
+        "workoutId": "workout-0",
+      },
+    ],
     "exerciseId": "seed-bench-press",
     "exerciseName": "Bench Press",
     "exposuresAtLoad": 1,
@@ -1018,6 +1061,16 @@ exports[`engine characterisation — current behaviour, not desired correctness 
   },
   "twoMisses": {
     "action": "deload",
+    "cites": [
+      {
+        "date": "2026-09-01",
+        "workoutId": "workout-0",
+      },
+      {
+        "date": "2026-09-02",
+        "workoutId": "workout-1",
+      },
+    ],
     "exerciseId": "seed-bench-press",
     "exerciseName": "Bench Press",
     "exposuresAtLoad": 2,

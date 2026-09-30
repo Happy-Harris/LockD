@@ -8,6 +8,7 @@ import { Card, Stat } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { consultLab } from "@/lib/lab/ask";
 import { actionLabel } from "@/lib/gym/progression";
+import { CitedSessions } from "@/components/app/cited-sessions";
 import { useGymDerived } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
 import { useCanSignIn, useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -218,6 +219,7 @@ function LabPage() {
                 <Badge tone={call.action === "easier_week" ? "warning" : "muted"}>{actionLabel(call.action)}</Badge>
               </div>
               <p className="mt-2 text-sm text-muted">{call.why}</p>
+              <CitedSessions cites={call.cites} lift={call.exerciseName} />
             </Card>
           ))}
         </div>

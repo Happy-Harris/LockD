@@ -16,6 +16,7 @@ import { useStartProgramSession } from "@/lib/gym/program-hooks";
 import { LENSES, lensShows } from "@/lib/gym/lenses";
 import { formatSets, stateLabel } from "@/lib/gym/muscle-labels";
 import { actionLabel } from "@/lib/gym/progression";
+import { CitedSessions } from "@/components/app/cited-sessions";
 import { lastTrainedLabel, muscleLastTrained } from "@/lib/gym/recovery";
 import { useGymDerived } from "@/lib/gym/hooks";
 import { useGym } from "@/lib/gym/store";
@@ -324,6 +325,7 @@ function TodayPage() {
                   </Badge>
                 </div>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{call.why}</p>
+                <CitedSessions cites={call.cites} lift={call.exerciseName} />
               </Card>
             ))}
           </div>

@@ -37,6 +37,12 @@ export interface Exposure {
   avgRpe?: number;
 }
 
+/** A logged session a progression call read, so the lifter can open it (Opp 3). */
+export interface ProgressionCite {
+  workoutId: string;
+  date: string;
+}
+
 export interface ProgressionCall {
   exerciseId: string;
   exerciseName: string;
@@ -46,6 +52,12 @@ export interface ProgressionCall {
   suggestedReps?: number;
   suggestedSets?: number;
   why: string;
+  /**
+   * The sessions this call's rule read, oldest first: the misses behind a deload, the exposures at
+   * the load behind an add-load, the stall window behind an easier week, the last session otherwise.
+   * Empty when there is no session on file.
+   */
+  cites: ProgressionCite[];
   hitRate: number;
   missStreak: number;
   /**
@@ -223,6 +235,8 @@ export function progressExercise(opts: {
   const bodyweight = opts.trackingType === "reps_only";
   const increment = opts.incrementG > 0 ? opts.incrementG : 2500;
 
+  const cite = (rows: Exposure[]): ProgressionCite[] =>
+    rows.map((row) => ({ workoutId: row.workoutId, date: row.date }));
   const base = {
     exerciseId: opts.exerciseId,
     exerciseName: opts.exerciseName,
@@ -242,6 +256,7 @@ export function progressExercise(opts: {
       ...base,
       action: "hold",
       why: "No prior working sets on file. Start conservative and log honestly.",
+      cites: [],
     };
   }
 
@@ -260,6 +275,7 @@ export function progressExercise(opts: {
       suggestedWeightG:
         bodyweight || !lastLoad ? undefined : reEntryLoadG(lastLoad, percent, increment, opts.snap),
       suggestedReps: opts.targetRepMin ?? top?.reps,
+      cites: cite([last]),
       why: `${away} days since your last session of this lift, on ${last.date}. Comeback rule, not a prediction: ${percent}% of that session's top working load after ${comebackBand(away)}, rounded down to a load you can build. Change the rule in Settings.`,
     };
   }
@@ -271,6 +287,11 @@ export function progressExercise(opts: {
       action: "easier_week",
       suggestedWeightG: bodyweight ? undefined : stepDownG(lastLoad, 0.9, increment, opts.snap),
       suggestedReps: last.working[0]?.reps,
+      cites: cite(
+        missStreak >= 3
+          ? exposures.slice(-missStreak)
+          : exposures.filter((row) => row.date >= shiftLocalDate(last.date, -(STALL_WINDOW_DAYS - 1))),
+      ),
       why:
         missStreak >= 3
           ? `Missed the target ${missStreak} sessions in a row. Drop about 10% and rebuild the hit.`
@@ -284,6 +305,7 @@ export function progressExercise(opts: {
       action: "deload",
       suggestedWeightG: bodyweight ? undefined : stepDownG(lastLoad, 0.95, increment, opts.snap),
       suggestedReps: opts.targetRepMin ?? last.working[0]?.reps,
+      cites: cite(exposures.slice(-missStreak)),
       why: "Missed the target twice at this load. Small drop, same range, then retry.",
     };
   }
@@ -294,16 +316,19 @@ export function progressExercise(opts: {
       action: "add_load",
       suggestedWeightG: stepUpG(lastLoad, increment, opts.snap),
       suggestedReps: opts.targetRepMin ?? last.working[0]?.reps,
+      cites: cite(exposures.slice(-atLoad)),
       why: `You usually progress after ${typical} exposures at a load. This is exposure ${atLoad}. Add one increment.`,
     };
   }
 
   if (last.topHit && (atLoad >= 2 || (recentTwo.length === 2 && recentTwo.every((row) => row.topHit)))) {
+    const topCites = cite(atLoad >= 2 ? exposures.slice(-atLoad) : recentTwo);
     if (bodyweight) {
       return {
         ...base,
         action: "add_reps",
         suggestedReps: lastReps + 1,
+        cites: topCites,
         why: "Hit the top of the range. Add a rep.",
       };
     }
@@ -312,6 +337,7 @@ export function progressExercise(opts: {
       action: "add_load",
       suggestedWeightG: stepUpG(lastLoad, increment, opts.snap),
       suggestedReps: opts.targetRepMin ?? last.working[0]?.reps,
+      cites: topCites,
       why:
         atLoad >= 2
           ? "Hit the top of the range twice at this load. Add one increment."
@@ -326,6 +352,7 @@ export function progressExercise(opts: {
       action: "add_reps",
       suggestedWeightG: lastLoad || undefined,
       suggestedReps: nextReps,
+      cites: cite([last]),
       why: "In range, not yet at the top. Same load, push a rep.",
     };
   }
@@ -336,6 +363,7 @@ export function progressExercise(opts: {
       action: "hold",
       suggestedWeightG: lastLoad || undefined,
       suggestedReps: last.working[0]?.reps,
+      cites: cite([last]),
       why: "Last session hit. Repeat the load and confirm it.",
     };
   }
@@ -345,6 +373,7 @@ export function progressExercise(opts: {
     action: "hold",
     suggestedWeightG: lastLoad || undefined,
     suggestedReps: last.working[0]?.reps,
+    cites: cite([last]),
     why: "One miss isn't a stall. Repeat the load.",
   };
 }

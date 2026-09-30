@@ -113,7 +113,12 @@ export function buildLabBrief(
         .map((row) => `${row.name}: ${row.headline} [${row.findings.map((f) => `${f.title}: ${f.evidence}`).join("; ")}]`)
         .join(" || "),
     "Queue: " + queue.map((row) => `${row.name} ${row.how}`).join(" | "),
-    board.map((call) => `${call.exerciseName}: ${call.action} — ${call.why}`).join(" | "),
+    board
+      .map(
+        (call) =>
+          `${call.exerciseName}: ${call.action} — ${call.why}${call.cites.length ? ` (read from sessions on ${call.cites.map((cite) => cite.date).join(", ")})` : ""}`,
+      )
+      .join(" | "),
     intelligence.insights.join(" | "),
     intelligence.volumeResponse,
     intelligence.restNote,

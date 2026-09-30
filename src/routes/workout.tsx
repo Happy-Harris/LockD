@@ -39,6 +39,7 @@ import {
   ghostSetsForExercise,
 } from "@/lib/gym/ghost";
 import { progressExercise, actionLabel } from "@/lib/gym/progression";
+import { programSwapForWorkout } from "@/lib/gym/programs";
 import {
   intensityChoices,
   intensityLabel,
@@ -67,6 +68,8 @@ function ActiveWorkoutPage() {
   const templateExercises = useGym((s) => s.templateExercises);
   const settings = useGym((s) => s.settings);
   const exercises = useGym((s) => s.exercises);
+  const programSessions = useGym((s) => s.programSessions);
+  const programExercises = useGym((s) => s.programExercises);
   const bars = useGym((s) => s.bars);
   const plates = useGym((s) => s.plates);
   const machineSetups = useGym((s) => s.machineSetups);
@@ -249,6 +252,13 @@ function ActiveWorkoutPage() {
               : null;
           const blockIncrement = block.catalog?.incrementG ?? increment;
           const suggestion = suggestions.get(block.exercise.id);
+          const swap = programSwapForWorkout(
+            workout.programId,
+            block.exercise.exerciseId,
+            programSessions,
+            programExercises,
+            exercises,
+          );
           const restHint = block.exercise.restSeconds;
           // Effort is logged beside reps, so an exercise without a reps row (a plank) shows no effort target.
           const effortPrescription = usesReps(tracking) ? block.prescription : undefined;
@@ -334,6 +344,11 @@ function ActiveWorkoutPage() {
               {block.ghost.length > 0 ? (
                 <p className="mb-2 font-mono text-xs text-subtle">
                   Ghost: {block.ghost.map((set) => formatGhostSet(set, unit)).join("  ")}
+                </p>
+              ) : null}
+              {swap ? (
+                <p className="mb-2 text-xs leading-relaxed text-muted" data-testid="program-swap">
+                  Swapped in for {swap.originalName}. The target reads {swap.name}'s own sessions.
                 </p>
               ) : null}
               {suggestion?.why ? (
