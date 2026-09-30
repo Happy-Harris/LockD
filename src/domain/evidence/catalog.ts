@@ -195,6 +195,20 @@ export const EVIDENCE_CLAIMS: readonly EvidenceClaim[] = [
     lastReviewed: "2026-09-29",
   },
   {
+    id: "era-naming-rules",
+    statement:
+      "An era's automatic name comes from the log: the first is Foundation; a single session between two layoffs is a Brief Return; an era is named for its training split (Push/Pull/Legs, Upper/Lower, Full Body) when at least 6 sessions, 75% of them named for that split's days with every day present, show it and the split differs from the era before; otherwise a return after a layoff is a Return and a volume, strength or PR stretch is a High-Volume Block, Strength Block or PR Run. These are dated by year, then half-year, month or day, whichever first tells same-named eras apart; an ordinary era is named by season and year. A name the lifter types always wins.",
+    kind: "implementation_heuristic",
+    behaviors: ["era_tone_names"],
+    sourceIds: [],
+    support: "context",
+    interpretation:
+      "Names are navigation aids read off the record, told apart by date rather than numbered, with nothing narrative added. The lifter owns the final title.",
+    limitations:
+      "The 6-session and 75% thresholds and the split vocabulary are product choices. A split is read from workout names only, so sessions named for something else show no split.",
+    lastReviewed: "2026-09-30",
+  },
+  {
     id: "thin-evidence-insight-gate",
     statement:
       "The Lab's volume-response, rest and recovery-gap notes appear only with at least 8 observations, at least 3 in each group compared, and a difference of at least 3%, and always show how many observations they rest on.",

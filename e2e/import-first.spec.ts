@@ -38,7 +38,7 @@ test.describe("import-first onboarding (Opp 1)", () => {
       "6 sessions in your log, 1 layoff and 1 PR run.",
     );
     await expect(card).toContainText("Foundation");
-    await expect(card).toContainText("The Return");
+    await expect(card).toContainText("2026 Return");
 
     await page.getByTestId("import-open-chronicle").click();
     await expect(page).toHaveURL(/\/chronicle$/);

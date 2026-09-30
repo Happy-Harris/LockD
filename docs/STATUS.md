@@ -120,7 +120,7 @@ are the ones the Step 4 to 8 work has been building underneath.
 
 | Opp | What | State | Done by / next |
 |---|---|---|---|
-| 1 | Import-first Chronicle: Hevy and generic CSV beside Strong with mapping review; then build Chronicle straight after an import | **done** | Steps 7b to 7f (import), then `Opp 1: Chronicle after import` (import-first onboarding, a Chronicle card on the import's last step). A single session between two layoffs is a Brief Return, kept apart (owner's decision, 2026-09-30) |
+| 1 | Import-first Chronicle: Hevy and generic CSV beside Strong with mapping review; then build Chronicle straight after an import | **done** | Steps 7b to 7f (import), then `Opp 1: Chronicle after import` (import-first onboarding, a Chronicle card on the import's last step). A single session between two layoffs is a Brief Return, kept apart (owner's decision, 2026-09-30). Era names come from the record and are told apart by date, never numbered |
 | 2 | Web receipt with no account: drop an export on the site, processed on the device, get a training receipt | not started | needs the wizard (done) and a receipt view |
 | 3 | Explained progression: a deterministic next target with a "why" that cites the sessions behind it; handles missed sessions, failed reps, swaps | not started | Step 8d-2 is the engine fix underneath; the "why" and swaps are the Opp |
 | 4 | Numbers show their working: tap any e1RM, volume, PR or trend for the formula, the sets used, what was excluded; stall with stated confidence | **partly done** | verdict, flags and muscle sets each open a receipt (Steps 8b, 8c-1). Not done: e1RM, PR and trend tap-through, stated confidence on stalls |
