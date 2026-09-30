@@ -136,6 +136,11 @@
   font-size: var(--type-micro-legacy);
 }
 
+:root[data-text-size="large"] .text-tab {
+  /* Five labels share 320 px: at 12 px "Chronicle" with tracking-wide is a pixel too wide. */
+  letter-spacing: 0;
+}
+
 @utility text-tab {
   font-size: var(--type-tab);
   white-space: nowrap;

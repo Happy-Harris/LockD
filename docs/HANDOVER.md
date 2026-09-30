@@ -9,6 +9,15 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-09-30 — Fix: the bottom tab bar was one pixel too wide at Large and 320 px
+
+- Found by `e2e/text-size.spec.ts` on CI after Text size step A merged (`/analytics` was only the first screen it measured):
+  the five tab items could not shrink below their label, so at Large on a 320 px phone the bar reached 321 px. It did not
+  reproduce on my machine, where the font renders a little narrower; the failure message now names the overflowing elements.
+- **Fixed:** the tab items may shrink (`min-w-0`), and at Large the tab labels drop their letter spacing. Standard and
+  Comfortable are unchanged.
+- **Riding on the Lift Math step A PR** because `main`'s end-to-end run is red until it lands.
+
 ### 2026-09-30 — Lift Math, step A: the maths, no screen
 
 - **Plan:** `PLAN-ADDENDUM.md` § 6 item 2 and A-5, built to the owner's *Text Size & Lift Math, Spec v2* build-order step 5:
