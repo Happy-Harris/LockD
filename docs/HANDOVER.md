@@ -9,6 +9,13 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-10-01 — Fix: security headers on the web build (web readiness gap 4)
+
+- **Shipped:** `src/lib/security/headers.ts` holds the headers, applied to every path as a Nitro route rule in `vite.config.ts` (so they land in the Vercel output config): a content policy that allows only Lock'd's own origin, HSTS for two years with subdomains (not preloaded), `nosniff`, `X-Frame-Options: DENY` with `frame-ancestors 'none'`, `strict-origin-when-cross-origin` referrer policy, and a permissions policy that turns off camera, microphone, location, payment and USB.
+- **Kept on purpose:** `'unsafe-inline'` for scripts and styles. The text-size pre-paint script and the framework's hydration scripts are inline, and toasts and dialogs set inline styles; a nonce-based policy is a larger change. Third-party scripts, connections, fonts, frames and form targets are all blocked. Adding a service (crash reporting is next) means adding its origin to the policy.
+- **Checked:** the offline suite (production build under `vite preview`) gains `e2e-offline/security-headers.spec.ts`: the headers arrive on the page, and the app opens the sample log and visits History, Data Lab, Lab, Settings, the web receipt and Lift Math with no content-policy errors, at 390 and 1024 px. All 8 offline tests pass.
+- **Not verified:** a live Vercel deployment (the route rule is in the generated `config.json`, not seen on a real response yet), and real Google, Apple or email sign-in under the policy (they redirect the page rather than load scripts, so they should be unaffected).
+
 ### 2026-10-01 — Fix: workout notes never reach a public receipt (web readiness gap 2)
 
 - **Problem:** a session receipt share put the workout's private notes in its public payload. No receipt showed them, but `getShare` returned them to anyone with the link. Found by the readiness audit (`docs/launch/WEB-READINESS.md` § 4).
