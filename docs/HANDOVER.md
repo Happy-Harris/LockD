@@ -9,6 +9,14 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-10-01 — Crash reporting, off until keyed (web readiness gap 12)
+
+- **Owner's decision (2026-10-01):** crash reporting with Sentry, carrying the error and the page only: no training data, email, or share links.
+- **Shipped:** `src/lib/crash/report.ts`. Off unless the build sets `VITE_SENTRY_DSN` (in `.env.example`); with it unset the Sentry code is not built at all, so the service worker never caches it (checked: no Sentry chunk in a build without the variable; with it, an 88 kB lazy chunk loaded after the log has opened). Every event passes `scrubEvent`: it keeps the error's type, message and stack, the page path, and the browser and system names; it drops user, IP, cookies, headers, query strings, extras, tags and all breadcrumbs; share ids, handles and history tokens are replaced in the path, message and stack. Uncaught errors are reported on their own, and a screen that fails to render reports through the error screen. The content policy adds the DSN's host to `connect-src` only when it is set.
+- **Log redaction:** the app's own console lines were checked; none prints a token, share id, email or log content, so nothing changed there. Build-time migration errors can print SQL detail, but only into the operator's build log.
+- **Checked:** `src/lib/crash/report.test.ts` (scrubbing, with a deliberately leaky event) and `src/lib/security/headers.test.ts` (the policy, with and without a DSN).
+- **Not verified:** a real Sentry project receiving an event. The owner needs to create one and set `VITE_SENTRY_DSN` in the host's build settings; the privacy policy draft (gap 3) describes this.
+
 ### 2026-10-01 — Fix: a page for wrong addresses, a safer error screen, and keyboard fixes (web readiness gap 11)
 
 - **404:** `src/lib/not-found-component.tsx` is the router's not-found page: "Nothing at this address", a line saying the log is untouched, and Go to Today. The server still answers 404.

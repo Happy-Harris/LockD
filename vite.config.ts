@@ -1,13 +1,13 @@
 import { copyFileSync, existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { Plugin } from "vite";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 import { isMigrationFile } from "./scripts/migration-plan.mjs";
-import { SECURITY_HEADERS } from "./src/lib/security/headers.ts";
+import { reportOriginFromDsn, securityHeaders } from "./src/lib/security/headers.ts";
 
 function copyPgliteAssetsPlugin(): Plugin {
   return {
@@ -73,6 +73,8 @@ export default defineConfig(({ command, isPreview, mode: requestedMode }) => {
   // The SPA prerender starts a preview server that reads this file again in the default mode, so `build:native` also
   // sets LOCKD_NATIVE. Without it the preview asks for a server build that the native build does not make.
   const mode = process.env.LOCKD_NATIVE === "1" ? "native" : requestedMode;
+  // Crash reporting is off unless the build sets VITE_SENTRY_DSN; then its origin joins the content policy.
+  const headers = securityHeaders(reportOriginFromDsn(loadEnv(mode, process.cwd(), "VITE_").VITE_SENTRY_DSN));
   return {
     server: {
       host: "0.0.0.0",
@@ -93,7 +95,7 @@ export default defineConfig(({ command, isPreview, mode: requestedMode }) => {
       tailwindcss(),
       tanstackStart(mode === "native" ? { spa: { enabled: true } } : undefined),
       ...((command === "build" || isPreview) && mode !== "native"
-        ? [nitro({ preset: "vercel", routeRules: { "/**": { headers: SECURITY_HEADERS } } }), copyPgliteAssetsPlugin()]
+        ? [nitro({ preset: "vercel", routeRules: { "/**": { headers } } }), copyPgliteAssetsPlugin()]
         : []),
       viteReact(),
     ],
