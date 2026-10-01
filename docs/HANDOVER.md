@@ -9,6 +9,14 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-10-01 — Docs: production web readiness audit
+
+- **Delivered for review:** `docs/launch/WEB-READINESS.md` audits the code at `170c6c7`: deployment/environment behavior, server security and validation, cloud storage/deletion/restore, off-device data, reliability, legal-page requirements, web basics and operations. Each finding cites files and distinguishes implemented behavior, gaps and outcomes the repo cannot establish; ranked gaps and owner questions close the report.
+- **Scope:** docs only. No application code, legal pages, engines, stored-data formats, migrations or product defaults changed. No payments, subscriptions, pricing, paywalls or analytics added. Existing logging, guest/offline and free history/charts/export principles remain requirements.
+- **Review:** written by another agent on `codex/web-readiness-audit` (LockD#103); reviewed and landed from this branch with the owner's answers appended, after the owner asked Claude to carry the launch work forward. Approved gaps 1, 2, 3, 4, 11, 12 and 13 follow, one PR each from `main`. The STATUS header now points at the audit; the stale "resume with Step 12b" line is gone.
+- **Checks:** `taskset -c 0 npm run verify` passed (116 files / 1,203 tests, lint/typecheck/build); six pre-existing lint warnings. Initial unconstrained verify hit the privacy migration test’s 10-second PGLite setup timeout while e2e competed. Brand check: zero findings. Production offline suite: 6 passed. Full e2e: **152 passed, 3 failed, 1 existing intentional phone skip**. Failures: phone Finish blocked by a hover-paused toast; desktop backup evaluation context lost during navigation (also missing trace artifacts); desktop large-log read best 527 ms against existing <500 ms limit. Browser suites shared an artifact directory; backup passed when run separately without changes, but its original navigation cause is not established. Focused storage run also failed (best 563 ms against unchanged <500 ms); cause remains unresolved. The full e2e gate is **not green**; no app/test fix was made in this audit.
+- **Not verified:** live deployment or response headers; real auth/email/Lab providers; production database, outage, backup/restore or rollback drills; phone installation; assistive-technology/accessibility conformance; production first-load performance. Repository inspection and local automated checks cannot establish those outcomes.
+
 ### 2026-10-01 — Watch icons, and no more dropped watch and lock-screen taps
 
 - **Owner's ask:** add the watch icon catalog from the Lock'd mark; stop dropping watch and lock-screen taps while the phone's web layer is suspended; keep the phone the only log writer; never show a tap as done before the phone confirms.
