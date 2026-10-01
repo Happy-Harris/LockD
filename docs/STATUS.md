@@ -1,4 +1,4 @@
-# Lock'd — where the project stands
+_Last updated: 2026-10-01. Steps 1 to 13 and Opps 1 to 11 are done (native code compiled in CI, not run on a device). **Now: the web launch.** The readiness audit is [`docs/launch/WEB-READINESS.md`](launch/WEB-READINESS.md); its approved gaps (1, 2, 3, 4, 11, 12, 13) land one PR each, and the owner's answers are recorded at the end of that file._# Lock'd — where the project stands
 
 **This file is the map.** If you are a new engineer or a new AI model picking this project up, read
 this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HANDOVER.md` (what the
