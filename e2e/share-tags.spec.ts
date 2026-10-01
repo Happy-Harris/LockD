@@ -38,6 +38,7 @@ test.describe("share-card tags", () => {
     const html = await (await request.get("/s/00000000-0000-4000-8000-000000000000")).text();
     expect(tag(html, "og:title")).toBe("Lock’d");
     expect(tag(html, "og:url")).toContain("/s/00000000-0000-4000-8000-000000000000");
+    expect(tag(html, "robots")).toBe("noindex, nofollow");
   });
 
   test("a locker that is not public gets the site card and does not confirm it exists", async ({
@@ -46,5 +47,6 @@ test.describe("share-card tags", () => {
     const html = await (await request.get("/u/nobody-here")).text();
     expect(tag(html, "og:title")).toBe("Lock’d");
     expect(html).not.toContain("nobody-here’s");
+    expect(tag(html, "robots")).toBe("noindex, nofollow");
   });
 });

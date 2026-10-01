@@ -63,6 +63,13 @@ export function receiptOg(origin: string): MetaTag[] {
   });
 }
 
+/**
+ * Public shares and public lockers stay out of search results (owner's decision, 2026-10-01): anyone with the link
+ * can open them, but a search engine does not list them. Share cards still unfurl, since link previews do not read
+ * this. History links (`/h/$token`) already say the same in their own head.
+ */
+export const NOINDEX: MetaTag = { name: "robots", content: "noindex, nofollow" };
+
 const KIND_LINE: Record<PublicShare["kind"], string> = {
   moment: "A moment from a lifter’s record, kept on Lock’d.",
   receipt: "A session receipt, kept on Lock’d.",
@@ -77,9 +84,9 @@ export function shareOg(
   id: string,
   share: Pick<PublicShare, "title" | "kind"> | null,
 ): MetaTag[] {
-  if (!share) return siteOg(origin, `/s/${id}`);
+  if (!share) return [...siteOg(origin, `/s/${id}`), NOINDEX];
   const title = `${share.title} · ${SITE_NAME}`;
-  return ogMeta({ origin, path: `/s/${id}`, title, description: KIND_LINE[share.kind] });
+  return [...ogMeta({ origin, path: `/s/${id}`, title, description: KIND_LINE[share.kind] }), NOINDEX];
 }
 
 /** A public locker (`/u/$handle`): the display name and handle the page itself shows. Bio is not repeated. */
@@ -88,12 +95,15 @@ export function lockerOg(
   handle: string,
   card: { displayName: string; handle: string } | null,
 ): MetaTag[] {
-  if (!card) return siteOg(origin, `/u/${handle}`);
+  if (!card) return [...siteOg(origin, `/u/${handle}`), NOINDEX];
   const title = `${card.displayName} (@${card.handle}) · ${SITE_NAME}`;
-  return ogMeta({
-    origin,
-    path: `/u/${card.handle}`,
-    title,
-    description: `${card.displayName}’s public locker on Lock’d. Keep the receipt.`,
-  });
+  return [
+    ...ogMeta({
+      origin,
+      path: `/u/${card.handle}`,
+      title,
+      description: `${card.displayName}’s public locker on Lock’d. Keep the receipt.`,
+    }),
+    NOINDEX,
+  ];
 }

@@ -70,6 +70,17 @@ describe("share-card tags (plan Step 12: the middleware's job, now the routes')"
     expect(JSON.stringify(tags)).not.toContain("Sam");
   });
 
+  it("public shares and lockers, found or not, ask search engines not to list them; the home page does not", () => {
+    const pages = [
+      shareOg("https://lockd.example", "0b7a", { title: "Push Day", kind: "receipt" }),
+      shareOg("https://lockd.example", "gone", null),
+      lockerOg("https://lockd.example", "sam", { displayName: "Sam", handle: "sam" }),
+      lockerOg("https://lockd.example", "sam", null),
+    ];
+    for (const tags of pages) expect(value(tags, "robots")).toBe("noindex, nofollow");
+    expect(value(siteOg("https://lockd.example"), "robots")).toBeUndefined();
+  });
+
   it("ogMeta sets the page title as well", () => {
     expect(ogMeta({ origin: "", path: "/", title: "T", description: "D" })[0]).toEqual({
       title: "T",
