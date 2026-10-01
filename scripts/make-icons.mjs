@@ -51,6 +51,20 @@ for (const { file, size, body } of icons) {
   writeFileSync(new URL(`../public/${file}`, import.meta.url), await page.screenshot({ type: "png" }));
   console.log(`public/${file} (${size} x ${size})`);
 }
+// The native icons: one 1024 square each, no transparency (the platform rounds it). The tile drawing is the one above.
+const native = [
+  "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+  "ios/App/LockdWatch/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png",
+];
+await page.setViewportSize({ width: 1024, height: 1024 });
+await page.setContent(
+  `<style>html,body{margin:0;background:${MILL}}svg{display:block;width:1024px;height:1024px}</style>${svg(tile)}`,
+);
+const nativePng = await page.screenshot({ type: "png" });
+for (const file of native) {
+  writeFileSync(new URL(`../${file}`, import.meta.url), nativePng);
+  console.log(`${file} (1024 x 1024)`);
+}
 // The share card: the mark, the name, the line. Mill field, Oxide tile, Chalk type.
 const CHALK = colour("chalk");
 const STEEL = colour("steel");

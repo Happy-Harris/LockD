@@ -1,6 +1,7 @@
 import { registerPlugin } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import type { TimerState } from "@/domain/types";
+import { inboxFromPlugin, type InboxPlugin, type IntentInbox, type IntentOutcome } from "./pending-intents";
 import { isNativePlatform } from "./platform";
 
 /**
@@ -36,15 +37,14 @@ export interface LockScreenTimerPayload {
 
 export type LockScreenAction = "plus" | "minus" | "stop";
 
-/** What the native `LockScreenTimer` plugin implements. */
-export interface LockScreenTimerPlugin {
+/**
+ * What the native `LockScreenTimer` plugin implements. A button tap is kept in the plugin's durable inbox until the
+ * web layer is running and has applied it, so a tap on a locked phone is not lost when nothing is listening.
+ */
+export interface LockScreenTimerPlugin extends InboxPlugin {
   show(timer: LockScreenTimerPayload): Promise<void>;
   update(timer: LockScreenTimerPayload): Promise<void>;
   clear(): Promise<void>;
-  addListener(
-    event: "action",
-    listener: (event: { action: LockScreenAction }) => void,
-  ): Promise<{ remove: () => Promise<void> }>;
 }
 
 /** The lock-screen surface, and the alert, as the sync logic sees them. Faked in tests. */
@@ -54,7 +54,7 @@ export interface LockScreenBridge {
   clear(): Promise<void>;
   scheduleEnd(endsAtMs: number, label: string | undefined): Promise<void>;
   cancelEnd(): Promise<void>;
-  onAction(listener: (action: LockScreenAction) => void): () => void;
+  inbox: IntentInbox;
 }
 
 export function payloadFor(timer: TimerState, nowMs: number): LockScreenTimerPayload {
@@ -117,7 +117,7 @@ export function createLockScreenSync(bridge: LockScreenBridge) {
       signature = "";
       scheduledFor = null;
     },
-    onAction: bridge.onAction,
+    inbox: bridge.inbox,
   };
 }
 
@@ -126,6 +126,8 @@ const nativePlugin = registerPlugin<LockScreenTimerPlugin>("LockScreenTimer", {
     show: async () => undefined,
     update: async () => undefined,
     clear: async () => undefined,
+    pendingActions: async () => ({ items: [] }),
+    acknowledgeActions: async () => undefined,
     addListener: async () => ({ remove: async () => undefined }),
   } satisfies LockScreenTimerPlugin,
 });
@@ -162,22 +164,27 @@ export const nativeLockScreenBridge: LockScreenBridge = {
   async cancelEnd() {
     if (isNativePlatform()) await LocalNotifications.cancel({ notifications: [{ id: REST_END_NOTIFICATION_ID }] });
   },
-  onAction(listener) {
-    if (!isNativePlatform()) return () => undefined;
-    let handle: { remove: () => Promise<void> } | null = null;
-    let removed = false;
-    void nativePlugin
-      .addListener("action", (event) => listener(event.action))
-      .then((added) => {
-        if (removed) void added.remove();
-        else handle = added;
-      })
-      .catch(() => undefined);
-    return () => {
-      removed = true;
-      if (handle) void handle.remove();
-    };
-  },
+  inbox: inboxFromPlugin(nativePlugin, isNativePlatform),
 };
 
 export const lockScreenSync = createLockScreenSync(nativeLockScreenBridge);
+
+export interface LockScreenActionDeps {
+  restTimer: TimerState | null;
+  adjustRestTimer: (deltaSeconds: number, atMs?: number) => void;
+  stopRestTimer: () => void;
+}
+
+/**
+ * Applies one queued button tap through the store, as of when it was tapped. A tap with no timer to act on, or made
+ * before the current timer started (it belonged to an earlier one), is not applied and says why.
+ */
+export function applyLockScreenAction(payload: unknown, atMs: number, deps: LockScreenActionDeps): IntentOutcome {
+  const action = (payload as { action?: unknown } | null)?.action;
+  if (action !== "plus" && action !== "minus" && action !== "stop") return { applied: false, reason: "invalid" };
+  if (!deps.restTimer) return { applied: false, reason: "no-timer" };
+  if (atMs < Date.parse(deps.restTimer.startedAt)) return { applied: false, reason: "superseded" };
+  if (action === "stop") deps.stopRestTimer();
+  else deps.adjustRestTimer(action === "plus" ? LOCK_SCREEN_STEP_SECONDS : -LOCK_SCREEN_STEP_SECONDS, atMs);
+  return { applied: true };
+}

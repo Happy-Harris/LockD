@@ -5,8 +5,8 @@ import Foundation
 /// The iOS half of the lock-screen rest timer (Opp 6, docs/design/lock-screen-rest-timer.md).
 ///
 /// The web store owns the timer. This plugin only draws it as a Live Activity whose clock is bound to `endsAt`, so
-/// the system counts down with the app suspended. Buttons come back as an `action` event (`plus`, `minus`, `stop`)
-/// and go through the store. The end-of-rest alert is a separate scheduled notification (local-notifications).
+/// the system counts down with the app suspended. Button taps (`plus`, `minus`, `stop`) wait in a durable inbox
+/// (`PendingActionStore.restTimer`) until the web store applies and acknowledges them. The end-of-rest alert is a separate scheduled notification (local-notifications).
 @objc(LockScreenTimerPlugin)
 public class LockScreenTimerPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "LockScreenTimerPlugin"
@@ -15,16 +15,18 @@ public class LockScreenTimerPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "show", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "update", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "clear", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "pendingActions", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "acknowledgeActions", returnType: CAPPluginReturnPromise),
     ]
 
     private var observer: NSObjectProtocol?
 
     override public func load() {
         observer = NotificationCenter.default.addObserver(
-            forName: .lockdRestTimerAction, object: nil, queue: .main
+            forName: .lockdPendingActions, object: nil, queue: .main
         ) { [weak self] note in
-            guard let action = note.userInfo?["action"] as? String else { return }
-            self?.notifyListeners("action", data: ["action": action])
+            guard (note.userInfo?["store"] as? String) == PendingActionStore.restTimer.name else { return }
+            self?.notifyListeners("pending", data: [:])
         }
     }
 
@@ -32,6 +34,16 @@ public class LockScreenTimerPlugin: CAPPlugin, CAPBridgedPlugin {
         if let observer = observer {
             NotificationCenter.default.removeObserver(observer)
         }
+    }
+
+    @objc func pendingActions(_ call: CAPPluginCall) {
+        call.resolve(["items": PendingActionStore.restTimer.items()])
+    }
+
+    @objc func acknowledgeActions(_ call: CAPPluginCall) {
+        let ids = (call.getArray("ids") as? [String]) ?? []
+        PendingActionStore.restTimer.remove(ids: ids)
+        call.resolve()
     }
 
     @objc func show(_ call: CAPPluginCall) {

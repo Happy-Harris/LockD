@@ -1,28 +1,24 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { TimerState } from "@/domain/types";
 import {
   createLockScreenSync,
   LOCK_SCREEN_DONE_LINGER_SECONDS,
   payloadFor,
-  type LockScreenAction,
+  applyLockScreenAction,
   type LockScreenBridge,
 } from "./lock-screen-timer";
 
 function fakeBridge() {
   const calls: string[] = [];
-  const listeners = new Set<(action: LockScreenAction) => void>();
   const bridge: LockScreenBridge = {
     show: async (t) => void calls.push(`show ${t.remainingSeconds}`),
     update: async (t) => void calls.push(`update ${t.remainingSeconds}${t.isRunning ? "" : " paused"}`),
     clear: async () => void calls.push("clear"),
     scheduleEnd: async (at) => void calls.push(`schedule ${new Date(at).toISOString().slice(11, 19)}`),
     cancelEnd: async () => void calls.push("cancel"),
-    onAction: (listener) => {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
+    inbox: { pending: async () => [], acknowledge: async () => undefined, onWake: () => () => undefined },
   };
-  return { bridge, calls, press: (action: LockScreenAction) => listeners.forEach((l) => l(action)) };
+  return { bridge, calls };
 }
 
 const START = Date.parse("2026-09-30T12:00:00Z");
@@ -121,14 +117,39 @@ describe("lock-screen sync", () => {
     await Promise.resolve();
   });
 
-  it("passes the lock screen's buttons through", () => {
-    const { bridge, press } = fakeBridge();
-    const seen: string[] = [];
-    const off = createLockScreenSync(bridge).onAction((a) => seen.push(a));
-    press("plus");
-    press("stop");
-    off();
-    press("minus");
-    expect(seen).toEqual(["plus", "stop"]);
+});
+
+describe("a queued lock-screen button", () => {
+  const deps = (over: Record<string, unknown> = {}) => ({
+    restTimer: timer(),
+    adjustRestTimer: vi.fn(),
+    stopRestTimer: vi.fn(),
+    ...over,
+  });
+  const tapAfterStart = START + 5_000;
+
+  it("adds and removes a step, as of when it was tapped", () => {
+    const d = deps();
+    expect(applyLockScreenAction({ action: "plus" }, tapAfterStart, d)).toEqual({ applied: true });
+    expect(d.adjustRestTimer).toHaveBeenCalledWith(15, tapAfterStart);
+    expect(applyLockScreenAction({ action: "minus" }, tapAfterStart, d)).toEqual({ applied: true });
+    expect(d.adjustRestTimer).toHaveBeenLastCalledWith(-15, tapAfterStart);
+  });
+
+  it("stops the timer", () => {
+    const d = deps();
+    expect(applyLockScreenAction({ action: "stop" }, tapAfterStart, d)).toEqual({ applied: true });
+    expect(d.stopRestTimer).toHaveBeenCalled();
+  });
+
+  it("does not apply a tap with no timer, one from before the current timer, or one it cannot read", () => {
+    const none = deps({ restTimer: null });
+    expect(applyLockScreenAction({ action: "stop" }, tapAfterStart, none)).toEqual({ applied: false, reason: "no-timer" });
+    const old = deps();
+    expect(applyLockScreenAction({ action: "plus" }, START - 1, old)).toEqual({ applied: false, reason: "superseded" });
+    expect(old.adjustRestTimer).not.toHaveBeenCalled();
+    for (const bad of [null, {}, { action: "explode" }, "plus"]) {
+      expect(applyLockScreenAction(bad, tapAfterStart, deps())).toEqual({ applied: false, reason: "invalid" });
+    }
   });
 });

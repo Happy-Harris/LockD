@@ -1,3 +1,4 @@
+import { inboxFromPlugin, type InboxPlugin, type IntentInbox } from "./pending-intents";
 import { registerPlugin } from "@capacitor/core";
 import type { TimerState, Workout, WorkoutExercise, WorkoutSet } from "@/domain/types";
 import { formatWeight, type WeightUnit } from "@/domain/units";
@@ -63,27 +64,37 @@ export interface WatchSnapshot {
   display?: { load?: string; previous?: string; target?: string };
   /** A short line for a moment after a record; names the lift and the value only. */
   record?: string;
+  /**
+   * What the phone did with the watch's recent taps, by the id the watch gave each one. The watch shows a tap as
+   * waiting until the phone says here that it was applied, and says plainly when it was not. Newest last.
+   */
+  acks?: WatchAck[];
 }
+
+export interface WatchAck {
+  id: string;
+  result: "applied" | "dropped";
+  /** Why a dropped tap was not applied: `stale`, `no-workout`, `no-timer`, `superseded` or `invalid`. */
+  reason?: string;
+}
+
+export const WATCH_ACK_LIMIT = 10;
 
 export type WatchIntent =
   | { type: "completeSet"; setId: string }
   | { type: "adjustRest"; deltaSeconds: number }
   | { type: "stopRest" };
 
-/** What the native `LockdWatch` plugin implements. */
-export interface LockdWatchPlugin {
+/** What the native `LockdWatch` plugin implements. Taps arrive through its durable inbox, never as a bare event. */
+export interface LockdWatchPlugin extends InboxPlugin {
   send(snapshot: WatchSnapshot): Promise<void>;
   clear(): Promise<void>;
-  addListener(
-    event: "intent",
-    listener: (event: { intent: unknown }) => void,
-  ): Promise<{ remove: () => Promise<void> }>;
 }
 
 export interface WatchBridge {
   send(snapshot: WatchSnapshot): Promise<void>;
   clear(): Promise<void>;
-  onIntent(listener: (intent: unknown) => void): () => void;
+  inbox: IntentInbox;
 }
 
 export interface WatchSnapshotInput {
@@ -99,6 +110,7 @@ export interface WatchSnapshotInput {
   /** The progression engine's call for each exercise in the workout, keyed by workout exercise id. */
   targets: ReadonlyMap<string, { weightG?: number; reps?: number; why: string } | undefined>;
   record?: string;
+  acks?: readonly WatchAck[];
 }
 
 /** "80 kg × 5", "80 kg" or "5 reps"; undefined when neither number is there. Never a zero for a missing one. */
@@ -168,6 +180,7 @@ export function buildWatchSnapshot(input: WatchSnapshotInput): WatchSnapshot | n
       rest: restLine,
       vibrate: input.vibrate,
       ...(input.record ? { record: input.record } : {}),
+      ...(input.acks?.length ? { acks: [...input.acks] } : {}),
     };
   }
 
@@ -214,6 +227,7 @@ export function buildWatchSnapshot(input: WatchSnapshotInput): WatchSnapshot | n
     vibrate: input.vibrate,
     ...(Object.keys(display).length ? { display } : {}),
     ...(input.record ? { record: input.record } : {}),
+    ...(input.acks?.length ? { acks: [...input.acks] } : {}),
   };
 }
 
@@ -241,16 +255,18 @@ export function parseWatchIntent(raw: unknown): WatchIntent | null {
 
 export type IntentResult =
   | { applied: true; records: PersonalRecord[] }
-  | { applied: false; reason: "invalid" | "no-workout" | "stale" | "no-timer" };
+  | { applied: false; reason: "invalid" | "no-workout" | "stale" | "no-timer" | "superseded" };
 
 export interface IntentDeps {
   workout: Workout | undefined;
   exercises: readonly WorkoutExercise[];
   sets: readonly WorkoutSet[];
   restTimer: TimerState | null;
-  completeSet: (setId: string) => PersonalRecord[];
-  adjustRestTimer: (deltaSeconds: number) => void;
+  completeSet: (setId: string, atMs?: number) => PersonalRecord[];
+  adjustRestTimer: (deltaSeconds: number, atMs?: number) => void;
   stopRestTimer: () => void;
+  /** When the tap happened, if it waited in the inbox. Work is stamped with this, not with the time it was applied. */
+  atMs?: number;
 }
 
 /**
@@ -265,10 +281,14 @@ export function applyWatchIntent(raw: unknown, deps: IntentDeps): IntentResult {
     if (!deps.workout || deps.workout.status !== "active") return { applied: false, reason: "no-workout" };
     const current = currentSetOf(deps.workout, deps.exercises, deps.sets);
     if (!current || current.rows[current.index]!.id !== intent.setId) return { applied: false, reason: "stale" };
-    return { applied: true, records: deps.completeSet(intent.setId) };
+    return { applied: true, records: deps.completeSet(intent.setId, deps.atMs) };
   }
   if (!deps.restTimer) return { applied: false, reason: "no-timer" };
-  if (intent.type === "adjustRest") deps.adjustRestTimer(intent.deltaSeconds);
+  // A tap made before the current timer started belongs to an earlier timer and must not change this one.
+  if (deps.atMs !== undefined && deps.atMs < Date.parse(deps.restTimer.startedAt)) {
+    return { applied: false, reason: "superseded" };
+  }
+  if (intent.type === "adjustRest") deps.adjustRestTimer(intent.deltaSeconds, deps.atMs);
   else deps.stopRestTimer();
   return { applied: true, records: [] };
 }
@@ -299,7 +319,7 @@ export function createWatchSync(bridge: WatchBridge) {
       last = null;
       void swallow(bridge.clear());
     },
-    onIntent: bridge.onIntent,
+    inbox: bridge.inbox,
   };
 }
 
@@ -307,6 +327,8 @@ const nativePlugin = registerPlugin<LockdWatchPlugin>("LockdWatch", {
   web: {
     send: async () => undefined,
     clear: async () => undefined,
+    pendingActions: async () => ({ items: [] }),
+    acknowledgeActions: async () => undefined,
     addListener: async () => ({ remove: async () => undefined }),
   } satisfies LockdWatchPlugin,
 });
@@ -321,22 +343,7 @@ export const nativeWatchBridge: WatchBridge = {
   async clear() {
     if (watchIsSupported()) await nativePlugin.clear();
   },
-  onIntent(listener) {
-    if (!watchIsSupported()) return () => undefined;
-    let handle: { remove: () => Promise<void> } | null = null;
-    let removed = false;
-    void nativePlugin
-      .addListener("intent", (event) => listener(event.intent))
-      .then((added) => {
-        if (removed) void added.remove();
-        else handle = added;
-      })
-      .catch(() => undefined);
-    return () => {
-      removed = true;
-      if (handle) void handle.remove();
-    };
-  },
+  inbox: inboxFromPlugin(nativePlugin, watchIsSupported),
 };
 
 export const watchSync = createWatchSync(nativeWatchBridge);

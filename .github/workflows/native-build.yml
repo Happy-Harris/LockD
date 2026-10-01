@@ -95,6 +95,7 @@ jobs:
           echo "app: $app"
           test -d "$app/PlugIns/RestTimerWidgetExtension.appex" || { echo 'missing the Live Activity extension'; exit 1; }
           test -d "$app/Watch/LockdWatch.app" || { echo 'missing the watch app'; exit 1; }
+          test -f "$app/Watch/LockdWatch.app/Assets.car" || { echo 'the watch app has no compiled icon catalog'; exit 1; }
       - name: Upload build log on failure
         if: failure()
         uses: actions/upload-artifact@v4

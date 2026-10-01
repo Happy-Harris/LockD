@@ -12,12 +12,16 @@ import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
+import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import org.json.JSONException;
 
 /**
  * The Android half of the lock-screen rest timer (Opp 6, docs/design/lock-screen-rest-timer.md).
@@ -42,13 +46,44 @@ public class LockScreenTimerPlugin extends Plugin {
         ensureChannel(getContext());
     }
 
-    /** Called by the notification buttons. Dropped when the web layer is not running: there is no store to update. */
-    static void dispatch(String action) {
+    /** Tells the web layer, if it is running, that a tap is waiting. A hint only: the inbox is the truth. */
+    static void announce() {
         LockScreenTimerPlugin plugin = instance.get();
         if (plugin == null) return;
-        JSObject data = new JSObject();
-        data.put("action", action);
-        plugin.notifyListeners("action", data);
+        plugin.notifyListeners("pending", new JSObject());
+    }
+
+    @PluginMethod
+    public void pendingActions(PluginCall call) {
+        JSArray items = new JSArray();
+        for (PendingActions.Item item : PendingActionStore.items(getContext())) {
+            JSObject payload = new JSObject();
+            payload.put("action", item.action);
+            JSObject entry = new JSObject();
+            entry.put("id", item.id);
+            entry.put("receivedAtMs", item.receivedAtMs);
+            entry.put("payload", payload);
+            items.put(entry);
+        }
+        JSObject result = new JSObject();
+        result.put("items", items);
+        call.resolve(result);
+    }
+
+    @PluginMethod
+    public void acknowledgeActions(PluginCall call) {
+        List<String> ids = new ArrayList<>();
+        try {
+            JSArray raw = call.getArray("ids");
+            if (raw != null) {
+                for (int i = 0; i < raw.length(); i++) ids.add(raw.getString(i));
+            }
+        } catch (JSONException e) {
+            call.reject("ids must be strings");
+            return;
+        }
+        PendingActionStore.remove(getContext(), ids);
+        call.resolve();
     }
 
     @PluginMethod

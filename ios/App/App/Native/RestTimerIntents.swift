@@ -1,13 +1,10 @@
 import AppIntents
 import Foundation
 
-extension Notification.Name {
-    /// Posted in the app process when a Live Activity button is tapped. The plugin forwards it to the web layer.
-    static let lockdRestTimerAction = Notification.Name("lockd.restTimerAction")
-}
-
-/// A Live Activity button: minus 15 s, plus 15 s or stop. It edits nothing itself; the web store writes the new
-/// timestamps and pushes the update. Shared by the app and the widget extension.
+/// A Live Activity button: minus 15 s, plus 15 s or stop. It edits nothing itself. The tap is written to a durable
+/// inbox (so it survives the web layer not running) and the web store applies it, writes the new timestamps and
+/// pushes the update; until then the Live Activity keeps showing the old time. Shared by the app and the widget
+/// extension.
 @available(iOS 17.0, *)
 struct RestTimerActionIntent: LiveActivityIntent {
     static let title: LocalizedStringResource = "Rest timer"
@@ -24,7 +21,9 @@ struct RestTimerActionIntent: LiveActivityIntent {
     }
 
     func perform() async throws -> some IntentResult {
-        NotificationCenter.default.post(name: .lockdRestTimerAction, object: nil, userInfo: ["action": action])
+        let store = PendingActionStore.restTimer
+        store.enqueue(id: nil, receivedAtMs: Date().timeIntervalSince1970 * 1000, payload: ["action": action])
+        store.announce()
         return .result()
     }
 }

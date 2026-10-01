@@ -6,17 +6,28 @@ import { barbellSnap } from "@/lib/gym/loads";
 import { progressExercise } from "@/lib/gym/progression";
 import { useGym } from "@/lib/gym/store";
 import { isNativePlatform } from "@/lib/native/platform";
+import { createIntentDrain, createSeenIds } from "@/lib/native/pending-intents";
 import {
+  WATCH_ACK_LIMIT,
   applyWatchIntent,
   buildWatchSnapshot,
   currentSetOf,
   recordLine,
   watchIsSupported,
   watchSync,
+  type WatchAck,
   type WatchSnapshot,
 } from "@/lib/native/watch";
 
 const RECORD_LINE_MS = 8000;
+
+function safeStorage(): Storage | undefined {
+  try {
+    return typeof localStorage === "undefined" ? undefined : localStorage;
+  } catch {
+    return undefined;
+  }
+}
 
 /**
  * Keeps the Apple Watch in step with the active workout (native iOS only) and applies what the watch sends back
@@ -36,6 +47,7 @@ export function WatchSync() {
   const plates = useGym((s) => s.plates);
   const slices = useSlices();
   const [record, setRecord] = useState<string | undefined>();
+  const [acks, setAcks] = useState<WatchAck[]>([]);
   const recordTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const workout = workouts.find((row) => row.status === "active");
   const unit = weightUnitFor(settings.unitSystem);
@@ -104,34 +116,55 @@ export function WatchSync() {
       ghosts,
       targets: new Map(currentExerciseId ? [[currentExerciseId, target]] : []),
       record,
+      acks,
     });
-  }, [enabled, workout, exercisesOfWorkout, sets, restTimer, unit, settings.restTimerVibrate, ghostSlice, currentExerciseId, target, record]);
+  }, [enabled, workout, exercisesOfWorkout, sets, restTimer, unit, settings.restTimerVibrate, ghostSlice, currentExerciseId, target, record, acks]);
 
   useEffect(() => {
     if (!enabled) return;
     watchSync.sync(snapshot);
   }, [enabled, snapshot]);
 
+  // Taps come from the native inbox, which keeps them while this page is not running. Each is applied through the
+  // store (stamped with when it was tapped), and only then acknowledged; the watch is told what happened to it.
   useEffect(() => {
     if (!enabled) return;
-    const stop = watchSync.onIntent((raw) => {
-      const state = useGym.getState();
-      const result = applyWatchIntent(raw, {
-        workout: state.workouts.find((row) => row.status === "active"),
-        exercises: state.workoutExercises,
-        sets: state.workoutSets,
-        restTimer: state.restTimer,
-        completeSet: state.completeSet,
-        adjustRestTimer: state.adjustRestTimer,
-        stopRestTimer: state.stopRestTimer,
-      });
-      if (!result.applied && result.reason === "stale") watchSync.resend();
-      if (result.applied && result.records[0]) {
-        clearTimeout(recordTimer.current);
-        setRecord(recordLine(result.records[0], weightUnitFor(state.settings.unitSystem)));
-        recordTimer.current = setTimeout(() => setRecord(undefined), RECORD_LINE_MS);
-      }
+    const drain = createIntentDrain({
+      inbox: watchSync.inbox,
+      seen: createSeenIds("lockd-watch-intent-ids", safeStorage()),
+      handle: (item) => {
+        const state = useGym.getState();
+        const result = applyWatchIntent(item.payload, {
+          workout: state.workouts.find((row) => row.status === "active"),
+          exercises: state.workoutExercises,
+          sets: state.workoutSets,
+          restTimer: state.restTimer,
+          completeSet: state.completeSet,
+          adjustRestTimer: state.adjustRestTimer,
+          stopRestTimer: state.stopRestTimer,
+          atMs: item.receivedAtMs,
+        });
+        if (!result.applied) {
+          if (result.reason === "stale") watchSync.resend();
+          return { applied: false, reason: result.reason };
+        }
+        if (result.records[0]) {
+          clearTimeout(recordTimer.current);
+          setRecord(recordLine(result.records[0], weightUnitFor(state.settings.unitSystem)));
+          recordTimer.current = setTimeout(() => setRecord(undefined), RECORD_LINE_MS);
+        }
+        return { applied: true };
+      },
+      onOutcome: (item, outcome) => {
+        const id = (item.payload as { id?: unknown } | null)?.id;
+        const ackId = typeof id === "string" ? id : item.id;
+        const ack: WatchAck = outcome.applied
+          ? { id: ackId, result: "applied" }
+          : { id: ackId, result: "dropped", reason: outcome.reason };
+        setAcks((previous) => [...previous, ack].slice(-WATCH_ACK_LIMIT));
+      },
     });
+    const stop = drain.start();
     return () => {
       stop();
       clearTimeout(recordTimer.current);
