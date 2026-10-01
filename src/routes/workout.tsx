@@ -217,7 +217,8 @@ function ActiveWorkoutPage() {
           <input
             value={workout.name}
             onChange={(event) => updateWorkout(workout.id, { name: event.target.value })}
-            className="w-full bg-transparent font-display text-2xl font-semibold tracking-tight text-ink outline-none"
+            aria-label="Workout name"
+            className="w-full rounded-md bg-transparent font-display text-2xl font-semibold tracking-tight text-ink outline-none focus-visible:ring-2 focus-visible:ring-accent/70"
           />
           <p className="font-mono text-xs text-muted tabular">
             <ElapsedClock startedAt={workout.startedAt} pausedSeconds={workout.pausedSeconds} /> ·{" "}

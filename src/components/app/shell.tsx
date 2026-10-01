@@ -61,6 +61,12 @@ export function AppShell({ children, hideNav }: { children: React.ReactNode; hid
 
   return (
     <div className="min-h-dvh bg-canvas text-ink lg:flex">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:rounded-xl focus:bg-accent focus:px-4 focus:py-2.5 focus:text-sm focus:font-medium focus:text-accent-ink"
+      >
+        Skip to content
+      </a>
       <aside className={cn("hidden w-60 shrink-0 border-r border-line lg:flex lg:flex-col lg:px-3 lg:py-6", hideNav && "lg:hidden")}>
         <div className="mb-8 flex items-center gap-2.5 px-2">
           <LockdMark className="size-8" />

@@ -94,6 +94,7 @@ function ReceiptPage() {
         className={cn(
           "mt-5 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-5 text-center",
           dragging ? "border-accent bg-raised" : "border-current/20",
+          "focus-within:ring-2 focus-within:ring-accent/70 focus-within:ring-offset-2 focus-within:ring-offset-canvas",
         )}
         onDragOver={(event) => {
           event.preventDefault();
