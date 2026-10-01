@@ -5,7 +5,9 @@ this first, then `CLAUDE.md` (the rules), then the top few entries of `docs/HAND
 last PRs did and did not verify). Keep this file current: update the tables in the same PR that
 changes a status.
 
-_Last updated: 2026-09-30, after `LockD#71` merged. Steps 1 to 11, 12a and 13 are done. **Paused for a new session: resume with Step 12b** (see the Step 12 row and the top of `docs/HANDOVER.md`)._
+_Last updated: 2026-10-01 (web readiness audit), after `LockD#71` merged. Steps 1 to 11, 12a and 13 are done. **Paused for a new session: resume with Step 12b** (see the Step 12 row and the top of `docs/HANDOVER.md`)._
+
+**Current web-launch work:** Phase 1 audit is documented in [WEB-READINESS.md](launch/WEB-READINESS.md), pending review in a docs-only PR from `codex/web-readiness-audit` to `main`. Verify and production offline checks passed; the full e2e run is red. Results/limits are recorded in the handover and audit. No fixes or launch decisions are approved. The resume instruction above is stale; existing Step/Opp rows remain the source for their completed work. For this task, **do not merge**; the session merge permission below does not apply. Phase 2 starts only after the owner replies **go** on that PR and approves gaps, with one small PR per approved fix from `main`. These launch phases differ from the historic consolidation phase labels below.
 
 ## 1. How to read the labels
 
