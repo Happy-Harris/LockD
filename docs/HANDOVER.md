@@ -9,6 +9,17 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-10-01 — Watch icons, and no more dropped watch and lock-screen taps
+
+- **Owner's ask:** add the watch icon catalog from the Lock'd mark; stop dropping watch and lock-screen taps while the phone's web layer is suspended; keep the phone the only log writer; never show a tap as done before the phone confirms.
+- **Code fixes (compiled, not run on a device):**
+  - Icons: `scripts/make-icons.mjs` now draws the 1024 native icon from the brand mark; the watch app has its asset catalog (`scripts/native/add-watch-icons.rb`). The iOS app icon was still Capacitor's default; it is now the Lock'd mark too.
+  - A durable native inbox (`PendingActionStore` on iOS, `PendingActions` on Android; `WatchRelay` is started from the app delegate so a background launch still catches a watch tap). The web store pulls it, applies each tap as of when it was made, then acknowledges it (`src/lib/native/pending-intents.ts`). `completeSet`, `startRestTimer` and `adjustRestTimer` take an optional tap time; with none they behave as before.
+  - The watch shows "Waiting for phone" until a snapshot's `acks` says `applied`, says plainly when a tap was dropped and why, and never marks a set done itself.
+- **Kept explicit:** a Live Activity does not redraw at zero while the app is suspended (system behaviour).
+- **Needs a device:** whether the page gets time to run when a tap wakes the app with the phone locked; the zero-state look; round-trip latency. The Android lateness test is still outstanding and parked.
+- **Edge:** if the app dies after applying a tap but before the phone's confirmation reaches the watch, the watch waits and then says the phone has not confirmed; the tap is not applied twice.
+
 ### 2026-09-30 — Opp 7: the Apple Watch app and the LockdWatch plugin
 
 - **Shipped:** a watchOS 9 SwiftUI app (`LockdWatch`) that shows the snapshot and sends intents, the phone-side `LockdWatch` Capacitor plugin over WatchConnectivity, and `scripts/native/add-watch-app.rb`. The snapshot gained phone-written `display` text so the watch never formats a weight.

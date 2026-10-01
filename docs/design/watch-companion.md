@@ -120,9 +120,26 @@ All taken as recommended.
 |---|---|
 | Code written | yes |
 | Compile check | CI job `ios` (simulator, unsigned) |
-| Device check | **Not run.** Reachability, tap latency, and whether the snapshot survives the watch app being suspended |
+| Device check | **Not run.** Reachability, tap latency, whether the snapshot survives the watch app being suspended, and whether a tap is applied with the phone locked |
 
-Known limits to test on a device: a complete-set tap from the watch is dropped if the phone's web layer is suspended (the stale-set guard makes that safe, not silent), and the watch app has no icon asset catalog yet, which distribution needs.
+### Taps while the phone's web layer is suspended (code fix)
+
+A tap used to be dropped if the phone's web layer was not running. Now the phone's native side (`WatchRelay`, started from the app
+delegate so a background launch still catches it) writes each tap to a durable inbox with the id the watch gave it and the time it was
+tapped. The web store stays the only writer: when the page runs it applies each tap as of when it was made, then acknowledges it
+(`src/lib/native/pending-intents.ts`, shared with the lock-screen timer). The watch never shows a tap as done on its own:
+
+- After a tap the button reads "Waiting for phone" and cannot be tapped again; a rest control is disabled while one is waiting.
+- The phone's next snapshot carries `acks`: `applied`, or `dropped` with a reason. Only then does the waiting end. A dropped tap says so
+  ("Not logged: that set had already moved on", and similar). After 15 s with no answer the screen says nothing is logged until the
+  phone confirms; after 10 minutes it stops waiting and says the phone has not confirmed.
+- If the live message fails, the same tap is sent again as a queued transfer. The phone applies a tap with a given id once.
+- A tap older than six hours is not applied. A stale set tap and a rest tap from before the current timer are dropped, as before.
+
+Needs a device: whether the phone's web layer gets time to run when a tap wakes the app in the background (if not, the tap waits in the
+inbox and is applied when the app is next opened, and the watch keeps saying it is waiting), and how long the whole round trip takes.
+
+The watch app now has its icon catalog (the Lock'd mark; `scripts/make-icons.mjs`).
 
 ## Needs the owner
 

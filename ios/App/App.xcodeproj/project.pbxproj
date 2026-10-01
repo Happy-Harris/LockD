@@ -13,12 +13,14 @@
 		238CEC5C6B564921F1FEEBB7 /* LockdHealthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E18ADD568B94F0BB488016 /* LockdHealthPlugin.swift */; };
 		2AB833228565E5FE5F2010B0 /* LockdWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = FF4049EC1A566C9587CA6237 /* LockdWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		425F0395E8E1DE1D822C8510 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 87667CA258A32C0A83ED3AC7 /* Assets.xcassets */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		52B687980034F50C64EE3650 /* PendingActionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 855062FF19AE36C2BF425DE8 /* PendingActionStore.swift */; };
 		5873FF49E78884526646082C /* LockdWatchPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80647253825CA599045C183D /* LockdWatchPlugin.swift */; };
 		5FAA307E84E2B1857459C1CC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AACF7E66018619201551A2B5 /* ContentView.swift */; };
 		6DE27068A75EDB166C9059BA /* LockScreenTimerPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF614EFFAAAFDEBD88E62FD9 /* LockScreenTimerPlugin.swift */; };
@@ -30,8 +32,10 @@
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 		A28BB160C3F05C953AEA4E42 /* SleepIntervals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CE83E05B7F9614C733DD7D /* SleepIntervals.swift */; };
 		A82C6C8599B0620C39E7925B /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 693174D7801CC3C82BACC50B /* Foundation.framework */; };
+		B70AF1BE9992F5648AAA4192 /* WatchRelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3771B0B201FBC6BCD37F7F8 /* WatchRelay.swift */; };
 		B96D2DE0455D054C3C0CDA33 /* WatchModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1407CA5803C818F73F9D5A63 /* WatchModel.swift */; };
 		D46913799E33C393CE9509B0 /* LockdWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE0FBDB2067C183F8217D4BB /* LockdWatchApp.swift */; };
+		DAA240D891E86E506676F07D /* PendingActionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 855062FF19AE36C2BF425DE8 /* PendingActionStore.swift */; };
 		FB15B6586C0E184E14F9C9F8 /* RestTimerIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ED9581293CC83C0C3CA9C36 /* RestTimerIntents.swift */; };
 /* End PBXBuildFile section */
 
@@ -97,6 +101,8 @@
 		6ED9581293CC83C0C3CA9C36 /* RestTimerIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RestTimerIntents.swift; sourceTree = "<group>"; };
 		80647253825CA599045C183D /* LockdWatchPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LockdWatchPlugin.swift; sourceTree = "<group>"; };
 		84D5AF5FC10892861A084DBC /* RestTimerWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RestTimerWidget.swift; sourceTree = "<group>"; };
+		855062FF19AE36C2BF425DE8 /* PendingActionStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PendingActionStore.swift; sourceTree = "<group>"; };
+		87667CA258A32C0A83ED3AC7 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8C1CD764CDC6BF9A6C0E570C /* WatchSnapshot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchSnapshot.swift; sourceTree = "<group>"; };
 		8F19F74644433E4DA164A28B /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A59BED91FB32138F434DA690 /* App.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
@@ -107,6 +113,7 @@
 		BF614EFFAAAFDEBD88E62FD9 /* LockScreenTimerPlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LockScreenTimerPlugin.swift; sourceTree = "<group>"; };
 		CE0FBDB2067C183F8217D4BB /* LockdWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LockdWatchApp.swift; sourceTree = "<group>"; };
 		D6DDE87A4CF77D849C1B34FB /* RestTimerAttributes.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RestTimerAttributes.swift; sourceTree = "<group>"; };
+		E3771B0B201FBC6BCD37F7F8 /* WatchRelay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchRelay.swift; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 		FF4049EC1A566C9587CA6237 /* LockdWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LockdWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -159,6 +166,8 @@
 				21E18ADD568B94F0BB488016 /* LockdHealthPlugin.swift */,
 				28CE83E05B7F9614C733DD7D /* SleepIntervals.swift */,
 				80647253825CA599045C183D /* LockdWatchPlugin.swift */,
+				855062FF19AE36C2BF425DE8 /* PendingActionStore.swift */,
+				E3771B0B201FBC6BCD37F7F8 /* WatchRelay.swift */,
 			);
 			name = Native;
 			path = Native;
@@ -238,6 +247,7 @@
 				1407CA5803C818F73F9D5A63 /* WatchModel.swift */,
 				8C1CD764CDC6BF9A6C0E570C /* WatchSnapshot.swift */,
 				1A1AF94F133D1229C0E4E32F /* Info.plist */,
+				87667CA258A32C0A83ED3AC7 /* Assets.xcassets */,
 			);
 			name = LockdWatch;
 			path = LockdWatch;
@@ -372,6 +382,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				425F0395E8E1DE1D822C8510 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -421,6 +432,7 @@
 				95DC2D000569C377FA750C18 /* RestTimerWidget.swift in Sources */,
 				1DA98D47B0C08F6A40E3ACF8 /* RestTimerAttributes.swift in Sources */,
 				FB15B6586C0E184E14F9C9F8 /* RestTimerIntents.swift in Sources */,
+				52B687980034F50C64EE3650 /* PendingActionStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -436,6 +448,8 @@
 				238CEC5C6B564921F1FEEBB7 /* LockdHealthPlugin.swift in Sources */,
 				A28BB160C3F05C953AEA4E42 /* SleepIntervals.swift in Sources */,
 				5873FF49E78884526646082C /* LockdWatchPlugin.swift in Sources */,
+				DAA240D891E86E506676F07D /* PendingActionStore.swift in Sources */,
+				B70AF1BE9992F5648AAA4192 /* WatchRelay.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

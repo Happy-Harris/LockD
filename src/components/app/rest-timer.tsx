@@ -1,6 +1,7 @@
 import { Pause, Play, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LOCK_SCREEN_STEP_SECONDS, lockScreenSync } from "@/lib/native/lock-screen-timer";
+import { applyLockScreenAction, lockScreenSync } from "@/lib/native/lock-screen-timer";
+import { createIntentDrain, createSeenIds } from "@/lib/native/pending-intents";
 import { isNativePlatform } from "@/lib/native/platform";
 import { formatDuration } from "@/domain/units";
 import { useGym } from "@/lib/gym/store";
@@ -192,14 +193,29 @@ export function RestTimerBar() {
     if (!isNativePlatform()) return;
     lockScreenSync.sync(stillActive ? restTimer : null, { notify, nowMs: now });
   }, [restTimer, stillActive, notify, now]);
+  // A button tap waits in the native inbox while this page is not running. It is applied here, as of when it was
+  // tapped, and the lock screen changes only once the store has changed: the button never shows a result early.
   useEffect(() => {
     if (!isNativePlatform()) return;
-    return lockScreenSync.onAction((action) => {
-      if (action === "plus") adjustRestTimer(LOCK_SCREEN_STEP_SECONDS);
-      else if (action === "minus") adjustRestTimer(-LOCK_SCREEN_STEP_SECONDS);
-      else stopRestTimer();
-    });
-  }, [adjustRestTimer, stopRestTimer]);
+    let storage: Storage | undefined;
+    try {
+      storage = typeof localStorage === "undefined" ? undefined : localStorage;
+    } catch {
+      storage = undefined;
+    }
+    return createIntentDrain({
+      inbox: lockScreenSync.inbox,
+      seen: createSeenIds("lockd-lock-screen-action-ids", storage),
+      handle: (item) => {
+        const state = useGym.getState();
+        return applyLockScreenAction(item.payload, item.receivedAtMs, {
+          restTimer: state.restTimer,
+          adjustRestTimer: state.adjustRestTimer,
+          stopRestTimer: state.stopRestTimer,
+        });
+      },
+    }).start();
+  }, []);
 
   if (!restTimer || !stillActive) return null;
 

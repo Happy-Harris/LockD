@@ -128,17 +128,26 @@ Built:
   - **iOS** (`ios/App/App/Native/`, `ios/App/RestTimerWidget/`): `LockScreenTimerPlugin` starts, updates and ends an ActivityKit Live
     Activity (iOS 16.2 and later; older systems get the scheduled alert only). A Widget Extension target `RestTimerWidgetExtension`
     (added by `scripts/native/add-rest-timer-widget.rb`) draws it: a `Text(timerInterval:)` clock bound to `endsAt`, so the system
-    counts down with the app suspended, and minus, plus and stop buttons (iOS 17 and later, as `LiveActivityIntent`s that post to the
-    plugin). `MainViewController` registers the plugin; the storyboard and `NSSupportsLiveActivities` are updated.
-  - **Known limits, by design:** a Live Activity does not redraw itself at zero while the app is suspended, so it may sit at 0:00
-    until the app wakes; the scheduled notification is what alerts. A lock-screen button tapped while the web layer is not running
-    has nobody to tell and is dropped.
+    counts down with the app suspended, and minus, plus and stop buttons (iOS 17 and later, as `LiveActivityIntent`s that write to the
+    durable inbox, see "Taps while the web layer is not running" below). `MainViewController` registers the plugin; the storyboard and `NSSupportsLiveActivities` are updated.
+  - **Known limit, kept explicit:** a Live Activity does not redraw itself at zero while the app is suspended, so it may sit at 0:00
+    until the app wakes; the scheduled notification is what alerts. This is the system's behaviour, not something code here can change,
+    and it needs a device to see how it looks.
+- **Taps while the web layer is not running (code fix).** A button tapped on a locked phone used to be dropped when nothing was
+  listening. Now the tap is written to a durable native inbox (iOS: a file written atomically, filled by the Live Activity intent;
+  Android: preferences, filled by the notification receiver) with its id and the time it was tapped. The web store stays the only
+  writer: when the page runs it pulls the inbox, applies each tap as of when it was tapped, and only then acknowledges it
+  (`src/lib/native/pending-intents.ts`). Until the store has changed, the tile keeps showing the old time: a button never shows a
+  result the store has not written. A tap with no timer to act on, from before the current timer, or older than six hours is not
+  applied. What still needs a device: whether iOS and Android give the page time to run while the phone stays locked. If not, the tap
+  is applied the next time the app is opened (it is kept, not lost), and the tile does not change until then.
 - **Verification.**
-  - Compiled here: the Android app builds (`assembleDebug`) and its 3 unit tests pass. The TypeScript is covered by `lock-screen-timer.test.ts`.
+  - Compiled here: the Android app builds (`assembleDebug`) and its unit tests pass (the inbox's `PendingActionsTest` and the wording's `RestTimerFormatTest`). The TypeScript is covered by `lock-screen-timer.test.ts`.
   - Compiled in CI only: the iOS app and the widget extension (`.github/workflows/native-build.yml`, job `ios`, unsigned, simulator SDK). Not
     compiled here: there is no Xcode.
   - Not verified on a device: any of it. To check: the tile appears and counts down with the screen locked; the buttons change the
-    timer; the end alert arrives; the Live Activity appears on a real iPhone.
+    timer, including a tap with the phone locked and the app suspended (and how soon the tile follows); the end alert arrives; the
+    Live Activity appears on a real iPhone; how the Live Activity looks at zero.
   - **Android lateness test (outstanding):** on a real Android phone with the screen locked, finish a set, let the alert fire, and
     measure how late it is against `endsAt`. If it is more than about 5 s late, come back to the owner with a foreground-service option.
 

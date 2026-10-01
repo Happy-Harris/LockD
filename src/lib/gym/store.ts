@@ -183,7 +183,8 @@ interface GymActions {
   updateSet: (setId: string, patch: Partial<WorkoutSet>) => void;
   nudgeSetWeight: (setId: string, deltaG: number) => void;
   nudgeSetReps: (setId: string, delta: number) => void;
-  completeSet: (setId: string) => PersonalRecord[];
+  /** `atMs` is when the tap happened, for a tap that was queued while the app was not running. Default: now. */
+  completeSet: (setId: string, atMs?: number) => PersonalRecord[];
   uncompleteSet: (setId: string) => void;
   deleteSet: (setId: string) => void;
   /** Undo for deleteSet: puts the row back unchanged, unless its exercise was removed meanwhile. */
@@ -216,8 +217,9 @@ interface GymActions {
     setId?: string,
     label?: string,
     suggestedSeconds?: number,
+    atMs?: number,
   ) => void;
-  adjustRestTimer: (deltaSeconds: number) => void;
+  adjustRestTimer: (deltaSeconds: number, atMs?: number) => void;
   stopRestTimer: () => void;
   installProgramPack: (packId: string) => string | undefined;
   duplicateProgram: (programId: string) => string | undefined;
@@ -924,8 +926,8 @@ export const useGym = create<GymState>()(
           };
         }),
 
-      completeSet: (setId) => {
-        const stamp = new Date().toISOString();
+      completeSet: (setId, atMs) => {
+        const stamp = new Date(atMs ?? Date.now()).toISOString();
         set((state) => ({
           workoutSets: state.workoutSets.map((row) =>
             row.id === setId ? { ...row, isCompleted: true, completedAt: stamp } : row,
@@ -954,6 +956,7 @@ export const useGym = create<GymState>()(
               setId,
               we.exerciseNameSnapshot,
               restSuggestion(learned, seconds),
+              atMs,
             );
           }
         }
@@ -1180,8 +1183,8 @@ export const useGym = create<GymState>()(
         };
       },
 
-      startRestTimer: (seconds, workoutId, setId, label, suggestedSeconds) => {
-        const started = new Date();
+      startRestTimer: (seconds, workoutId, setId, label, suggestedSeconds, atMs) => {
+        const started = new Date(atMs ?? Date.now());
         const ends = new Date(started.getTime() + seconds * 1000);
         set({
           restTimer: {
@@ -1197,25 +1200,23 @@ export const useGym = create<GymState>()(
         });
       },
 
-      adjustRestTimer: (deltaSeconds) => {
+      adjustRestTimer: (deltaSeconds, atMs) => {
         const timer = get().restTimer;
         if (!timer) return;
-        const remaining = Math.max(
-          0,
-          Math.ceil((Date.parse(timer.endsAt) - Date.now()) / 1000) + deltaSeconds,
-        );
+        const at = atMs ?? Date.now();
+        const remaining = Math.max(0, Math.ceil((Date.parse(timer.endsAt) - at) / 1000) + deltaSeconds);
         if (remaining <= 0) {
           set({
             restTimer: {
               ...timer,
-              endsAt: new Date().toISOString(),
+              endsAt: new Date(at).toISOString(),
               durationSeconds: 0,
               isRunning: false,
             },
           });
           return;
         }
-        get().startRestTimer(remaining, timer.workoutId, timer.setId, timer.label);
+        get().startRestTimer(remaining, timer.workoutId, timer.setId, timer.label, undefined, atMs);
       },
 
       stopRestTimer: () => set({ restTimer: null }),

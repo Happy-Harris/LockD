@@ -16,6 +16,10 @@ Three separate things are kept apart: code written, a compile check, and a devic
 | Health reads, iOS (HealthKit) | yes | CI job `ios` only | not run | an Apple Developer account and the HealthKit capability on the App ID |
 | Apple Watch app and `LockdWatch` plugin | yes | CI job `ios` builds the watch target for the simulator and checks it is in the products | not run | an Apple Developer account and team; App IDs for the watch app and widget; a paired watch |
 
+Taps from the watch and the lock-screen timer do not depend on the web layer running: native code keeps them in a durable inbox with
+the time they were made, and the web store applies and then acknowledges each (`src/lib/native/pending-intents.ts`). Native code never writes the
+log or the timer. Code written and compiled; whether the phone gives the page time to run while locked is a device check.
+
 CI: `.github/workflows/native-build.yml` builds the debug APK and runs the Android unit tests on Ubuntu, and builds the iOS app and widget extension
 unsigned for the simulator on macOS. It runs on changes under `ios/`, `android/`, `src/lib/native/`, the Capacitor config and the native scripts.
 It signs nothing and proves nothing about a real device.

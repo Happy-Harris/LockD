@@ -48,6 +48,8 @@ const input = (sets: WorkoutSet[], over: Record<string, unknown> = {}) => ({
   ...over,
 });
 
+const emptyInbox = { pending: async () => [], acknowledge: async () => undefined, onWake: () => () => undefined };
+
 describe("watch snapshot", () => {
   it("shows the first set not done, counting working sets from 1", () => {
     const snap = buildWatchSnapshot(input(base()))!;
@@ -119,6 +121,18 @@ describe("watch snapshot", () => {
   });
 });
 
+describe("watch acknowledgements", () => {
+  it("carries what the phone did with the watch's taps, and nothing when there are none", () => {
+    const sets = [{ id: "a", order: 0, isCompleted: false, setType: "working" } as WorkoutSet];
+    const withAcks = buildWatchSnapshot(
+      input(sets, { acks: [{ id: "t1", result: "dropped", reason: "stale" }] }) as Parameters<typeof buildWatchSnapshot>[0],
+    );
+    expect(withAcks?.acks).toEqual([{ id: "t1", result: "dropped", reason: "stale" }]);
+    const without = buildWatchSnapshot(input(sets) as Parameters<typeof buildWatchSnapshot>[0]);
+    expect(without?.acks).toBeUndefined();
+  });
+});
+
 describe("watch display text", () => {
   it("is written by the phone with the weight rule, and absent when the numbers are", () => {
     const ghosts = new Map([["x1", [{ weightG: 77500, reps: 5 }]]]);
@@ -155,7 +169,7 @@ describe("watch intents", () => {
   it("completes the set the watch was shown", () => {
     const d = deps();
     expect(applyWatchIntent({ type: "completeSet", setId: "b" }, d)).toEqual({ applied: true, records: [] });
-    expect(d.completeSet).toHaveBeenCalledWith("b");
+    expect(d.completeSet).toHaveBeenCalledWith("b", undefined);
   });
 
   it("drops a tap on a set that is no longer the current one", () => {
@@ -173,12 +187,33 @@ describe("watch intents", () => {
   it("adjusts and stops rest only while a timer exists", () => {
     const d = deps();
     expect(applyWatchIntent({ type: "adjustRest", deltaSeconds: 15 }, d).applied).toBe(true);
-    expect(d.adjustRestTimer).toHaveBeenCalledWith(15);
+    expect(d.adjustRestTimer).toHaveBeenCalledWith(15, undefined);
     expect(applyWatchIntent({ type: "stopRest" }, d).applied).toBe(true);
     expect(d.stopRestTimer).toHaveBeenCalled();
     const none = deps(base(), { restTimer: null });
     expect(applyWatchIntent({ type: "stopRest" }, none)).toEqual({ applied: false, reason: "no-timer" });
     expect(none.stopRestTimer).not.toHaveBeenCalled();
+  });
+
+  it("stamps a queued tap with when it happened, not when it was applied", () => {
+    const d = deps(base(), { atMs: 1_000 });
+    expect(applyWatchIntent({ type: "completeSet", setId: "b" }, d).applied).toBe(true);
+    expect(d.completeSet).toHaveBeenCalledWith("b", 1_000);
+  });
+
+  it("drops a queued rest tap that was made before the current timer started", () => {
+    const d = deps(base(), { atMs: Date.parse(timer().startedAt) - 1 });
+    expect(applyWatchIntent({ type: "adjustRest", deltaSeconds: 15 }, d)).toEqual({ applied: false, reason: "superseded" });
+    expect(applyWatchIntent({ type: "stopRest" }, d)).toEqual({ applied: false, reason: "superseded" });
+    expect(d.adjustRestTimer).not.toHaveBeenCalled();
+    expect(d.stopRestTimer).not.toHaveBeenCalled();
+  });
+
+  it("applies a queued rest tap made after the current timer started, with its own time", () => {
+    const at = Date.parse(timer().startedAt) + 5_000;
+    const d = deps(base(), { atMs: at });
+    expect(applyWatchIntent({ type: "adjustRest", deltaSeconds: -15 }, d).applied).toBe(true);
+    expect(d.adjustRestTimer).toHaveBeenCalledWith(-15, at);
   });
 
   it("finds no current set when everything is done", () => {
@@ -188,7 +223,7 @@ describe("watch intents", () => {
 
 describe("watch sync", () => {
   const bridge = () => {
-    const b = { send: vi.fn(async () => undefined), clear: vi.fn(async () => undefined), onIntent: vi.fn(() => () => undefined) };
+    const b = { send: vi.fn(async () => undefined), clear: vi.fn(async () => undefined), inbox: emptyInbox };
     return b satisfies WatchBridge;
   };
   const snap = (over: Partial<WatchSnapshot> = {}) => ({ ...buildWatchSnapshot(input(base(), { restTimer: timer() }))!, ...over });

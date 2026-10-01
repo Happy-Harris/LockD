@@ -44,13 +44,19 @@ struct SetView: View {
                     if let previous = snapshot.display?.previous {
                         Text("Last: \(previous)").font(.caption2).foregroundStyle(.secondary)
                     }
-                    Button("Complete") { model.send(.completeSet(setId: set.setId)) }
-                        .disabled(!model.phoneReachable)
+                    // Not "done" until the phone confirms: the button says it is waiting and cannot be tapped twice.
+                    Button(model.isWaiting(setId: set.setId) ? "Waiting for phone\u{2026}" : "Complete") {
+                        model.send(.completeSet(setId: set.setId))
+                    }
+                    .disabled(!model.phoneReachable || model.isWaiting(setId: set.setId))
                 } else {
                     Text("All sets done").font(.title3)
                 }
                 if !model.phoneReachable {
                     Text("Phone not reachable").font(.caption2).foregroundStyle(.orange)
+                }
+                if let notice = model.notice {
+                    Text(notice).font(.caption2).foregroundStyle(.orange).multilineTextAlignment(.center)
                 }
                 restControls
             }
@@ -74,7 +80,7 @@ struct SetView: View {
                 }
                 Button("Stop") { model.send(.stopRest) }
             }
-            .disabled(!model.phoneReachable)
+            .disabled(!model.phoneReachable || model.isWaitingOnRest)
         }
     }
 
