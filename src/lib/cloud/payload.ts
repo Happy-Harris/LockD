@@ -1,6 +1,6 @@
 import type { BodyMeasurement } from "@/domain/types";
 import type { GymData } from "@/lib/gym/store";
-import type { CloudGym } from "./types";
+import type { CloudGym, SharePayload, ShareReceiptPayload } from "./types";
 
 /**
  * A reading that came from a health app stays on the device (owner's decision, 2026-09-30): it is tagged with its source
@@ -50,4 +50,14 @@ export function slugHandle(name: string, fallback = "lifter"): string {
     .replace(/[^a-z0-9]+/g, "")
     .slice(0, 16);
   return cleaned || fallback;
+}
+
+/**
+ * What a public read returns. Receipts published before gap 2 carried the workout's private notes, which no receipt
+ * shows; they never leave the server again (migration 0005 also removes them from stored rows).
+ */
+export function publicSharePayload(payload: SharePayload): SharePayload {
+  if (payload.kind !== "receipt" || !("notes" in payload)) return payload;
+  const { notes: _notes, ...rest } = payload as ShareReceiptPayload & { notes?: unknown };
+  return rest;
 }

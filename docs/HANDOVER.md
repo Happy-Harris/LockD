@@ -9,6 +9,14 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-10-01 — Fix: workout notes never reach a public receipt (web readiness gap 2)
+
+- **Problem:** a session receipt share put the workout's private notes in its public payload. No receipt showed them, but `getShare` returned them to anyone with the link. Found by the readiness audit (`docs/launch/WEB-READINESS.md` § 4).
+- **Fix, three layers:** `receiptShare` no longer copies notes; the publish validator no longer accepts a `notes` field, so an old client's notes are dropped before storage; `getShare` reads through `publicSharePayload` (`src/lib/cloud/payload.ts`), which drops notes from receipts published earlier. Migration `migrations/0005_share_receipt_notes.sql` removes them from stored receipt rows; it is idempotent and touches no other kind (program notes are shown on the page and stay).
+- **Tests:** `src/lib/cloud/share-notes.test.ts` (new share, old client publish, old stored row read, the migration on an old-format row, re-running it). `validate.test.ts`'s share size test used `notes` as its filler and now uses the workout name.
+- **Not done:** the audit also suggests a preview of the exact published fields before a share goes out, and tighter schemas for moment, wrapped and program payloads. Both belong with the accounts phase (sharing needs sign-in), not this fix.
+- **Not verified:** the migration against a real Postgres (tested on PGLite).
+
 ### 2026-10-01 — Fix: toasts no longer cover Finish (web readiness gap 1)
 
 - **Problem:** toasts sat at the top centre, over the workout header. Completing a set that ties or beats last time raises one, and on a phone it covered Finish, Discard and Back; Sonner pauses a toast while the pointer is over it, so the tap could stay blocked. Reproduced: the new check in `e2e/detail-routes.spec.ts` fails on the phone project without the fix.

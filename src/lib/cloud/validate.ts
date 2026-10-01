@@ -174,7 +174,6 @@ const payloads = {
       .max(500),
     prs: z.array(z.string()).max(500),
     eraName: z.string().optional(),
-    notes: z.string().optional(),
   }),
   wrapped: z.object({ kind: z.literal("wrapped"), ...person, unit, receipt: row }),
   program: z.object({

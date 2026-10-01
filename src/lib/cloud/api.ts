@@ -5,7 +5,7 @@ import { uuid } from "@/domain/ids";
 import { defaultSettings } from "@/lib/gym/store";
 import { buildLockerCard } from "./card";
 import { historyView, MAX_HISTORY_LINKS, newHistoryToken, type HistoryView } from "./history-link";
-import { asJson, slugHandle, vaultHasLog } from "./payload";
+import { asJson, publicSharePayload, slugHandle, vaultHasLog } from "./payload";
 import {
   validateHandleInput,
   validateHistoryLinkInput,
@@ -291,7 +291,7 @@ export const getShare = createServerFn({ method: "GET" })
       kind: rows[0].kind,
       title: rows[0].title,
       createdAt: rows[0].created_at,
-      payload: asJson<SharePayload>(rows[0].payload),
+      payload: publicSharePayload(asJson<SharePayload>(rows[0].payload)),
     };
     return { ok: true as const, share };
   });
