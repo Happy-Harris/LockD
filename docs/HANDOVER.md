@@ -9,6 +9,14 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-10-01 — Fix: a page for wrong addresses, a safer error screen, and keyboard fixes (web readiness gap 11)
+
+- **404:** `src/lib/not-found-component.tsx` is the router's not-found page: "Nothing at this address", a line saying the log is untouched, and Go to Today. The server still answers 404.
+- **Error screen:** `src/lib/error-component.tsx` no longer prints the raw error to the lifter (it could carry server or database detail); it says the screen could not open and the log is unchanged, with Try again and Go to Today. The message still shows in development.
+- **Keyboard and screen reader:** a Skip to content link is the first Tab stop on every app page; the workout name field is named "Workout name" and shows a focus ring; the web receipt's file drop zone shows a focus ring when its hidden file input has focus.
+- **Checked:** `e2e/not-found-and-focus.spec.ts` at 390 and 1024 px (404 status and page, the way back, the first Tab, the named field). The 404 page looked at in a screenshot at both widths.
+- **Not done:** a full keyboard, screen-reader and zoom audit of the main flows; this covers the audit's named items only.
+
 ### 2026-10-01 — Fix: public shares and lockers stay out of search (web readiness gap 13)
 
 - **Owner's decision (2026-10-01):** public shares and public lockers can be opened by anyone with the link but are not listed by search engines. Recorded in `docs/launch/WEB-READINESS.md`.
