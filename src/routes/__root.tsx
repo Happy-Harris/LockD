@@ -21,6 +21,7 @@ import { StorageNoticeBanner } from "@/components/app/storage-notice";
 import { TextSizeNotice } from "@/components/app/text-size-notice";
 import { bootStorage } from "@/lib/storage/boot";
 import { startServiceWorker } from "@/lib/pwa/start";
+import { startCrashReporting } from "@/lib/crash/report";
 import { siteOg } from "@/lib/og/tags";
 import { TEXT_SIZE_PREPAINT_SCRIPT } from "@/lib/device/text-size";
 import appCss from "../styles.css?url";
@@ -134,6 +135,7 @@ function GymGate() {
       .then((result) => {
         if (!useGym.getState().hydrated) useGym.getState().setHydrated(true);
         startServiceWorker();
+        void startCrashReporting();
         // Test hook: how long reading the log took (see `BootResult.readMs`).
         if (result.readMs !== undefined) {
           document.documentElement.dataset.gymBootMs = String(result.readMs);
