@@ -7,6 +7,7 @@ import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { nitro } from "nitro/vite";
 import { isMigrationFile } from "./scripts/migration-plan.mjs";
+import { SECURITY_HEADERS } from "./src/lib/security/headers.ts";
 
 function copyPgliteAssetsPlugin(): Plugin {
   return {
@@ -92,7 +93,7 @@ export default defineConfig(({ command, isPreview, mode: requestedMode }) => {
       tailwindcss(),
       tanstackStart(mode === "native" ? { spa: { enabled: true } } : undefined),
       ...((command === "build" || isPreview) && mode !== "native"
-        ? [nitro({ preset: "vercel" }), copyPgliteAssetsPlugin()]
+        ? [nitro({ preset: "vercel", routeRules: { "/**": { headers: SECURITY_HEADERS } } }), copyPgliteAssetsPlugin()]
         : []),
       viteReact(),
     ],
