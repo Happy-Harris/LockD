@@ -1,11 +1,16 @@
 import type { ErrorComponentProps } from "@tanstack/react-router";
 import { TriangleAlert } from "lucide-react";
+import { useEffect } from "react";
+import { reportError } from "@/lib/crash/report";
 
 /**
  * A screen that failed to render. The raw error can carry server or database detail, so the lifter sees a plain
  * sentence and two ways out; the detail shows only in development.
  */
 export function AppErrorComponent({ error, reset }: ErrorComponentProps) {
+  useEffect(() => {
+    reportError(error);
+  }, [error]);
   const detail = import.meta.env.DEV && error instanceof Error ? error.message : null;
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-canvas px-6 text-center text-ink">
