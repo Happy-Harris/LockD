@@ -170,14 +170,14 @@ describe("publishing a share", () => {
       payload: {
         kind: "receipt",
         athlete: "Lifter",
-        workoutName: "w",
+        // Oversized through a field the receipt keeps (notes are dropped before the size check).
+        workoutName: "x".repeat(MAX_SHARE_BYTES + 1),
         date: "2026-01-01",
         durationSec: 1,
         hardSets: 1,
         tonnageLabel: "1 kg",
         lines: [],
         prs: [],
-        notes: "x".repeat(MAX_SHARE_BYTES + 1),
       },
     };
     expect(() => validateShareInput(share)).toThrow(/limit for a public page/);

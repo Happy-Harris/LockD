@@ -28,7 +28,6 @@ export function receiptShare(
     hardSets: hardSetCount(slice.sets),
     tonnageLabel: formatWeightWithUnit(tonnage, unit),
     eraName,
-    notes: slice.workout.notes,
     prs: prs.map((row) => row.exerciseName),
     lines: slice.exercises.map((exercise) => {
       const sets = slice.sets

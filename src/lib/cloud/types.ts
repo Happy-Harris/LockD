@@ -78,7 +78,6 @@ export type ShareReceiptPayload = {
   lines: ShareReceiptLine[];
   prs: string[];
   eraName?: string;
-  notes?: string;
 };
 
 export type ShareWrappedPayload = {
