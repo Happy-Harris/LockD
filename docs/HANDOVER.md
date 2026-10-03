@@ -9,6 +9,13 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-10-01 — Privacy policy and terms, as drafts (web readiness gap 3)
+
+- **Shipped:** public `/privacy` and `/terms` pages (no account, no onboarding), linked from Settings beside the promise and from the footer of every paper page (web receipt, shares, lockers, history links). The wording lives in `src/lib/legal/content.ts`, written from what the code does after gaps 2, 4, 12 and 13: the log stays on the device, what signing in and sync store, what each kind of share shows (no notes), the server Lab's brief to xAI, Sentry crash reports, and that account deletion is not in the app yet. The terms repeat the history promise word for word.
+- **Marked as drafts:** every page opens with "DRAFT FOR OWNER AND LAWYER REVIEW". Bracketed items are the owner's to supply: operator and contact, hosting and database providers and locations, retention, legal bases, rights, minimum age, governing law, liability, and confirming IP storage is off in Sentry.
+- **Checked:** `src/lib/legal/content.test.ts` (the banner, the promise, no claim the code does not keep, no price or plan) and `e2e/legal-pages.spec.ts` at 390 and 1024 px (both pages open on a fresh browser, the Settings links work). Brand check clean. The privacy page looked at in a screenshot at both widths.
+- **When behaviour changes** (a new service, account deletion, a new kind of share), `content.ts` changes in the same PR.
+
 ### 2026-10-01 — Crash reporting, off until keyed (web readiness gap 12)
 
 - **Owner's decision (2026-10-01):** crash reporting with Sentry, carrying the error and the page only: no training data, email, or share links.

@@ -107,6 +107,8 @@ function isPublicPath(pathname: string) {
   return (
     pathname === "/login" ||
     pathname === "/receipt" ||
+    pathname === "/privacy" ||
+    pathname === "/terms" ||
     pathname.startsWith("/s/") ||
     pathname.startsWith("/h/") ||
     pathname.startsWith("/u/")
