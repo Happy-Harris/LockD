@@ -9,6 +9,13 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-10-01 — Fix: toasts no longer cover Finish (web readiness gap 1)
+
+- **Problem:** toasts sat at the top centre, over the workout header. Completing a set that ties or beats last time raises one, and on a phone it covered Finish, Discard and Back; Sonner pauses a toast while the pointer is over it, so the tap could stay blocked. Reproduced: the new check in `e2e/detail-routes.spec.ts` fails on the phone project without the fix.
+- **Fix:** the Toaster in `src/routes/__root.tsx` sits 5 rem from the top on every width, below the page header. Nothing else about toasts changed (text, timing, undo).
+- **Checked:** the summary e2e at 390 and 1024 px now asserts the toast is below Finish, Discard and Back once it has slid in, then taps Finish. Screenshots at both widths looked at: the toast sits under the header and above the first set card.
+- **Not verified:** a real phone with a notch in standalone mode (the offset does not add the top safe area).
+
 ### 2026-10-01 — Docs: production web readiness audit
 
 - **Delivered for review:** `docs/launch/WEB-READINESS.md` audits the code at `170c6c7`: deployment/environment behavior, server security and validation, cloud storage/deletion/restore, off-device data, reliability, legal-page requirements, web basics and operations. Each finding cites files and distinguishes implemented behavior, gaps and outcomes the repo cannot establish; ranked gaps and owner questions close the report.

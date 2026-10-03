@@ -44,6 +44,17 @@ test.describe("detail screens render themselves, not their list", () => {
     await expect(page).toHaveURL(/\/workout$/);
     await waitForApp(page);
     await page.getByRole("button", { name: "Complete set" }).first().click();
+    // A repeated set ties last time and raises a toast; it must not sit over the header buttons.
+    const toast = page.locator("[data-sonner-toast]").first();
+    await expect(toast).toBeVisible();
+    // Checked once the toast has finished sliding in.
+    await expect(async () => {
+      const toastBox = (await toast.boundingBox())!;
+      for (const name of ["Finish", "Discard", "Back"]) {
+        const box = (await page.getByRole("button", { name, exact: true }).boundingBox())!;
+        expect(box.y + box.height, `${name} is above the toast`).toBeLessThanOrEqual(toastBox.y);
+      }
+    }).toPass({ timeout: 3_000 });
     await page.getByRole("button", { name: "Finish" }).click();
     await expect(page).toHaveURL(/\/workout\/.+\/summary$/);
     await expect(page.getByRole("heading", { level: 1, name: "Keep the receipt." })).toBeVisible();

@@ -174,6 +174,9 @@ function GymGate() {
       <Toaster
         theme={theme === "light" ? "light" : "dark"}
         position="top-center"
+        // Below the page header, so a toast never covers Finish, Discard or Back mid-workout.
+        offset={{ top: "5rem" }}
+        mobileOffset={{ top: "5rem" }}
         toastOptions={{
           className: "bg-surface text-ink hairline",
         }}
