@@ -366,6 +366,14 @@ function SettingsPage() {
             {HISTORY_PROMISE_TITLE}
           </p>
           <p className="mt-1 text-sm leading-relaxed text-ink">{HISTORY_PROMISE}</p>
+          <p className="mt-2 flex gap-4 text-xs">
+            <Link to="/privacy" className="text-accent underline-offset-4 hover:underline">
+              Privacy policy
+            </Link>
+            <Link to="/terms" className="text-accent underline-offset-4 hover:underline">
+              Terms
+            </Link>
+          </p>
         </div>
         <p className="text-sm leading-relaxed text-muted">
           Signed in, every session writes to the locker. JSON and CSV are still here if you want a

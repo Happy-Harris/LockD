@@ -15,6 +15,14 @@ export function PaperShell({ children, kicker }: { children: React.ReactNode; ki
           </span>
         </Link>
         {children}
+        <nav aria-label="Legal" className="mt-12 flex gap-4 text-xs text-subtle">
+          <Link to="/privacy" className="underline-offset-4 hover:underline">
+            Privacy
+          </Link>
+          <Link to="/terms" className="underline-offset-4 hover:underline">
+            Terms
+          </Link>
+        </nav>
       </main>
     </div>
   );

@@ -20,10 +20,12 @@ import { Route as LibraryRouteImport } from './routes/library'
 import { Route as LockerRouteImport } from './routes/locker'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MoreRouteImport } from './routes/more'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProgramsRouteImport } from './routes/programs'
 import { Route as ReceiptRouteImport } from './routes/receipt'
 import { Route as RoutinesRouteImport } from './routes/routines'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as WorkoutRouteImport } from './routes/workout'
@@ -98,6 +100,11 @@ const MoreRoute = MoreRouteImport.update({
   path: '/more',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProgramsRoute = ProgramsRouteImport.update({
   id: '/programs',
   path: '/programs',
@@ -116,6 +123,11 @@ const RoutinesRoute = RoutinesRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ToolsRoute = ToolsRouteImport.update({
@@ -221,10 +233,12 @@ export interface FileRoutesByFullPath {
   '/locker': typeof LockerRoute
   '/login': typeof LoginRoute
   '/more': typeof MoreRoute
+  '/privacy': typeof PrivacyRoute
   '/programs': typeof ProgramsRoute
   '/receipt': typeof ReceiptRoute
   '/routines': typeof RoutinesRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/tools': typeof ToolsRoute
   '/vault': typeof VaultRoute
   '/workout': typeof WorkoutRoute
@@ -256,10 +270,12 @@ export interface FileRoutesByTo {
   '/locker': typeof LockerRoute
   '/login': typeof LoginRoute
   '/more': typeof MoreRoute
+  '/privacy': typeof PrivacyRoute
   '/programs': typeof ProgramsRoute
   '/receipt': typeof ReceiptRoute
   '/routines': typeof RoutinesRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/tools': typeof ToolsRoute
   '/vault': typeof VaultRoute
   '/workout': typeof WorkoutRoute
@@ -292,10 +308,12 @@ export interface FileRoutesById {
   '/locker': typeof LockerRoute
   '/login': typeof LoginRoute
   '/more': typeof MoreRoute
+  '/privacy': typeof PrivacyRoute
   '/programs': typeof ProgramsRoute
   '/receipt': typeof ReceiptRoute
   '/routines': typeof RoutinesRoute
   '/settings': typeof SettingsRoute
+  '/terms': typeof TermsRoute
   '/tools': typeof ToolsRoute
   '/vault': typeof VaultRoute
   '/workout': typeof WorkoutRoute
@@ -329,10 +347,12 @@ export interface FileRouteTypes {
     | '/locker'
     | '/login'
     | '/more'
+    | '/privacy'
     | '/programs'
     | '/receipt'
     | '/routines'
     | '/settings'
+    | '/terms'
     | '/tools'
     | '/vault'
     | '/workout'
@@ -364,10 +384,12 @@ export interface FileRouteTypes {
     | '/locker'
     | '/login'
     | '/more'
+    | '/privacy'
     | '/programs'
     | '/receipt'
     | '/routines'
     | '/settings'
+    | '/terms'
     | '/tools'
     | '/vault'
     | '/workout'
@@ -399,10 +421,12 @@ export interface FileRouteTypes {
     | '/locker'
     | '/login'
     | '/more'
+    | '/privacy'
     | '/programs'
     | '/receipt'
     | '/routines'
     | '/settings'
+    | '/terms'
     | '/tools'
     | '/vault'
     | '/workout'
@@ -435,10 +459,12 @@ export interface RootRouteChildren {
   LockerRoute: typeof LockerRoute
   LoginRoute: typeof LoginRoute
   MoreRoute: typeof MoreRoute
+  PrivacyRoute: typeof PrivacyRoute
   ProgramsRoute: typeof ProgramsRoute
   ReceiptRoute: typeof ReceiptRoute
   RoutinesRoute: typeof RoutinesRoute
   SettingsRoute: typeof SettingsRoute
+  TermsRoute: typeof TermsRoute
   ToolsRoute: typeof ToolsRoute
   VaultRoute: typeof VaultRoute
   WorkoutRoute: typeof WorkoutRoute
@@ -538,6 +564,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MoreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/programs': {
       id: '/programs'
       path: '/programs'
@@ -564,6 +597,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tools': {
@@ -707,10 +747,12 @@ const rootRouteChildren: RootRouteChildren = {
   LockerRoute: LockerRoute,
   LoginRoute: LoginRoute,
   MoreRoute: MoreRoute,
+  PrivacyRoute: PrivacyRoute,
   ProgramsRoute: ProgramsRoute,
   ReceiptRoute: ReceiptRoute,
   RoutinesRoute: RoutinesRoute,
   SettingsRoute: SettingsRoute,
+  TermsRoute: TermsRoute,
   ToolsRoute: ToolsRoute,
   VaultRoute: VaultRoute,
   WorkoutRoute: WorkoutRoute,
