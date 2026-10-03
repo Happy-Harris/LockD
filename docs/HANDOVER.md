@@ -9,6 +9,13 @@ Labels: entries are headed by **Step** (older ones say "Plan PR", the same thing
 
 ## Log
 
+### 2026-10-01 — Fix: public shares and lockers stay out of search (web readiness gap 13)
+
+- **Owner's decision (2026-10-01):** public shares and public lockers can be opened by anyone with the link but are not listed by search engines. Recorded in `docs/launch/WEB-READINESS.md`.
+- **Shipped:** `NOINDEX` in `src/lib/og/tags.ts` (`robots: noindex, nofollow`) is added to every `/s/$id` and `/u/$handle` page, found or not. Share cards still unfurl in chats (link previews do not read it). History links already carried it. No `robots.txt` block, on purpose: a crawler that is blocked from a page never sees its `noindex`.
+- **Checked:** `src/lib/og/tags.test.ts` (all four share and locker cases carry it, the home page does not) and `e2e/share-tags.spec.ts` on the server-rendered HTML at 390 and 1024 px.
+- **Rest of gap 13, not done here:** no first-load budget until the live site is measured (owner's decision); no custom install button (owner's decision); the local large-log read that missed its 500 ms budget on another agent's machine has not been reproduced in CI.
+
 ### 2026-10-01 — Fix: security headers on the web build (web readiness gap 4)
 
 - **Shipped:** `src/lib/security/headers.ts` holds the headers, applied to every path as a Nitro route rule in `vite.config.ts` (so they land in the Vercel output config): a content policy that allows only Lock'd's own origin, HSTS for two years with subdomains (not preloaded), `nosniff`, `X-Frame-Options: DENY` with `frame-ancestors 'none'`, `strict-origin-when-cross-origin` referrer policy, and a permissions policy that turns off camera, microphone, location, payment and USB.
